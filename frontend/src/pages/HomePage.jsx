@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { HeroCarousel } from '../components/HeroCarousel';
+import { StoryHighlights } from '../components/StoryHighlights';
 import { ProductCard } from '../components/ProductCard';
 import { api } from '../api/client';
 import { Clock, ChevronRight, Zap, Award, ShieldCheck } from 'lucide-react';
 
-export function HomePage({ onSelectProduct, onSelectCategory, onViewCatalog, onWishlistToggle, wishlistIds = [] }) {
+export function HomePage({
+  onSelectProduct,
+  onSelectCategory,
+  onViewCatalog,
+  onWishlistToggle,
+  wishlistIds = [],
+  onOpenStreak,
+}) {
   const [deals, setDeals] = useState([]);
   const [featured, setFeatured] = useState([]);
   const [topOffers, setTopOffers] = useState([]);
@@ -33,6 +41,12 @@ export function HomePage({ onSelectProduct, onSelectCategory, onViewCatalog, onW
 
   return (
     <div className="space-y-4 pb-8">
+      {/* Instagram-style circular story highlights carousel (Agent 10) */}
+      <StoryHighlights
+        onSelectCategory={onSelectCategory}
+        onOpenStreak={onOpenStreak}
+      />
+
       {/* Hero Carousel */}
       <HeroCarousel onSelectCategory={onSelectCategory} />
 
@@ -129,7 +143,7 @@ export function HomePage({ onSelectProduct, onSelectCategory, onViewCatalog, onW
         </div>
       </div>
 
-      {/* Featured Products Collection */}
+      {/* Featured Recommendations Collection */}
       <div className="max-w-7xl mx-auto px-4">
         <div className="bg-white p-4 rounded-xs shadow-xs">
           <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-100">

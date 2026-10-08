@@ -54,8 +54,8 @@ export function OrderDetailPage({ orderId, onBack, onViewProduct }) {
   }
 
   const milestones = [
-    { key: 'PLACED', title: 'Order Placed' },
-    { key: 'CONFIRMED', title: 'Order Confirmed' },
+    { key: 'PLACED', title: 'Ordered' },
+    { key: 'CONFIRMED', title: 'Packed' },
     { key: 'SHIPPED', title: 'Shipped' },
     { key: 'OUT_FOR_DELIVERY', title: 'Out for Delivery' },
     { key: 'DELIVERED', title: 'Delivered' },

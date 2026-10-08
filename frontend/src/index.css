@@ -8,11 +8,11 @@
   --sk-amber: #FF7A00;
   --sk-amber-light: #FFF7ED;
   --sk-green: #388E3C;
-  --sk-bg: #F4F6FB;
+  --sk-bg: #F1F3F6;
   --sk-surface: #FFFFFF;
-  --sk-text-dark: #0F172A;
-  --sk-text-muted: #64748B;
-  --sk-border: #E2E8F0;
+  --sk-text-dark: #212121;
+  --sk-text-muted: #878787;
+  --sk-border: #E0E0E0;
 }
 
 body {
@@ -42,4 +42,92 @@ body {
 /* Micro-interaction helper */
 .tap-highlight-none {
   -webkit-tap-highlight-color: transparent;
+}
+
+/* 60fps Micro-Interactions & Hardware Acceleration */
+.card-lift {
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease-out;
+  will-change: transform, box-shadow;
+}
+.card-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+}
+
+/* Cart Badge Bounce Animation */
+@keyframes cartBounce {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.45); }
+  65% { transform: scale(0.88); }
+  85% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.animate-cart-bounce {
+  animation: cartBounce 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Heart Wishlist Bounce Animation */
+@keyframes heartBounce {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.35) rotate(-6deg); }
+  50% { transform: scale(0.9) rotate(4deg); }
+  75% { transform: scale(1.15) rotate(-2deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.animate-heart-bounce {
+  animation: heartBounce 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Fly-To-Cart Projectile Animation */
+@keyframes flyToCart {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(calc(var(--target-x, 250px) * 0.45), calc(var(--target-y, -300px) * 0.85)) scale(0.65);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(var(--target-x, 250px), var(--target-y, -300px)) scale(0.15);
+    opacity: 0;
+  }
+}
+
+.fly-projectile {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  animation: flyToCart 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* Shimmer Skeleton Loader */
+@keyframes shimmerWave {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e4e4e4 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmerWave 1.6s infinite ease-in-out;
+}
+
+/* Scratch Card Canvas & Card */
+.scratch-container {
+  user-select: none;
+  touch-action: none;
+}
+
+/* Story Highlights Gradient Ring */
+.story-ring {
+  background: linear-gradient(45deg, #2874F0, #FF7A00, #FB641B);
+  padding: 2.5px;
+  border-radius: 9999px;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.story-ring:hover {
+  transform: scale(1.06);
 }

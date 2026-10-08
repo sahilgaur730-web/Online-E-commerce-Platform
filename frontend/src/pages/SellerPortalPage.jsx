@@ -11,6 +11,7 @@ import {
   Package,
   UploadCloud,
   Truck,
+  Layers,
 } from 'lucide-react';
 
 export function SellerPortalPage({ onViewProduct }) {
