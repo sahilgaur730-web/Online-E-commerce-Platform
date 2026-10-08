@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+:root {
+  --fk-blue: #2874F0;
+  --fk-blue-dark: #0A3B74;
+  --fk-orange: #FB641B;
+  --fk-orange-warm: #FF7A00;
+  --fk-yellow: #FFE500;
+  --fk-green: #388E3C;
+  --fk-bg: #F1F3F6;
+  --fk-text-dark: #212121;
+  --fk-text-muted: #878787;
+  --fk-border: #E0E0E0;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--fk-bg);
+  color: var(--fk-text-dark);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom scrollbar matching Flipkart */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
