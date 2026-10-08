@@ -1,0 +1,32 @@
+# Node / Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Java / Backend
+target/
+*.class
+*.jar
+*.war
+.mvn/wrapper/maven-wrapper.jar
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.idea/
+*.iml
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Temporary tools
+.tools/
