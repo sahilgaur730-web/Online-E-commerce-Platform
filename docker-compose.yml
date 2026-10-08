@@ -50,6 +50,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_FLYWAY_ENABLED: "true"
       SPRING_CACHE_TYPE: redis
       REDIS_HOST: redis
       REDIS_PORT: 6379
