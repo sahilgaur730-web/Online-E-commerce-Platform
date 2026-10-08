@@ -1,22 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { Award, CheckCircle, Flame, Gift, Sparkles, X } from 'lucide-react';
 
-export function DailyStreakModal({ isOpen, onClose, onCoinsClaimed }) {
-  const [streakData, setStreakData] = useState(() => {
-    const saved = localStorage.getItem('shopkart_streak_data');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        // fallback
+function getEvaluatedStreak() {
+  const saved = localStorage.getItem('shopkart_streak_data');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed.lastCheckInDate) {
+        const lastDate = new Date(parsed.lastCheckInDate);
+        const today = new Date();
+        const isToday = lastDate.toDateString() === today.toDateString();
+
+        const d1 = new Date(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate());
+        const d2 = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const diffDays = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+
+        if (isToday) {
+          return { ...parsed, claimedToday: true };
+        } else if (diffDays === 1) {
+          // Consecutive check-in, ready to claim
+          return { ...parsed, claimedToday: false };
+        } else if (diffDays > 1) {
+          // Broken streak resets to Day 1
+          return { currentStreak: 1, lastCheckInDate: parsed.lastCheckInDate, claimedToday: false };
+        }
       }
+      return parsed;
+    } catch {
+      // fallback
     }
-    return {
-      currentStreak: 3,
-      lastCheckInDate: null,
-      claimedToday: false,
-    };
-  });
+  }
+  return {
+    currentStreak: 3,
+    lastCheckInDate: null,
+    claimedToday: false,
+  };
+}
+
+export function DailyStreakModal({ isOpen, onClose, onCoinsClaimed }) {
+  const [streakData, setStreakData] = useState(getEvaluatedStreak);
+  const [isClaiming, setIsClaiming] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setStreakData(getEvaluatedStreak());
+    }
+  }, [isOpen]);
 
   const rewards = [
     { day: 1, coins: 5 },
@@ -29,8 +58,11 @@ export function DailyStreakModal({ isOpen, onClose, onCoinsClaimed }) {
   ];
 
   const handleClaim = () => {
-    const nextStreak = (streakData.currentStreak % 7) + 1;
+    if (isClaiming || streakData.claimedToday) return;
+    setIsClaiming(true);
+
     const earned = rewards[streakData.currentStreak - 1]?.coins || 15;
+    const nextStreak = (streakData.currentStreak % 7) + 1;
     const updated = {
       currentStreak: nextStreak,
       lastCheckInDate: new Date().toISOString(),
@@ -43,6 +75,7 @@ export function DailyStreakModal({ isOpen, onClose, onCoinsClaimed }) {
     const currentBalance = parseInt(localStorage.getItem('shopkart_supercoins') || '120', 10);
     const newBalance = currentBalance + earned;
     localStorage.setItem('shopkart_supercoins', newBalance.toString());
+    window.dispatchEvent(new Event('shopkart_coins_updated'));
 
     // Record ledger transaction
     const ledger = JSON.parse(localStorage.getItem('shopkart_coins_ledger') || '[]');
@@ -58,6 +91,7 @@ export function DailyStreakModal({ isOpen, onClose, onCoinsClaimed }) {
     if (onCoinsClaimed) {
       onCoinsClaimed(earned, newBalance);
     }
+    setTimeout(() => setIsClaiming(false), 500);
   };
 
   if (!isOpen) return null;
@@ -136,10 +170,11 @@ export function DailyStreakModal({ isOpen, onClose, onCoinsClaimed }) {
             ) : (
               <button
                 onClick={handleClaim}
-                className="w-full py-3 bg-[#FF7A00] hover:bg-[#e06b00] text-white font-bold text-xs uppercase tracking-wider rounded-xs shadow-md transition cursor-pointer flex items-center justify-center gap-2"
+                disabled={isClaiming}
+                className="w-full py-3 bg-[#FF7A00] hover:bg-[#e06b00] disabled:bg-gray-300 text-white font-bold text-xs uppercase tracking-wider rounded-xs shadow-md transition cursor-pointer flex items-center justify-center gap-2"
               >
                 <Gift className="w-4 h-4" />
-                <span>Claim Day {streakData.currentStreak} ({rewards[streakData.currentStreak - 1]?.coins} SuperCoins)</span>
+                <span>{isClaiming ? 'Claiming...' : `Claim Day ${streakData.currentStreak} (${rewards[streakData.currentStreak - 1]?.coins} SuperCoins)`}</span>
               </button>
             )}
             <p className="text-[11px] text-gray-500 mt-2">

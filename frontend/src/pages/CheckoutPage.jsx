@@ -66,15 +66,29 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
   const [captchaError, setCaptchaError] = useState('');
 
   // SuperCoins Loyalty Redemption
-  const [superCoinsBalance, setSuperCoinsBalance] = useState(120);
+  const [superCoinsBalance, setSuperCoinsBalance] = useState(() => {
+    try {
+      return parseInt(localStorage.getItem('shopkart_supercoins') || '120', 10);
+    } catch {
+      return 120;
+    }
+  });
   const [useSuperCoins, setUseSuperCoins] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmedOrder, setConfirmedOrder] = useState(null);
 
   useEffect(() => {
-    const coins = parseInt(localStorage.getItem('shopkart_supercoins') || '120', 10);
-    setSuperCoinsBalance(coins);
+    const handleStorage = () => {
+      const coins = parseInt(localStorage.getItem('shopkart_supercoins') || '120', 10);
+      setSuperCoinsBalance(coins);
+    };
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('shopkart_coins_updated', handleStorage);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('shopkart_coins_updated', handleStorage);
+    };
   }, []);
 
   const loadAddresses = async () => {
@@ -115,9 +129,11 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
     }
   };
 
-  // SuperCoins calculations
+  // SuperCoins & Total calculations
+  const securedPackagingFee = 49;
   const coinsDeduction = useSuperCoins ? Math.min(superCoinsBalance, 100) : 0;
   const finalCalculatedAmount = Math.max(0, (cart.finalTotal || 0) - coinsDeduction);
+  const totalPayableAmount = finalCalculatedAmount + securedPackagingFee;
   const coinsToEarn = Math.floor(finalCalculatedAmount * 0.04);
 
   const handleProceedToPayment = () => {
@@ -139,15 +155,35 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
       const txnId = 'TXN_' + Date.now();
       await api.verifyPayment(order.id, txnId, true, null);
 
-      // Deduct coins if redeemed
-      if (useSuperCoins) {
-        const newBal = Math.max(0, superCoinsBalance - coinsDeduction);
-        localStorage.setItem('shopkart_supercoins', newBal.toString());
+      // SuperCoins Ledger & Balance Tracking
+      const ledger = JSON.parse(localStorage.getItem('shopkart_coins_ledger') || '[]');
+      let updatedCoins = superCoinsBalance;
+
+      if (useSuperCoins && coinsDeduction > 0) {
+        updatedCoins = Math.max(0, updatedCoins - coinsDeduction);
+        ledger.unshift({
+          id: 'TXN_' + Date.now() + '_RED',
+          type: 'REDEEMED',
+          amount: coinsDeduction,
+          description: `Instant Discount on Order #${order.orderNumber || order.id}`,
+          timestamp: new Date().toISOString(),
+        });
       }
 
-      // Add earned SuperCoins
-      const currentCoins = parseInt(localStorage.getItem('shopkart_supercoins') || '120', 10);
-      localStorage.setItem('shopkart_supercoins', (currentCoins + coinsToEarn).toString());
+      if (coinsToEarn > 0) {
+        updatedCoins = updatedCoins + coinsToEarn;
+        ledger.unshift({
+          id: 'TXN_' + Date.now() + '_EARN',
+          type: 'EARNED',
+          amount: coinsToEarn,
+          description: `4% SuperCoins Earned on Order #${order.orderNumber || order.id}`,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
+      localStorage.setItem('shopkart_supercoins', updatedCoins.toString());
+      localStorage.setItem('shopkart_coins_ledger', JSON.stringify(ledger));
+      window.dispatchEvent(new Event('shopkart_coins_updated'));
 
       await clearCart();
       setConfirmedOrder({
@@ -163,6 +199,28 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
       setIsSubmitting(false);
       setShowOtpModal(false);
     }
+  };
+
+  const handleScratchRevealed = () => {
+    const creditedKey = `shopkart_scratch_credited_${confirmedOrder?.id || 'latest'}`;
+    if (sessionStorage.getItem(creditedKey)) return;
+    sessionStorage.setItem(creditedKey, 'true');
+
+    const bonus = 50;
+    const currentCoins = parseInt(localStorage.getItem('shopkart_supercoins') || '120', 10);
+    const updated = currentCoins + bonus;
+    localStorage.setItem('shopkart_supercoins', updated.toString());
+
+    const ledger = JSON.parse(localStorage.getItem('shopkart_coins_ledger') || '[]');
+    ledger.unshift({
+      id: 'TXN_' + Date.now(),
+      type: 'SCRATCH_BONUS',
+      amount: bonus,
+      description: 'Mystery Scratch Card Reward (Promo: SHOPKART200)',
+      timestamp: new Date().toISOString(),
+    });
+    localStorage.setItem('shopkart_coins_ledger', JSON.stringify(ledger));
+    window.dispatchEvent(new Event('shopkart_coins_updated'));
   };
 
   const handlePlaceOrder = async () => {
@@ -246,6 +304,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
               promoCode="SHOPKART200"
               discountText="₹200 Instant Off on Your Next Purchase"
               coinsBonus={50}
+              onRevealed={handleScratchRevealed}
             />
           </div>
 
@@ -780,7 +839,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                       'Processing Order...'
                     ) : (
                       <>
-                        <span>Pay ₹{finalCalculatedAmount.toLocaleString('en-IN')} & Confirm</span>
+                        <span>Pay ₹{totalPayableAmount.toLocaleString('en-IN')} & Confirm</span>
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
@@ -831,7 +890,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
 
             <div className="border-t border-dashed border-gray-300 pt-3 flex justify-between text-sm font-black text-gray-900">
               <span>Total Payable Amount:</span>
-              <span>₹{(finalCalculatedAmount + 49).toLocaleString('en-IN')}</span>
+              <span>₹{totalPayableAmount.toLocaleString('en-IN')}</span>
             </div>
           </div>
 

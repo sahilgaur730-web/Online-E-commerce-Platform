@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, User, Lock, Mail, Phone, Store, CheckCircle } from 'lucide-react';
+import { X, User, Lock, Mail, Phone, Store } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export function LoginModal({ isOpen, onClose, initialMode = 'login' }) {

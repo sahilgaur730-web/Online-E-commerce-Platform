@@ -131,3 +131,20 @@ body {
 .story-ring:hover {
   transform: scale(1.06);
 }
+
+/* Visual Search Scanner Laser Beam Animation */
+@keyframes scannerSweep {
+  0% { top: 0%; opacity: 0.8; }
+  50% { top: 96%; opacity: 1; }
+  100% { top: 0%; opacity: 0.8; }
+}
+
+.visual-scan-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #2874F0, #FF7A00, #2874F0, transparent);
+  box-shadow: 0 0 15px 3px rgba(40, 116, 240, 0.7);
+  animation: scannerSweep 2.2s ease-in-out infinite;
+}

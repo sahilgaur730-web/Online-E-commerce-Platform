@@ -102,14 +102,39 @@ export function AdminDashboardPage({ onViewOrder }) {
     }
     try {
       setBatchProcessing(true);
+      let successCount = 0;
+      const skippedOrders = [];
+
       for (const id of selectedOrderIds) {
+        const order = orders.find((o) => o.id === id);
+        const current = order ? order.orderStatus : null;
+
+        // Verify valid state machine transitions according to OrderService rules
+        let isValid = false;
+        if (batchTargetStatus === 'CONFIRMED' && current === 'PLACED') isValid = true;
+        else if (batchTargetStatus === 'SHIPPED' && current === 'CONFIRMED') isValid = true;
+        else if (batchTargetStatus === 'OUT_FOR_DELIVERY' && current === 'SHIPPED') isValid = true;
+        else if (batchTargetStatus === 'DELIVERED' && current === 'OUT_FOR_DELIVERY') isValid = true;
+        else if (batchTargetStatus === 'CANCELLED' && (current === 'PLACED' || current === 'CONFIRMED')) isValid = true;
+
+        if (!isValid) {
+          skippedOrders.push(order?.orderNumber || `#${id} (${current || 'UNKNOWN'})`);
+          continue;
+        }
+
         try {
           await api.updateOrderStatus(id, batchTargetStatus, 'Batch status update applied by Admin');
+          successCount++;
         } catch {
-          // ignore individual conflict
+          skippedOrders.push(order?.orderNumber || `#${id} (${current || 'UNKNOWN'})`);
         }
       }
-      alert(`Batch update executed on ${selectedOrderIds.length} orders.`);
+
+      let summary = `Batch Update Finished: ${successCount} order(s) transitioned to ${batchTargetStatus}.`;
+      if (skippedOrders.length > 0) {
+        summary += ` ${skippedOrders.length} order(s) bypassed due to invalid lifecycle transitions: ${skippedOrders.slice(0, 5).join(', ')}${skippedOrders.length > 5 ? '...' : ''}.`;
+      }
+      alert(summary);
       setSelectedOrderIds([]);
       await loadAdminData();
     } catch (err) {

@@ -9,6 +9,7 @@ import { DailyStreakModal } from './components/DailyStreakModal';
 import { SuperCoinsLedgerModal } from './components/SuperCoinsLedgerModal';
 import { ReferralModal } from './components/ReferralModal';
 import { AbandonedCartToast } from './components/AbandonedCartToast';
+import { VisualSearchModal } from './components/VisualSearchModal';
 import { HomePage } from './pages/HomePage';
 import { CatalogPage } from './pages/CatalogPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
@@ -33,10 +34,11 @@ function MainApp() {
   const [authModalMode, setAuthModalMode] = useState('login');
   const [wishlistIds, setWishlistIds] = useState([]);
 
-  // Gamification & Retention Modals
+  // Gamification, Discovery & Retention Modals
   const [dailyStreakOpen, setDailyStreakOpen] = useState(false);
   const [superCoinsLedgerOpen, setSuperCoinsLedgerOpen] = useState(false);
   const [referralModalOpen, setReferralModalOpen] = useState(false);
+  const [visualSearchOpen, setVisualSearchOpen] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -148,6 +150,7 @@ function MainApp() {
         onOpenStreak={() => setDailyStreakOpen(true)}
         onOpenLedger={() => setSuperCoinsLedgerOpen(true)}
         onOpenReferral={() => setReferralModalOpen(true)}
+        onOpenVisualSearch={() => setVisualSearchOpen(true)}
         onSelectProduct={handleSelectProduct}
       />
 
@@ -274,6 +277,13 @@ function MainApp() {
       <ReferralModal
         isOpen={referralModalOpen}
         onClose={() => setReferralModalOpen(false)}
+      />
+
+      {/* Visual Search Lens Modal (Agent 10) */}
+      <VisualSearchModal
+        isOpen={visualSearchOpen}
+        onClose={() => setVisualSearchOpen(false)}
+        onSelectProduct={handleSelectProduct}
       />
     </div>
   );

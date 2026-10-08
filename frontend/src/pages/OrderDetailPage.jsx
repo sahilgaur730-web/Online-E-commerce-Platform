@@ -5,6 +5,8 @@ import {
   CheckCircle,
   XCircle,
   ArrowLeft,
+  MapPin,
+  AlertTriangle,
 } from 'lucide-react';
 
 export function OrderDetailPage({ orderId, onBack, onViewProduct }) {
@@ -13,10 +15,6 @@ export function OrderDetailPage({ orderId, onBack, onViewProduct }) {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState('Found better price elsewhere');
   const [cancelling, setCancelling] = useState(false);
-
-  useEffect(() => {
-    loadOrder();
-  }, [orderId]);
 
   const loadOrder = async () => {
     try {
@@ -29,6 +27,12 @@ export function OrderDetailPage({ orderId, onBack, onViewProduct }) {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (orderId) {
+      loadOrder();
+    }
+  }, [orderId]);
 
   const handleCancelOrder = async () => {
     try {

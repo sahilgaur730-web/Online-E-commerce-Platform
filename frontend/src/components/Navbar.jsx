@@ -15,6 +15,7 @@ import {
   TrendingUp,
   X,
   Share2,
+  Camera,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -28,6 +29,7 @@ export function Navbar({
   onOpenStreak,
   onOpenLedger,
   onOpenReferral,
+  onOpenVisualSearch,
   onSelectProduct,
 }) {
   const { user, isAuthenticated, isSeller, isAdmin, logout, loginDemo } = useAuth();
@@ -37,7 +39,13 @@ export function Navbar({
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const [superCoins, setSuperCoins] = useState(120);
+  const [superCoins, setSuperCoins] = useState(() => {
+    try {
+      return parseInt(localStorage.getItem('shopkart_supercoins') || '120', 10);
+    } catch {
+      return 120;
+    }
+  });
 
   // Predictive Auto-Suggest Search States
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -65,8 +73,16 @@ export function Navbar({
   ];
 
   useEffect(() => {
-    const coins = parseInt(localStorage.getItem('shopkart_supercoins') || '120', 10);
-    setSuperCoins(coins);
+    const handleStorageChange = () => {
+      const coins = parseInt(localStorage.getItem('shopkart_supercoins') || '120', 10);
+      setSuperCoins(coins);
+    };
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('shopkart_coins_updated', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('shopkart_coins_updated', handleStorageChange);
+    };
   }, []);
 
   useEffect(() => {
@@ -208,18 +224,26 @@ export function Navbar({
               onFocus={() => setIsSearchFocused(true)}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search for Products, Brands and More..."
-              className="w-full bg-white text-gray-900 placeholder-gray-500 text-xs sm:text-sm px-4 py-2.5 rounded-xs focus:outline-none focus:ring-2 focus:ring-yellow-400 pr-16 shadow-xs"
+              className="w-full bg-white text-gray-900 placeholder-gray-500 text-xs sm:text-sm px-4 py-2.5 rounded-xs focus:outline-none focus:ring-2 focus:ring-yellow-400 pr-24 shadow-xs"
             />
             {searchTerm && (
               <button
                 type="button"
                 onClick={() => setSearchTerm('')}
-                className="absolute right-10 text-gray-400 hover:text-gray-700 transition cursor-pointer p-1"
+                className="absolute right-18 text-gray-400 hover:text-gray-700 transition cursor-pointer p-1"
                 title="Clear"
               >
                 <X className="w-4 h-4" />
               </button>
             )}
+            <button
+              type="button"
+              onClick={onOpenVisualSearch}
+              className="absolute right-10 text-gray-400 hover:text-[#2874F0] transition p-1 cursor-pointer"
+              title="Visual Search / Search by Image"
+            >
+              <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
             <button
               type="submit"
               className="absolute right-2.5 text-[#2874F0] hover:text-blue-800 transition p-1 cursor-pointer"

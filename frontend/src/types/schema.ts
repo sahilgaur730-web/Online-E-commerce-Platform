@@ -348,3 +348,16 @@ export interface StoryHighlight {
     discount: string;
   }[];
 }
+
+export interface VisualSearchQuery {
+  imageUrl: string;
+  presetKeyword?: string;
+  presetTags?: string[];
+}
+
+export interface VisualSearchResult {
+  product: Product;
+  matchScore: number;
+  matchedFeatures: string[];
+}
+

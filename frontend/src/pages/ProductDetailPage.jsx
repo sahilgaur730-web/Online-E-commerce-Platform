@@ -10,6 +10,7 @@ import {
   Heart,
   ChevronRight,
   Check,
+  CheckCircle,
   Clock,
   AlertTriangle,
   BellRing,
@@ -56,6 +57,7 @@ export function ProductDetailPage({
 
   // Price Drop / Back in Stock Alert Modal
   const [showAlertModal, setShowAlertModal] = useState(false);
+  const [alertMode, setAlertMode] = useState('PRICE_DROP'); // 'PRICE_DROP' | 'BACK_IN_STOCK'
   const [alertEmail, setAlertEmail] = useState('');
   const [alertTargetPrice, setAlertTargetPrice] = useState('');
   const [alertSubscribed, setAlertSubscribed] = useState(false);
@@ -378,42 +380,56 @@ export function ProductDetailPage({
               </div>
             </div>
 
-            {/* Desktop Action Buttons */}
-            <div className="grid grid-cols-2 gap-3 w-full mt-6">
-              <button
-                onClick={handleAddToCart}
-                disabled={product.stock === 0}
-                className={`py-3.5 px-4 rounded-xs font-bold text-xs uppercase flex items-center justify-center gap-2 shadow-sm transition cursor-pointer active:scale-98 ${
-                  product.stock === 0
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    : added
-                    ? 'bg-[#388E3C] text-white'
-                    : 'bg-[#FF9F00] hover:bg-[#e68e00] text-white'
-                }`}
-              >
-                {added ? (
-                  <>
-                    <Check className="w-4 h-4" /> Added to Cart
-                  </>
-                ) : (
-                  <>
-                    <ShoppingCart className="w-4 h-4" /> Add to Cart
-                  </>
-                )}
-              </button>
+            {/* Desktop Action Buttons (Agent 04 & 13) */}
+            {product.stock === 0 ? (
+              <div className="w-full mt-6 p-4 bg-red-50 border border-red-200 rounded-xs space-y-2 text-center">
+                <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-red-700">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>Currently Out of Stock</span>
+                </div>
+                <p className="text-[11px] text-gray-500">
+                  This item is currently unavailable from our fulfillment centers.
+                </p>
+                <button
+                  onClick={() => {
+                    setAlertMode('BACK_IN_STOCK');
+                    setShowAlertModal(true);
+                  }}
+                  className="w-full py-2.5 px-4 bg-[#2874F0] hover:bg-blue-600 text-white font-bold text-xs uppercase rounded-xs transition shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <BellRing className="w-3.5 h-3.5" />
+                  <span>Notify Me When Back in Stock</span>
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 w-full mt-6">
+                <button
+                  onClick={handleAddToCart}
+                  className={`py-3.5 px-4 rounded-xs font-bold text-xs uppercase flex items-center justify-center gap-2 shadow-sm transition cursor-pointer active:scale-98 ${
+                    added
+                      ? 'bg-[#388E3C] text-white'
+                      : 'bg-[#FF9F00] hover:bg-[#e68e00] text-white'
+                  }`}
+                >
+                  {added ? (
+                    <>
+                      <Check className="w-4 h-4" /> Added to Cart
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="w-4 h-4" /> Add to Cart
+                    </>
+                  )}
+                </button>
 
-              <button
-                onClick={handleBuyNow}
-                disabled={product.stock === 0}
-                className={`py-3.5 px-4 rounded-xs font-bold text-xs uppercase flex items-center justify-center gap-2 shadow-sm transition cursor-pointer active:scale-98 ${
-                  product.stock === 0
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'bg-[#FB641B] hover:bg-[#e05816] text-white'
-                }`}
-              >
-                <Zap className="w-4 h-4 fill-current" /> Buy Now
-              </button>
-            </div>
+                <button
+                  onClick={handleBuyNow}
+                  className="py-3.5 px-4 rounded-xs font-bold text-xs uppercase flex items-center justify-center gap-2 shadow-sm transition cursor-pointer active:scale-98 bg-[#FB641B] hover:bg-[#e05816] text-white"
+                >
+                  <Zap className="w-4 h-4 fill-current" /> Buy Now
+                </button>
+              </div>
+            )}
           </div>
 
           {/* RIGHT COLUMN: Details, Variants, Triggers, Offers & Reviews */}
@@ -735,7 +751,9 @@ export function ProductDetailPage({
                 <div className="sm:col-span-8 space-y-1.5 text-xs">
                   {ratingDistribution.map((r) => (
                     <div key={r.stars} className="flex items-center gap-2">
-                      <span className="w-5 text-right font-bold text-gray-700">{r.stars} ★</span>
+                      <span className="w-6 text-right font-bold text-gray-700 flex items-center justify-end gap-0.5">
+                        {r.stars} <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400 shrink-0" />
+                      </span>
                       <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-[#388E3C] rounded-full"
@@ -918,27 +936,39 @@ export function ProductDetailPage({
         </div>
       )}
 
-      {/* Price Drop Alert Modal (Agent 13) */}
+      {/* Price Drop & Back in Stock Alert Modal (Agent 13) */}
       {showAlertModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="bg-white rounded-xs shadow-2xl max-w-sm w-full p-5 relative">
             <button
-              onClick={() => setShowAlertModal(false)}
+              onClick={() => {
+                setShowAlertModal(false);
+                setAlertSubscribed(false);
+              }}
               className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 p-1"
             >
               <X className="w-4 h-4" />
             </button>
             <div className="flex items-center gap-2 mb-2">
               <BellRing className="w-5 h-5 text-[#2874F0]" />
-              <h3 className="font-bold text-sm text-gray-900">Set Price Drop Alert</h3>
+              <h3 className="font-bold text-sm text-gray-900">
+                {alertMode === 'BACK_IN_STOCK' ? 'Set Back-in-Stock Alert' : 'Set Price Drop Alert'}
+              </h3>
             </div>
             <p className="text-xs text-gray-600 mb-3">
-              We will notify you immediately via email when the price drops below your target!
+              {alertMode === 'BACK_IN_STOCK'
+                ? 'We will notify you immediately via email as soon as this item is restocked.'
+                : 'We will notify you immediately via email when the price drops below your target!'}
             </p>
 
             {alertSubscribed ? (
-              <div className="p-3 bg-green-50 border border-green-200 rounded text-xs text-[#388E3C] font-bold">
-                ✓ Price alert saved! You will receive an instant notification when this item goes on sale.
+              <div className="p-3 bg-green-50 border border-green-200 rounded text-xs text-[#388E3C] font-bold flex items-center gap-1.5">
+                <CheckCircle className="w-4 h-4 text-[#388E3C] shrink-0" />
+                <span>
+                  {alertMode === 'BACK_IN_STOCK'
+                    ? 'Back-in-stock alert saved! We will notify you when this item is restocked.'
+                    : 'Price alert saved! You will receive an instant notification when this item goes on sale.'}
+                </span>
               </div>
             ) : (
               <div className="space-y-3">
@@ -954,29 +984,87 @@ export function ProductDetailPage({
                     className="w-full text-xs p-2 border border-gray-300 rounded focus:border-[#2874F0] focus:outline-none"
                   />
                 </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-gray-700 mb-1">
-                    Target Price (₹)
-                  </label>
-                  <input
-                    type="number"
-                    value={alertTargetPrice}
-                    onChange={(e) => setAlertTargetPrice(e.target.value)}
-                    placeholder={`e.g. ${Math.round(currentPrice * 0.9)}`}
-                    className="w-full text-xs p-2 border border-gray-300 rounded focus:border-[#2874F0] focus:outline-none"
-                  />
-                </div>
+                {alertMode === 'PRICE_DROP' && (
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                      Target Price (₹)
+                    </label>
+                    <input
+                      type="number"
+                      value={alertTargetPrice}
+                      onChange={(e) => setAlertTargetPrice(e.target.value)}
+                      placeholder={`e.g. ${Math.round(currentPrice * 0.9)}`}
+                      className="w-full text-xs p-2 border border-gray-300 rounded focus:border-[#2874F0] focus:outline-none"
+                    />
+                  </div>
+                )}
                 <button
                   onClick={() => setAlertSubscribed(true)}
                   className="w-full py-2 bg-[#2874F0] text-white font-bold text-xs uppercase rounded-xs hover:bg-blue-600 transition cursor-pointer"
                 >
-                  Activate Alert
+                  {alertMode === 'BACK_IN_STOCK' ? 'Notify Me' : 'Activate Alert'}
                 </button>
               </div>
             )}
           </div>
         </div>
       )}
+
+      {/* Sticky Bottom CTA Bar (Agent 04: Mobile & Scroll View) */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 px-4 py-2.5 shadow-2xl flex items-center justify-between gap-3 md:hidden">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <img
+            src={activeImage || product.primaryImage}
+            alt=""
+            className="w-10 h-10 object-contain rounded bg-white border border-gray-100 shrink-0"
+          />
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-gray-900 truncate">{product.title}</p>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-xs font-black text-gray-900">
+                ₹{currentPrice.toLocaleString('en-IN')}
+              </span>
+              {currentOriginalPrice && (
+                <span className="text-[10px] text-gray-400 line-through">
+                  ₹{currentOriginalPrice.toLocaleString('en-IN')}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          {product.stock === 0 ? (
+            <button
+              onClick={() => {
+                setAlertMode('BACK_IN_STOCK');
+                setShowAlertModal(true);
+              }}
+              className="py-2 px-3 bg-[#2874F0] hover:bg-blue-600 text-white font-bold text-xs uppercase rounded-xs shadow-xs transition flex items-center gap-1 cursor-pointer"
+            >
+              <BellRing className="w-3.5 h-3.5" />
+              <span>Notify Me</span>
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={handleAddToCart}
+                className="py-2 px-3 bg-[#FF9F00] hover:bg-[#e68e00] text-white font-bold text-xs uppercase rounded-xs shadow-xs transition flex items-center gap-1 cursor-pointer"
+              >
+                <ShoppingCart className="w-3.5 h-3.5" />
+                <span>Add</span>
+              </button>
+              <button
+                onClick={handleBuyNow}
+                className="py-2 px-4 bg-[#FB641B] hover:bg-[#e05816] text-white font-bold text-xs uppercase rounded-xs shadow-xs transition flex items-center gap-1 cursor-pointer"
+              >
+                <Zap className="w-3.5 h-3.5 fill-current" />
+                <span>Buy Now</span>
+              </button>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
