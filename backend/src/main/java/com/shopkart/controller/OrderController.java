@@ -3,6 +3,7 @@ package com.shopkart.controller;
 import com.shopkart.common.ApiResponse;
 import com.shopkart.dto.CreateOrderRequest;
 import com.shopkart.dto.OrderDto;
+import com.shopkart.dto.SubOrderDto;
 import com.shopkart.dto.UpdateOrderStatusRequest;
 import com.shopkart.model.Role;
 import com.shopkart.security.UserPrincipal;
@@ -82,5 +83,29 @@ public class OrderController {
     @PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
     public ResponseEntity<ApiResponse<List<OrderDto>>> getSellerOrders(@AuthenticationPrincipal UserPrincipal principal) {
         return ResponseEntity.ok(ApiResponse.ok(orderService.getOrdersBySeller(principal.getId())));
+    }
+
+    @GetMapping("/{id}/sub-orders")
+    public ResponseEntity<ApiResponse<List<SubOrderDto>>> getOrderSubOrders(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        boolean hasPrivileges = principal.getRole() == Role.ADMIN || principal.getRole() == Role.SELLER;
+        return ResponseEntity.ok(ApiResponse.ok(orderService.getSubOrdersByOrderId(id, principal.getId(), hasPrivileges)));
+    }
+
+    @GetMapping("/seller/sub-orders")
+    @PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<List<SubOrderDto>>> getSellerSubOrders(@AuthenticationPrincipal UserPrincipal principal) {
+        return ResponseEntity.ok(ApiResponse.ok(orderService.getSubOrdersBySeller(principal.getId())));
+    }
+
+    @PutMapping("/sub-orders/{subOrderId}/status")
+    @PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<SubOrderDto>> updateSubOrderStatus(
+            @PathVariable Long subOrderId,
+            @AuthenticationPrincipal UserPrincipal principal,
+            @Valid @RequestBody UpdateOrderStatusRequest req) {
+        SubOrderDto updated = orderService.updateSubOrderStatus(subOrderId, req.getStatus(), req.getNote(), principal.getEmail());
+        return ResponseEntity.ok(ApiResponse.ok("Package status updated successfully", updated));
     }
 }

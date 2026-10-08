@@ -83,11 +83,92 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
       // 1. Place order via backend
       const order = await api.createOrder(selectedAddressId, paymentMethod);
 
-      // 2. If online payment (UPI/Card), verify payment via backend PaymentService
-      if (paymentMethod !== 'COD') {
-        const txnId = 'TXN_' + Date.now();
-        await api.verifyPayment(order.id, txnId, true);
+      // 2. If Cash on Delivery, complete immediately
+      if (paymentMethod === 'COD') {
+        await clearCart();
+        setConfirmedOrder(order);
+        return;
       }
+
+      // 3. Online Payment: Request Payment Intent (Razorpay Sandbox)
+      let intent = null;
+      try {
+        intent = await api.createPaymentIntent(order.id, paymentMethod);
+      } catch (intentErr) {
+        console.warn('Payment intent creation note:', intentErr);
+      }
+
+      // Dynamically load Razorpay SDK
+      const loadRazorpayScript = () => {
+        return new Promise((resolve) => {
+          if (window.Razorpay) {
+            resolve(true);
+            return;
+          }
+          const script = document.createElement('script');
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+          script.onload = () => resolve(true);
+          script.onerror = () => resolve(false);
+          document.body.appendChild(script);
+        });
+      };
+
+      const scriptLoaded = await loadRazorpayScript();
+
+      // If Razorpay SDK is loaded and we have a valid non-placeholder test key
+      if (
+        scriptLoaded &&
+        window.Razorpay &&
+        intent?.keyId &&
+        !intent.keyId.includes('rzp_test_shopkartSandbox101') &&
+        intent?.gatewayOrderId
+      ) {
+        const options = {
+          key: intent.keyId,
+          amount: Math.round((intent.amount || cart.finalTotal || order.finalAmount) * 100),
+          currency: intent.currency || 'INR',
+          name: 'ShopKart India',
+          description: `Order #${order.orderNumber}`,
+          order_id: intent.gatewayOrderId,
+          prefill: {
+            name: user?.name || 'ShopKart Customer',
+            email: user?.email || 'customer@shopkart.com',
+            contact: user?.phone || '9876543210',
+          },
+          theme: {
+            color: '#0A3B74',
+          },
+          handler: async (response) => {
+            try {
+              await api.verifyPayment(
+                order.id,
+                response.razorpay_payment_id,
+                true,
+                response.razorpay_signature
+              );
+              await clearCart();
+              setConfirmedOrder(order);
+            } catch (verErr) {
+              alert('Payment verification failed: ' + (verErr.message || 'Error'));
+            } finally {
+              setIsSubmitting(false);
+            }
+          },
+          modal: {
+            ondismiss: () => {
+              setIsSubmitting(false);
+            },
+          },
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+        return;
+      }
+
+      // Fast Sandbox Simulation / Direct Verification for demo testing:
+      const txnId = intent?.transactionId || ('TXN_' + Date.now());
+      await api.verifyPayment(order.id, txnId, true, null);
 
       await clearCart();
       setConfirmedOrder(order);

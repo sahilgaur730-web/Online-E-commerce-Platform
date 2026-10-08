@@ -201,6 +201,74 @@ export function OrderDetailPage({ orderId, onBack, onViewProduct }) {
         )}
       </div>
 
+      {/* Multi-Seller Vendor Packages Split Breakdown */}
+      {order.subOrders && order.subOrders.length > 0 && (
+        <div className="bg-white rounded-xl p-5 shadow-xs border border-slate-200 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-2">
+              <Package className="w-5 h-5 text-[#0A3B74]" />
+              <h3 className="text-sm font-bold text-slate-900 tracking-tight">
+                Multi-Seller Vendor Packages ({order.subOrders.length})
+              </h3>
+            </div>
+            <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+              Independent Vendor Parcel Dispatch
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {order.subOrders.map((pkg, idx) => (
+              <div key={pkg.id || idx} className="border border-slate-200/90 rounded-xl p-4 bg-slate-50/50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                      Package {idx + 1} of {order.subOrders.length}
+                    </span>
+                    <span className="text-xs font-bold text-[#0A3B74] font-mono">
+                      {pkg.subOrderNumber}
+                    </span>
+                  </div>
+                  <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                    pkg.status === 'DELIVERED'
+                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                      : pkg.status === 'SHIPPED' || pkg.status === 'OUT_FOR_DELIVERY'
+                      ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                      : pkg.status === 'CONFIRMED'
+                      ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                      : 'bg-slate-200 text-slate-700'
+                  }`}>
+                    {pkg.status}
+                  </span>
+                </div>
+
+                <div className="text-xs text-slate-600 space-y-1">
+                  <p><span className="font-semibold text-slate-700">Fulfilled by:</span> {pkg.storeName || pkg.sellerName || 'Verified Seller'}</p>
+                  <p><span className="font-semibold text-slate-700">Logistics Carrier:</span> {pkg.carrier || 'Ekart Logistics'}</p>
+                  <p><span className="font-semibold text-slate-700">Package Tracking:</span> <span className="font-mono text-blue-600 font-semibold">{pkg.trackingNumber || 'Pending'}</span></p>
+                </div>
+
+                {pkg.items && pkg.items.length > 0 && (
+                  <div className="pt-2 border-t border-slate-200/60 space-y-2">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                      Package Items ({pkg.items.length})
+                    </span>
+                    {pkg.items.map((it) => (
+                      <div key={it.id} className="flex items-center gap-2 text-xs">
+                        {it.productImageUrl && (
+                          <img src={it.productImageUrl} alt="" className="w-7 h-7 object-contain bg-white rounded border border-slate-200 p-0.5 shrink-0" />
+                        )}
+                        <span className="font-medium text-slate-800 truncate flex-1">{it.productName}</span>
+                        <span className="text-slate-500 font-bold shrink-0">x{it.quantity}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Grid: Order Items & Delivery Address Details */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
         {/* Items Ordered */}

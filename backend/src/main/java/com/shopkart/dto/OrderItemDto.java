@@ -1,8 +1,11 @@
 package com.shopkart.dto;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
-public class OrderItemDto {
+public class OrderItemDto implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Long id;
     private Long productId;
     private String productName;
@@ -10,6 +13,8 @@ public class OrderItemDto {
     private BigDecimal price;
     private int quantity;
     private BigDecimal subtotal;
+    private Long sellerId;
+    private String sellerName;
 
     public OrderItemDto() {
     }
@@ -78,5 +83,21 @@ public class OrderItemDto {
 
     public void setSubtotal(BigDecimal subtotal) {
         this.subtotal = subtotal;
+    }
+
+    public Long getSellerId() {
+        return sellerId;
+    }
+
+    public void setSellerId(Long sellerId) {
+        this.sellerId = sellerId;
+    }
+
+    public String getSellerName() {
+        return sellerName;
+    }
+
+    public void setSellerName(String sellerName) {
+        this.sellerName = sellerName;
     }
 }

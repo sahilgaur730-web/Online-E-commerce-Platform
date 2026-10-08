@@ -59,6 +59,9 @@ public class Order {
     @OrderBy("timestamp ASC")
     private List<OrderTracking> trackingEvents = new ArrayList<>();
 
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<SubOrder> subOrders = new ArrayList<>();
+
     private String cancellationReason;
 
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -209,5 +212,13 @@ public class Order {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public List<SubOrder> getSubOrders() {
+        return subOrders;
+    }
+
+    public void setSubOrders(List<SubOrder> subOrders) {
+        this.subOrders = subOrders;
     }
 }

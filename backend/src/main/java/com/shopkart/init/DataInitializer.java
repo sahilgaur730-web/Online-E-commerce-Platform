@@ -22,6 +22,7 @@ public class DataInitializer implements CommandLineRunner {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final OrderTrackingRepository orderTrackingRepository;
+    private final SubOrderRepository subOrderRepository;
     private final ReviewRepository reviewRepository;
     private final AuditLogRepository auditLogRepository;
     private final PasswordEncoder passwordEncoder;
@@ -35,6 +36,7 @@ public class DataInitializer implements CommandLineRunner {
             OrderRepository orderRepository,
             OrderItemRepository orderItemRepository,
             OrderTrackingRepository orderTrackingRepository,
+            SubOrderRepository subOrderRepository,
             ReviewRepository reviewRepository,
             AuditLogRepository auditLogRepository,
             PasswordEncoder passwordEncoder) {
@@ -46,6 +48,7 @@ public class DataInitializer implements CommandLineRunner {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.orderTrackingRepository = orderTrackingRepository;
+        this.subOrderRepository = subOrderRepository;
         this.reviewRepository = reviewRepository;
         this.auditLogRepository = auditLogRepository;
         this.passwordEncoder = passwordEncoder;
@@ -368,6 +371,13 @@ public class DataInitializer implements CommandLineRunner {
         );
         orderItemRepository.save(item1);
         savedOrder.setItems(List.of(item1));
+
+        SubOrder subOrder1 = new SubOrder(savedOrder, seller1, savedOrder.getOrderNumber() + "-PKG1", p1.getPrice(), "PKG904812849");
+        subOrder1.setStatus(OrderStatus.DELIVERED);
+        subOrderRepository.save(subOrder1);
+        item1.setSubOrder(subOrder1);
+        orderItemRepository.save(item1);
+        subOrder1.setItems(List.of(item1));
 
         // Milestones
         OrderTracking t1 = new OrderTracking(savedOrder, OrderStatus.PLACED, "Order Placed", "Your order has been placed.");

@@ -12,8 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,6 +21,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final OrderTrackingRepository orderTrackingRepository;
+    private final SubOrderRepository subOrderRepository;
     private final CartItemRepository cartItemRepository;
     private final AddressRepository addressRepository;
     private final UserRepository userRepository;
@@ -33,6 +33,7 @@ public class OrderService {
             OrderRepository orderRepository,
             OrderItemRepository orderItemRepository,
             OrderTrackingRepository orderTrackingRepository,
+            SubOrderRepository subOrderRepository,
             CartItemRepository cartItemRepository,
             AddressRepository addressRepository,
             UserRepository userRepository,
@@ -42,6 +43,7 @@ public class OrderService {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.orderTrackingRepository = orderTrackingRepository;
+        this.subOrderRepository = subOrderRepository;
         this.cartItemRepository = cartItemRepository;
         this.addressRepository = addressRepository;
         this.userRepository = userRepository;
@@ -99,7 +101,7 @@ public class OrderService {
         order.setDeliveryFee(deliveryFee);
         order.setFinalAmount(finalTotal);
         order.setPaymentMethod(req.getPaymentMethod().toUpperCase());
-        order.setPaymentStatus("COD".equalsIgnoreCase(req.getPaymentMethod()) ? PaymentStatus.PENDING : PaymentStatus.PENDING);
+        order.setPaymentStatus(PaymentStatus.PENDING);
         order.setOrderStatus(OrderStatus.PLACED);
         order.setTrackingNumber(trackingNumber);
 
@@ -137,12 +139,57 @@ public class OrderService {
         orderItemRepository.saveAll(orderItems);
         savedOrder.setItems(orderItems);
 
+        // Multi-Seller Sub-Orders / Package Splitting
+        Map<Long, List<OrderItem>> itemsBySellerId = new LinkedHashMap<>();
+        for (OrderItem item : orderItems) {
+            Long sellerId = (item.getProduct() != null && item.getProduct().getSeller() != null)
+                    ? item.getProduct().getSeller().getId()
+                    : null;
+            itemsBySellerId.computeIfAbsent(sellerId, k -> new ArrayList<>()).add(item);
+        }
+
+        List<SubOrder> subOrders = new ArrayList<>();
+        int pkgIndex = 1;
+        for (Map.Entry<Long, List<OrderItem>> entry : itemsBySellerId.entrySet()) {
+            Long sId = entry.getKey();
+            List<OrderItem> sItems = entry.getValue();
+            User seller = null;
+            if (sId != null) {
+                seller = userRepository.findById(sId).orElse(null);
+            }
+            if (seller == null && !sItems.isEmpty() && sItems.get(0).getProduct() != null) {
+                seller = sItems.get(0).getProduct().getSeller();
+            }
+            if (seller == null) {
+                seller = buyer; // fallback safe
+            }
+
+            BigDecimal sSubtotal = sItems.stream()
+                    .map(OrderItem::getSubtotal)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            String subOrderNum = orderNumber + "-PKG" + pkgIndex;
+            String pkgTrackingNum = "PKG" + (10000000L + (long)(Math.random() * 90000000L));
+
+            SubOrder subOrder = new SubOrder(savedOrder, seller, subOrderNum, sSubtotal, pkgTrackingNum);
+            SubOrder savedSubOrder = subOrderRepository.save(subOrder);
+
+            for (OrderItem item : sItems) {
+                item.setSubOrder(savedSubOrder);
+            }
+            orderItemRepository.saveAll(sItems);
+            savedSubOrder.setItems(sItems);
+            subOrders.add(savedSubOrder);
+            pkgIndex++;
+        }
+        savedOrder.setSubOrders(subOrders);
+
         // Tracking event: Placed
         OrderTracking tracking = new OrderTracking(
                 savedOrder,
                 OrderStatus.PLACED,
                 "Order Placed",
-                "Your order " + orderNumber + " has been successfully placed on ShopKart."
+                "Your order " + orderNumber + " with " + subOrders.size() + " package(s) has been successfully placed on ShopKart."
         );
         orderTrackingRepository.save(tracking);
 
@@ -184,6 +231,25 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
+    public List<SubOrderDto> getSubOrdersBySeller(Long sellerId) {
+        return subOrderRepository.findBySellerIdOrderByCreatedAtDesc(sellerId).stream()
+                .map(this::toSubOrderDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<SubOrderDto> getSubOrdersByOrderId(Long orderId, Long userId, boolean hasPrivileges) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId));
+
+        if (!hasPrivileges && !order.getBuyer().getId().equals(userId)) {
+            throw new BadRequestException("Unauthorized access to sub-orders");
+        }
+
+        return subOrderRepository.findByOrderIdOrderByCreatedAtAsc(orderId).stream()
+                .map(this::toSubOrderDto)
+                .collect(Collectors.toList());
+    }
+
     public Page<OrderDto> getAllOrders(Pageable pageable) {
         return orderRepository.findAllByOrderByCreatedAtDesc(pageable).map(this::toDto);
     }
@@ -195,6 +261,8 @@ public class OrderService {
 
         User updater = userRepository.findByEmail(updaterEmail)
                 .orElseThrow(() -> new BadRequestException("Updater user not found: " + updaterEmail));
+
+        List<SubOrder> subOrders = subOrderRepository.findByOrderIdOrderByCreatedAtAsc(orderId);
 
         if (updater.getRole() != Role.ADMIN) {
             if (updater.getRole() == Role.SELLER) {
@@ -262,6 +330,17 @@ public class OrderService {
         }
         Order saved = orderRepository.save(order);
 
+        // Synchronize matching sub-orders
+        for (SubOrder so : subOrders) {
+            if (updater.getRole() == Role.ADMIN || (so.getSeller() != null && so.getSeller().getId().equals(updater.getId()))) {
+                so.setStatus(newStatus);
+                so.setUpdatedAt(LocalDateTime.now());
+            }
+        }
+        if (!subOrders.isEmpty()) {
+            subOrderRepository.saveAll(subOrders);
+        }
+
         // Add tracking milestone
         String title = formatStatusTitle(newStatus);
         String desc = (note != null && !note.isBlank()) ? note : "Order status updated to " + title;
@@ -279,6 +358,92 @@ public class OrderService {
                 "ORDER", saved.getId());
 
         return toDto(saved);
+    }
+
+    @Transactional
+    public SubOrderDto updateSubOrderStatus(Long subOrderId, OrderStatus newStatus, String note, String updaterEmail) {
+        SubOrder subOrder = subOrderRepository.findById(subOrderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Package / Sub-order not found: " + subOrderId));
+
+        User updater = userRepository.findByEmail(updaterEmail)
+                .orElseThrow(() -> new BadRequestException("Updater user not found: " + updaterEmail));
+
+        boolean isAdmin = updater.getRole() == Role.ADMIN;
+        boolean isOwnerSeller = subOrder.getSeller() != null && subOrder.getSeller().getId().equals(updater.getId());
+
+        if (!isAdmin && !isOwnerSeller) {
+            throw new BadRequestException("You do not have permission to manage this package");
+        }
+
+        OrderStatus currentStatus = subOrder.getStatus();
+        if (currentStatus == OrderStatus.DELIVERED) {
+            throw new BadRequestException("Package is already DELIVERED and cannot change status");
+        }
+        if (currentStatus == OrderStatus.CANCELLED) {
+            throw new BadRequestException("Package is CANCELLED and cannot change status");
+        }
+
+        // Validate state transitions
+        if (newStatus == OrderStatus.PLACED) {
+            throw new BadRequestException("Cannot rewind package status to PLACED");
+        }
+        if (newStatus == OrderStatus.CONFIRMED && currentStatus != OrderStatus.PLACED) {
+            throw new BadRequestException("Only PLACED packages can be CONFIRMED");
+        }
+        if (newStatus == OrderStatus.SHIPPED && currentStatus != OrderStatus.CONFIRMED) {
+            throw new BadRequestException("Package must be CONFIRMED before shipping");
+        }
+        if (newStatus == OrderStatus.OUT_FOR_DELIVERY && currentStatus != OrderStatus.SHIPPED) {
+            throw new BadRequestException("Package must be SHIPPED before out for delivery");
+        }
+        if (newStatus == OrderStatus.DELIVERED && currentStatus != OrderStatus.OUT_FOR_DELIVERY) {
+            throw new BadRequestException("Package must be OUT_FOR_DELIVERY before delivered");
+        }
+
+        subOrder.setStatus(newStatus);
+        subOrder.setUpdatedAt(LocalDateTime.now());
+        SubOrder savedSubOrder = subOrderRepository.save(subOrder);
+
+        // Update tracking on master order
+        Order order = subOrder.getOrder();
+        String sellerName = (subOrder.getSeller() != null && subOrder.getSeller().getStoreName() != null)
+                ? subOrder.getSeller().getStoreName()
+                : (subOrder.getSeller() != null ? subOrder.getSeller().getName() : "Seller");
+        String trackingTitle = "Package " + subOrder.getSubOrderNumber() + " " + formatStatusTitle(newStatus);
+        String trackingDesc = (note != null && !note.isBlank())
+                ? note
+                : "Package from " + sellerName + " is now " + formatStatusTitle(newStatus);
+
+        OrderTracking tracking = new OrderTracking(order, newStatus, trackingTitle, trackingDesc);
+        orderTrackingRepository.save(tracking);
+
+        // Recalculate Master Order Status based on all vendor packages
+        List<SubOrder> allPackages = subOrderRepository.findByOrderIdOrderByCreatedAtAsc(order.getId());
+        boolean allDelivered = allPackages.stream().allMatch(p -> p.getStatus() == OrderStatus.DELIVERED);
+        boolean allShippedOrDelivered = allPackages.stream().allMatch(p -> p.getStatus() == OrderStatus.SHIPPED || p.getStatus() == OrderStatus.OUT_FOR_DELIVERY || p.getStatus() == OrderStatus.DELIVERED);
+        boolean allConfirmedOrHigher = allPackages.stream().allMatch(p -> p.getStatus() != OrderStatus.PLACED && p.getStatus() != OrderStatus.CANCELLED);
+        boolean anyShipped = allPackages.stream().anyMatch(p -> p.getStatus() == OrderStatus.SHIPPED || p.getStatus() == OrderStatus.OUT_FOR_DELIVERY || p.getStatus() == OrderStatus.DELIVERED);
+
+        if (allDelivered) {
+            order.setOrderStatus(OrderStatus.DELIVERED);
+            if ("COD".equalsIgnoreCase(order.getPaymentMethod())) {
+                order.setPaymentStatus(PaymentStatus.PAID);
+            }
+        } else if (allShippedOrDelivered) {
+            order.setOrderStatus(OrderStatus.SHIPPED);
+        } else if (anyShipped) {
+            order.setOrderStatus(OrderStatus.SHIPPED);
+        } else if (allConfirmedOrHigher) {
+            order.setOrderStatus(OrderStatus.CONFIRMED);
+        }
+        order.setUpdatedAt(LocalDateTime.now());
+        orderRepository.save(order);
+
+        auditService.log("PACKAGE_STATUS_UPDATED", updaterEmail,
+                "Updated package " + subOrder.getSubOrderNumber() + " to " + newStatus,
+                "SUB_ORDER", savedSubOrder.getId());
+
+        return toSubOrderDto(savedSubOrder);
     }
 
     @Transactional
@@ -315,6 +480,15 @@ public class OrderService {
         order.setUpdatedAt(LocalDateTime.now());
         Order saved = orderRepository.save(order);
 
+        // Cancel all sub-orders
+        List<SubOrder> subOrders = subOrderRepository.findByOrderIdOrderByCreatedAtAsc(orderId);
+        for (SubOrder so : subOrders) {
+            so.setStatus(OrderStatus.CANCELLED);
+            so.setCancellationReason(reason != null ? reason : "Order cancelled by customer");
+            so.setUpdatedAt(LocalDateTime.now());
+        }
+        subOrderRepository.saveAll(subOrders);
+
         OrderTracking tracking = new OrderTracking(
                 saved,
                 OrderStatus.CANCELLED,
@@ -348,6 +522,51 @@ public class OrderService {
         }
     }
 
+    public SubOrderDto toSubOrderDto(SubOrder s) {
+        SubOrderDto dto = new SubOrderDto();
+        dto.setId(s.getId());
+        dto.setSubOrderNumber(s.getSubOrderNumber());
+        dto.setOrderId(s.getOrder() != null ? s.getOrder().getId() : null);
+        dto.setOrderNumber(s.getOrder() != null ? s.getOrder().getOrderNumber() : null);
+        if (s.getSeller() != null) {
+            dto.setSellerId(s.getSeller().getId());
+            dto.setSellerName(s.getSeller().getName());
+            dto.setStoreName(s.getSeller().getStoreName() != null ? s.getSeller().getStoreName() : s.getSeller().getName());
+        }
+        dto.setStatus(s.getStatus());
+        dto.setSubtotal(s.getSubtotal());
+        dto.setShippingFee(s.getShippingFee());
+        dto.setTrackingNumber(s.getTrackingNumber());
+        dto.setCarrier(s.getCarrier());
+        dto.setCancellationReason(s.getCancellationReason());
+        dto.setCreatedAt(s.getCreatedAt());
+        dto.setUpdatedAt(s.getUpdatedAt());
+
+        if (s.getItems() != null) {
+            dto.setItems(s.getItems().stream().map(this::toOrderItemDto).collect(Collectors.toList()));
+        }
+        return dto;
+    }
+
+    public OrderItemDto toOrderItemDto(OrderItem i) {
+        OrderItemDto itemDto = new OrderItemDto(
+                i.getId(),
+                i.getProduct() != null ? i.getProduct().getId() : null,
+                i.getProductName(),
+                i.getProductImageUrl(),
+                i.getPrice(),
+                i.getQuantity(),
+                i.getSubtotal()
+        );
+        if (i.getProduct() != null && i.getProduct().getSeller() != null) {
+            itemDto.setSellerId(i.getProduct().getSeller().getId());
+            itemDto.setSellerName(i.getProduct().getSeller().getStoreName() != null
+                    ? i.getProduct().getSeller().getStoreName()
+                    : i.getProduct().getSeller().getName());
+        }
+        return itemDto;
+    }
+
     public OrderDto toDto(Order o) {
         OrderDto dto = new OrderDto();
         dto.setId(o.getId());
@@ -371,17 +590,11 @@ public class OrderService {
         dto.setCreatedAt(o.getCreatedAt());
 
         if (o.getItems() != null) {
-            List<OrderItemDto> itemDtos = o.getItems().stream().map(i -> new OrderItemDto(
-                    i.getId(),
-                    i.getProduct() != null ? i.getProduct().getId() : null,
-                    i.getProductName(),
-                    i.getProductImageUrl(),
-                    i.getPrice(),
-                    i.getQuantity(),
-                    i.getSubtotal()
-            )).collect(Collectors.toList());
-            dto.setItems(itemDtos);
+            dto.setItems(o.getItems().stream().map(this::toOrderItemDto).collect(Collectors.toList()));
         }
+
+        List<SubOrder> subOrders = subOrderRepository.findByOrderIdOrderByCreatedAtAsc(o.getId());
+        dto.setSubOrders(subOrders.stream().map(this::toSubOrderDto).collect(Collectors.toList()));
 
         List<OrderTracking> trackings = orderTrackingRepository.findByOrderIdOrderByTimestampAsc(o.getId());
         dto.setTrackingEvents(trackings.stream().map(t -> new OrderTrackingDto(

@@ -1,9 +1,11 @@
 package com.shopkart.dto;
 
 import com.shopkart.model.OrderStatus;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class OrderTrackingDto {
+public class OrderTrackingDto implements Serializable {
+    private static final long serialVersionUID = 1L;
     private Long id;
     private OrderStatus status;
     private String title;

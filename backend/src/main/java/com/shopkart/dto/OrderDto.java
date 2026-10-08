@@ -2,12 +2,15 @@ package com.shopkart.dto;
 
 import com.shopkart.model.OrderStatus;
 import com.shopkart.model.PaymentStatus;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OrderDto {
+public class OrderDto implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Long id;
     private String orderNumber;
     private Long buyerId;
@@ -27,6 +30,7 @@ public class OrderDto {
     private LocalDateTime createdAt;
     private List<OrderItemDto> items = new ArrayList<>();
     private List<OrderTrackingDto> trackingEvents = new ArrayList<>();
+    private List<SubOrderDto> subOrders = new ArrayList<>();
 
     public OrderDto() {
     }
@@ -181,5 +185,13 @@ public class OrderDto {
 
     public void setTrackingEvents(List<OrderTrackingDto> trackingEvents) {
         this.trackingEvents = trackingEvents;
+    }
+
+    public List<SubOrderDto> getSubOrders() {
+        return subOrders;
+    }
+
+    public void setSubOrders(List<SubOrderDto> subOrders) {
+        this.subOrders = subOrders;
     }
 }

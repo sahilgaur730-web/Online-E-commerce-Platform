@@ -9,6 +9,8 @@ import com.shopkart.repository.CategoryRepository;
 import com.shopkart.repository.ProductImageRepository;
 import com.shopkart.repository.ProductRepository;
 import com.shopkart.repository.UserRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -96,24 +98,28 @@ public class ProductService {
         return productPage.map(this::toDto);
     }
 
+    @Cacheable(value = "products", key = "#id")
     public ProductDto getProductById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
         return toDto(product);
     }
 
+    @Cacheable(value = "products", key = "'featured'")
     public List<ProductDto> getFeaturedProducts() {
         return productRepository.findByFeaturedTrue().stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
+    @Cacheable(value = "products", key = "'deals'")
     public List<ProductDto> getDealsOfTheDay() {
         return productRepository.findByDealOfTheDayTrue().stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
+    @Cacheable(value = "products", key = "'topOffers'")
     public List<ProductDto> getTopOffers() {
         return productRepository.findByTopOfferTrue().stream()
                 .map(this::toDto)
@@ -131,6 +137,7 @@ public class ProductService {
     }
 
     @Transactional
+    @CacheEvict(value = "products", allEntries = true)
     public ProductDto createProduct(ProductCreateRequest req, Long sellerId) {
         User seller = userRepository.findById(sellerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
@@ -181,6 +188,7 @@ public class ProductService {
     }
 
     @Transactional
+    @CacheEvict(value = "products", allEntries = true)
     public ProductDto updateProduct(Long productId, ProductCreateRequest req, Long sellerId, boolean isAdmin) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
@@ -229,6 +237,7 @@ public class ProductService {
     }
 
     @Transactional
+    @CacheEvict(value = "products", allEntries = true)
     public void deleteProduct(Long productId, Long sellerId, boolean isAdmin) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
@@ -242,6 +251,7 @@ public class ProductService {
     }
 
     @Transactional
+    @CacheEvict(value = "products", allEntries = true)
     public ProductDto updateProductStock(Long productId, int newStock, Long sellerId, String updaterEmail, boolean isAdmin) {
         if (newStock < 0) {
             throw new BadRequestException("Stock cannot be negative");

@@ -17,6 +17,11 @@ public class OrderItem {
     @JsonIgnore
     private Order order;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sub_order_id")
+    @JsonIgnore
+    private SubOrder subOrder;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id")
     private Product product;
@@ -110,5 +115,13 @@ public class OrderItem {
 
     public void setSubtotal(BigDecimal subtotal) {
         this.subtotal = subtotal;
+    }
+
+    public SubOrder getSubOrder() {
+        return subOrder;
+    }
+
+    public void setSubOrder(SubOrder subOrder) {
+        this.subOrder = subOrder;
     }
 }

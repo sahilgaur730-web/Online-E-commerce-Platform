@@ -114,10 +114,10 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ orderId, paymentMethod }),
     }),
-  verifyPayment: (orderId, transactionId, success = true) =>
+  verifyPayment: (orderId, transactionId, success = true, signature = null) =>
     apiRequest('/payments/verify', {
       method: 'POST',
-      body: JSON.stringify({ orderId, transactionId, success }),
+      body: JSON.stringify({ orderId, transactionId, success, signature }),
     }),
 
   // Addresses
@@ -182,6 +182,32 @@ export const api = {
       method: 'DELETE',
     }),
   getSellerOrders: () => apiRequest('/orders/seller'),
+  getSellerSubOrders: () => apiRequest('/orders/seller/sub-orders'),
+  getOrderSubOrders: (orderId) => apiRequest(`/orders/${orderId}/sub-orders`),
+  updateSubOrderStatus: (subOrderId, status, note) =>
+    apiRequest(`/orders/sub-orders/${subOrderId}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status, note }),
+    }),
+  uploadSellerImage: async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const token = localStorage.getItem('shopkart_token');
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    const res = await fetch('/api/seller/upload', {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      throw new Error(data?.message || 'Failed to upload image');
+    }
+    return data?.data !== undefined ? data.data : data;
+  },
   getSellerDashboard: () => apiRequest('/seller/dashboard'),
 
   // Admin
