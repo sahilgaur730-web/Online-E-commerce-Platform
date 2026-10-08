@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS products (
     seller_id BIGINT NOT NULL REFERENCES users(id),
     rating DOUBLE PRECISION DEFAULT 0.0,
     rating_count INT DEFAULT 0,
+    review_count INT DEFAULT 0,
     specifications VARCHAR(5000),
     featured BOOLEAN DEFAULT FALSE,
     deal_of_the_day BOOLEAN DEFAULT FALSE,
@@ -169,9 +170,9 @@ CREATE TABLE IF NOT EXISTS notifications (
 CREATE TABLE IF NOT EXISTS audit_logs (
     id BIGSERIAL PRIMARY KEY,
     action VARCHAR(100) NOT NULL,
-    user_email VARCHAR(255) NOT NULL,
-    details VARCHAR(2000),
-    entity_name VARCHAR(100),
+    performed_by VARCHAR(255),
+    details VARCHAR(4000),
+    entity_type VARCHAR(100),
     entity_id BIGINT,
     timestamp TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

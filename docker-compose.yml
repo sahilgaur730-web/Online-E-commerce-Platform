@@ -56,6 +56,8 @@ services:
       RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-rzp_test_shopkartSandbox101}
       RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-secret_shopkartSandboxKey2026}
       RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:-whsec_shopkartSandboxSecret}
+    volumes:
+      - uploads_data:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -78,4 +80,6 @@ volumes:
   pgdata:
     driver: local
   redisdata:
+    driver: local
+  uploads_data:
     driver: local

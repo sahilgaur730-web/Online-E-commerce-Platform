@@ -81,9 +81,9 @@ export function Navbar({ onSearch, currentView, setCurrentView, openAuthModal })
           />
           <div className="flex flex-col leading-none">
             <span className="font-black text-xl tracking-tight text-white flex items-center">
-              Shop<span className="text-[#FFE500]">Kart</span>
+              Shop<span className="text-[#FF7A00]">Kart</span>
             </span>
-            <span className="text-[10px] text-yellow-300 font-semibold tracking-wider uppercase mt-0.5">
+            <span className="text-[10px] text-amber-200 font-semibold tracking-wider uppercase mt-0.5">
               Shop Smart • Live Better
             </span>
           </div>

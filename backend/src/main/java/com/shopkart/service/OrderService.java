@@ -334,6 +334,9 @@ public class OrderService {
         for (SubOrder so : subOrders) {
             if (updater.getRole() == Role.ADMIN || (so.getSeller() != null && so.getSeller().getId().equals(updater.getId()))) {
                 so.setStatus(newStatus);
+                if (newStatus == OrderStatus.CANCELLED) {
+                    so.setCancellationReason(note != null && !note.isBlank() ? note : "Cancelled by admin/seller");
+                }
                 so.setUpdatedAt(LocalDateTime.now());
             }
         }
@@ -383,10 +386,26 @@ public class OrderService {
             throw new BadRequestException("Package is CANCELLED and cannot change status");
         }
 
-        // Validate state transitions
         if (newStatus == OrderStatus.PLACED) {
             throw new BadRequestException("Cannot rewind package status to PLACED");
         }
+
+        if (newStatus == OrderStatus.CANCELLED) {
+            if (currentStatus == OrderStatus.SHIPPED || currentStatus == OrderStatus.OUT_FOR_DELIVERY) {
+                throw new BadRequestException("Package cannot be cancelled once shipped or out for delivery");
+            }
+            // Restore inventory for package items
+            if (subOrder.getItems() != null) {
+                for (OrderItem item : subOrder.getItems()) {
+                    if (item.getProduct() != null) {
+                        inventoryService.restoreStock(item.getProduct().getId(), item.getQuantity());
+                    }
+                }
+            }
+            subOrder.setCancellationReason(note != null && !note.isBlank() ? note : "Cancelled by seller/admin");
+        }
+
+        // Validate state transitions
         if (newStatus == OrderStatus.CONFIRMED && currentStatus != OrderStatus.PLACED) {
             throw new BadRequestException("Only PLACED packages can be CONFIRMED");
         }
@@ -419,22 +438,37 @@ public class OrderService {
 
         // Recalculate Master Order Status based on all vendor packages
         List<SubOrder> allPackages = subOrderRepository.findByOrderIdOrderByCreatedAtAsc(order.getId());
-        boolean allDelivered = allPackages.stream().allMatch(p -> p.getStatus() == OrderStatus.DELIVERED);
-        boolean allShippedOrDelivered = allPackages.stream().allMatch(p -> p.getStatus() == OrderStatus.SHIPPED || p.getStatus() == OrderStatus.OUT_FOR_DELIVERY || p.getStatus() == OrderStatus.DELIVERED);
-        boolean allConfirmedOrHigher = allPackages.stream().allMatch(p -> p.getStatus() != OrderStatus.PLACED && p.getStatus() != OrderStatus.CANCELLED);
-        boolean anyShipped = allPackages.stream().anyMatch(p -> p.getStatus() == OrderStatus.SHIPPED || p.getStatus() == OrderStatus.OUT_FOR_DELIVERY || p.getStatus() == OrderStatus.DELIVERED);
+        List<SubOrder> activePackages = allPackages.stream()
+                .filter(p -> p.getStatus() != OrderStatus.CANCELLED)
+                .collect(Collectors.toList());
 
-        if (allDelivered) {
-            order.setOrderStatus(OrderStatus.DELIVERED);
-            if ("COD".equalsIgnoreCase(order.getPaymentMethod())) {
-                order.setPaymentStatus(PaymentStatus.PAID);
+        if (activePackages.isEmpty()) {
+            // All packages have been cancelled
+            order.setOrderStatus(OrderStatus.CANCELLED);
+            order.setCancellationReason("All packages in this order were cancelled");
+            if (order.getPaymentStatus() == PaymentStatus.PAID) {
+                order.setPaymentStatus(PaymentStatus.REFUNDED);
             }
-        } else if (allShippedOrDelivered) {
-            order.setOrderStatus(OrderStatus.SHIPPED);
-        } else if (anyShipped) {
-            order.setOrderStatus(OrderStatus.SHIPPED);
-        } else if (allConfirmedOrHigher) {
-            order.setOrderStatus(OrderStatus.CONFIRMED);
+        } else {
+            boolean allDelivered = activePackages.stream().allMatch(p -> p.getStatus() == OrderStatus.DELIVERED);
+            boolean allOutOrDelivered = activePackages.stream().allMatch(p -> p.getStatus() == OrderStatus.OUT_FOR_DELIVERY || p.getStatus() == OrderStatus.DELIVERED);
+            boolean anyShippedOrOut = activePackages.stream().anyMatch(p -> p.getStatus() == OrderStatus.SHIPPED || p.getStatus() == OrderStatus.OUT_FOR_DELIVERY || p.getStatus() == OrderStatus.DELIVERED);
+            boolean allConfirmedOrHigher = activePackages.stream().allMatch(p -> p.getStatus() != OrderStatus.PLACED);
+
+            if (allDelivered) {
+                order.setOrderStatus(OrderStatus.DELIVERED);
+                if ("COD".equalsIgnoreCase(order.getPaymentMethod())) {
+                    order.setPaymentStatus(PaymentStatus.PAID);
+                }
+            } else if (allOutOrDelivered) {
+                order.setOrderStatus(OrderStatus.OUT_FOR_DELIVERY);
+            } else if (anyShippedOrOut) {
+                order.setOrderStatus(OrderStatus.SHIPPED);
+            } else if (allConfirmedOrHigher) {
+                order.setOrderStatus(OrderStatus.CONFIRMED);
+            } else {
+                order.setOrderStatus(OrderStatus.PLACED);
+            }
         }
         order.setUpdatedAt(LocalDateTime.now());
         orderRepository.save(order);

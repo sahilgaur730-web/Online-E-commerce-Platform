@@ -2,15 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
 import {
   Package,
-  MapPin,
   CheckCircle,
-  Clock,
   XCircle,
-  Truck,
-  RotateCcw,
   ArrowLeft,
-  ShieldCheck,
-  AlertTriangle,
 } from 'lucide-react';
 
 export function OrderDetailPage({ orderId, onBack, onViewProduct }) {
@@ -235,6 +229,8 @@ export function OrderDetailPage({ orderId, onBack, onViewProduct }) {
                       ? 'bg-blue-100 text-blue-800 border border-blue-300'
                       : pkg.status === 'CONFIRMED'
                       ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                      : pkg.status === 'CANCELLED'
+                      ? 'bg-rose-100 text-rose-800 border border-rose-300'
                       : 'bg-slate-200 text-slate-700'
                   }`}>
                     {pkg.status}
@@ -245,6 +241,9 @@ export function OrderDetailPage({ orderId, onBack, onViewProduct }) {
                   <p><span className="font-semibold text-slate-700">Fulfilled by:</span> {pkg.storeName || pkg.sellerName || 'Verified Seller'}</p>
                   <p><span className="font-semibold text-slate-700">Logistics Carrier:</span> {pkg.carrier || 'Ekart Logistics'}</p>
                   <p><span className="font-semibold text-slate-700">Package Tracking:</span> <span className="font-mono text-blue-600 font-semibold">{pkg.trackingNumber || 'Pending'}</span></p>
+                  {pkg.status === 'CANCELLED' && pkg.cancellationReason && (
+                    <p className="text-rose-600 font-medium"><span className="font-semibold">Cancellation Note:</span> {pkg.cancellationReason}</p>
+                  )}
                 </div>
 
                 {pkg.items && pkg.items.length > 0 && (

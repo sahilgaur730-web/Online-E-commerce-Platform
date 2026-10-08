@@ -10,8 +10,10 @@ import com.shopkart.model.Order;
 import com.shopkart.model.OrderStatus;
 import com.shopkart.model.OrderTracking;
 import com.shopkart.model.PaymentStatus;
+import com.shopkart.model.SubOrder;
 import com.shopkart.repository.OrderRepository;
 import com.shopkart.repository.OrderTrackingRepository;
+import com.shopkart.repository.SubOrderRepository;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +26,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -33,6 +36,7 @@ public class PaymentService {
 
     private final OrderRepository orderRepository;
     private final OrderTrackingRepository orderTrackingRepository;
+    private final SubOrderRepository subOrderRepository;
     private final NotificationService notificationService;
     private final AuditService auditService;
 
@@ -48,10 +52,12 @@ public class PaymentService {
     public PaymentService(
             OrderRepository orderRepository,
             OrderTrackingRepository orderTrackingRepository,
+            SubOrderRepository subOrderRepository,
             NotificationService notificationService,
             AuditService auditService) {
         this.orderRepository = orderRepository;
         this.orderTrackingRepository = orderTrackingRepository;
+        this.subOrderRepository = subOrderRepository;
         this.notificationService = notificationService;
         this.auditService = auditService;
     }
@@ -167,6 +173,19 @@ public class PaymentService {
             );
             orderTrackingRepository.save(tracking);
         }
+
+        // Synchronize and advance sub-orders from PLACED to CONFIRMED
+        List<SubOrder> subOrders = subOrderRepository.findByOrderIdOrderByCreatedAtAsc(order.getId());
+        for (SubOrder so : subOrders) {
+            if (so.getStatus() == OrderStatus.PLACED) {
+                so.setStatus(OrderStatus.CONFIRMED);
+                so.setUpdatedAt(LocalDateTime.now());
+            }
+        }
+        if (!subOrders.isEmpty()) {
+            subOrderRepository.saveAll(subOrders);
+        }
+
         order.setUpdatedAt(LocalDateTime.now());
         Order saved = orderRepository.save(order);
 
@@ -250,6 +269,18 @@ public class PaymentService {
                                 order.setPaymentTransactionId(entity.optString("id", "WEBHOOK_" + System.currentTimeMillis()));
                                 order.setUpdatedAt(LocalDateTime.now());
                                 orderRepository.save(order);
+
+                                List<SubOrder> subOrders = subOrderRepository.findByOrderIdOrderByCreatedAtAsc(order.getId());
+                                for (SubOrder so : subOrders) {
+                                    if (so.getStatus() == OrderStatus.PLACED) {
+                                        so.setStatus(OrderStatus.CONFIRMED);
+                                        so.setUpdatedAt(LocalDateTime.now());
+                                    }
+                                }
+                                if (!subOrders.isEmpty()) {
+                                    subOrderRepository.saveAll(subOrders);
+                                }
+
                                 log.info("Order {} confirmed via Webhook", order.getOrderNumber());
                                 return true;
                             }

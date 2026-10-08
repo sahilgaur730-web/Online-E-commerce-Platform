@@ -11,9 +11,6 @@ import {
   Package,
   UploadCloud,
   Truck,
-  Clock,
-  Layers,
-  ArrowRight,
 } from 'lucide-react';
 
 export function SellerPortalPage({ onViewProduct }) {
@@ -147,9 +144,10 @@ export function SellerPortalPage({ onViewProduct }) {
     }
   };
 
-  const handleUpdatePackageStatus = async (subOrderId, newStatus) => {
+  const handleUpdatePackageStatus = async (subOrderId, newStatus, customNote = null) => {
     try {
-      await api.updateSubOrderStatus(subOrderId, newStatus, `Package updated to ${newStatus} by vendor`);
+      const note = customNote || `Package updated to ${newStatus} by vendor`;
+      await api.updateSubOrderStatus(subOrderId, newStatus, note);
       loadSellerData();
       alert(`Vendor package successfully updated to ${newStatus}`);
     } catch (err) {
@@ -418,49 +416,80 @@ export function SellerPortalPage({ onViewProduct }) {
                             ? 'bg-blue-100 text-blue-800'
                             : so.status === 'CONFIRMED'
                             ? 'bg-amber-100 text-amber-800'
+                            : so.status === 'CANCELLED'
+                            ? 'bg-rose-100 text-rose-800'
                             : 'bg-slate-100 text-slate-700'
                         }`}>
                           {so.status}
                         </span>
                       </td>
                       <td className="p-3.5 text-right">
-                        {so.status === 'PLACED' && (
-                          <button
-                            onClick={() => handleUpdatePackageStatus(so.id, 'CONFIRMED')}
-                            className="bg-amber-500 hover:bg-amber-600 text-white font-bold px-3 py-1.5 rounded-md text-xs cursor-pointer shadow-2xs"
-                          >
-                            Confirm Parcel
-                          </button>
-                        )}
-                        {so.status === 'CONFIRMED' && (
-                          <button
-                            onClick={() => handleUpdatePackageStatus(so.id, 'SHIPPED')}
-                            className="bg-[#2874F0] hover:bg-[#0A3B74] text-white font-bold px-3 py-1.5 rounded-md text-xs cursor-pointer shadow-2xs flex items-center gap-1 ml-auto"
-                          >
-                            <Truck className="w-3.5 h-3.5" /> Mark Shipped
-                          </button>
-                        )}
-                        {so.status === 'SHIPPED' && (
-                          <button
-                            onClick={() => handleUpdatePackageStatus(so.id, 'OUT_FOR_DELIVERY')}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-md text-xs cursor-pointer shadow-2xs"
-                          >
-                            Out for Delivery
-                          </button>
-                        )}
-                        {so.status === 'OUT_FOR_DELIVERY' && (
-                          <button
-                            onClick={() => handleUpdatePackageStatus(so.id, 'DELIVERED')}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-md text-xs cursor-pointer shadow-2xs"
-                          >
-                            Mark Delivered
-                          </button>
-                        )}
-                        {so.status === 'DELIVERED' && (
-                          <span className="text-emerald-600 font-bold inline-flex items-center gap-1">
-                            <CheckCircle className="w-3.5 h-3.5" /> Fulfilled
-                          </span>
-                        )}
+                        <div className="flex items-center justify-end gap-2">
+                          {so.status === 'PLACED' && (
+                            <>
+                              <button
+                                onClick={() => handleUpdatePackageStatus(so.id, 'CONFIRMED')}
+                                className="bg-amber-500 hover:bg-amber-600 text-white font-bold px-3 py-1.5 rounded-md text-xs cursor-pointer shadow-2xs"
+                              >
+                                Confirm Parcel
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const reason = prompt('Reason for cancelling this package:');
+                                  if (reason) handleUpdatePackageStatus(so.id, 'CANCELLED', reason);
+                                }}
+                                className="text-rose-600 hover:text-rose-800 hover:bg-rose-50 px-2 py-1.5 rounded text-xs font-semibold cursor-pointer"
+                              >
+                                Cancel
+                              </button>
+                            </>
+                          )}
+                          {so.status === 'CONFIRMED' && (
+                            <>
+                              <button
+                                onClick={() => handleUpdatePackageStatus(so.id, 'SHIPPED')}
+                                className="bg-[#2874F0] hover:bg-[#0A3B74] text-white font-bold px-3 py-1.5 rounded-md text-xs cursor-pointer shadow-2xs flex items-center gap-1"
+                              >
+                                <Truck className="w-3.5 h-3.5" /> Mark Shipped
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const reason = prompt('Reason for cancelling this package:');
+                                  if (reason) handleUpdatePackageStatus(so.id, 'CANCELLED', reason);
+                                }}
+                                className="text-rose-600 hover:text-rose-800 hover:bg-rose-50 px-2 py-1.5 rounded text-xs font-semibold cursor-pointer"
+                              >
+                                Cancel
+                              </button>
+                            </>
+                          )}
+                          {so.status === 'SHIPPED' && (
+                            <button
+                              onClick={() => handleUpdatePackageStatus(so.id, 'OUT_FOR_DELIVERY')}
+                              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-md text-xs cursor-pointer shadow-2xs"
+                            >
+                              Out for Delivery
+                            </button>
+                          )}
+                          {so.status === 'OUT_FOR_DELIVERY' && (
+                            <button
+                              onClick={() => handleUpdatePackageStatus(so.id, 'DELIVERED')}
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-md text-xs cursor-pointer shadow-2xs"
+                            >
+                              Mark Delivered
+                            </button>
+                          )}
+                          {so.status === 'DELIVERED' && (
+                            <span className="text-emerald-600 font-bold inline-flex items-center gap-1">
+                              <CheckCircle className="w-3.5 h-3.5" /> Fulfilled
+                            </span>
+                          )}
+                          {so.status === 'CANCELLED' && (
+                            <span className="text-rose-600 font-bold text-xs">
+                              Cancelled
+                            </span>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))

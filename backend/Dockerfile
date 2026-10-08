@@ -10,6 +10,7 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 RUN addgroup -S shopkart && adduser -S shopkart -G shopkart
+RUN mkdir -p /app/uploads && chown -R shopkart:shopkart /app/uploads
 USER shopkart
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
