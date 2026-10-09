@@ -286,7 +286,7 @@ export function SellerPortalPage({ onViewProduct }) {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+      <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 py-16 text-center">
         <div className="inline-block w-8 h-8 border-4 border-[#0A3B74] border-t-transparent rounded-full animate-spin" />
         <p className="text-xs text-slate-500 mt-2">Loading Seller Dashboard...</p>
       </div>
@@ -294,7 +294,7 @@ export function SellerPortalPage({ onViewProduct }) {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+    <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 py-6 space-y-6">
       {/* Seller Header */}
       <div className="bg-white rounded-xl p-5 shadow-xs border border-slate-200/90 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="flex items-center gap-3.5">

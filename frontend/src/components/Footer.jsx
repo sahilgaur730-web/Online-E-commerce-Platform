@@ -6,7 +6,7 @@ export function Footer() {
     <footer className="bg-[#001D44] text-white text-xs mt-12">
       {/* Top Value Propositions */}
       <div className="border-b border-blue-900/60 py-6 bg-[#0A3B74]">
-        <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+        <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           <div className="flex items-center justify-center gap-2">
             <ShieldCheck className="w-5 h-5 text-[#FF7A00]" />
             <span className="font-semibold text-gray-200">100% Authentic Products</span>
@@ -27,7 +27,7 @@ export function Footer() {
       </div>
 
       {/* Main Footer Links */}
-      <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-2 md:grid-cols-5 gap-8 border-b border-gray-700">
+      <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 py-10 grid grid-cols-2 md:grid-cols-5 gap-8 border-b border-gray-700">
         <div>
           <h4 className="text-gray-400 uppercase font-semibold text-[11px] mb-3">About</h4>
           <ul className="space-y-1.5 text-gray-300">
@@ -82,7 +82,7 @@ export function Footer() {
       </div>
 
       {/* Bottom Copyright & Security */}
-      <div className="max-w-7xl mx-auto px-4 py-5 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-gray-400">
+      <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-gray-400">
         <div className="flex items-center gap-6">
           <span className="flex items-center gap-1.5 text-[#FF7A00] font-semibold">
             <Briefcase className="w-3.5 h-3.5" /> Become a Seller

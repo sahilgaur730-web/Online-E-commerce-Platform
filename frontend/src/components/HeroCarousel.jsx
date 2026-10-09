@@ -55,7 +55,7 @@ export function HeroCarousel({ onSelectCategory }) {
   return (
     <div className="relative overflow-hidden bg-gray-900 text-white select-none">
       <div className={`w-full bg-gradient-to-r ${slide.bg} transition-colors duration-700`}>
-        <div className="max-w-7xl mx-auto px-6 py-10 md:py-14 flex flex-col md:flex-row items-center justify-between gap-8 min-h-[300px]">
+        <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 py-8 md:py-12 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 min-h-[350px] md:min-h-[380px]">
           {/* Text Content */}
           <div className="max-w-xl space-y-3 z-10">
             <span className="inline-block bg-[#FF7A00] text-white text-xs font-bold tracking-wider px-3 py-1 rounded-sm uppercase">
@@ -72,6 +72,7 @@ export function HeroCarousel({ onSelectCategory }) {
             </p>
             <div className="pt-2">
               <button
+                type="button"
                 onClick={() => onSelectCategory(slide.category)}
                 className="bg-[#FF7A00] hover:bg-[#E66A00] text-white font-bold px-6 py-2.5 rounded-sm shadow-md transition text-sm cursor-pointer"
               >
@@ -93,31 +94,60 @@ export function HeroCarousel({ onSelectCategory }) {
         </div>
       </div>
 
-      {/* Navigation Arrows */}
-      <button
-        onClick={() => setCurrent((prev) => (prev - 1 + SLIDES.length) % SLIDES.length)}
-        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-2 rounded-r-sm transition cursor-pointer"
-        aria-label="Previous Slide"
+      {/* Isolated Navigation Controls Overlay (CLS-Free & Pointer-Events Isolated) */}
+      <div
+        className="absolute inset-0 pointer-events-none z-20"
+        style={{ pointerEvents: 'none' }}
+        aria-hidden="false"
       >
-        <ChevronLeft className="w-6 h-6" />
-      </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setCurrent((prev) => (prev - 1 + SLIDES.length) % SLIDES.length);
+          }}
+          style={{
+            position: 'absolute',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 20,
+            pointerEvents: 'auto',
+          }}
+          className="left-2 sm:left-4 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-xs transition-colors duration-150 border border-white/20 shadow-lg cursor-pointer focus:outline-hidden m-0 p-0 select-none active:translate-y-[-50%]"
+          aria-label="Previous Slide"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
 
-      <button
-        onClick={() => setCurrent((prev) => (prev + 1) % SLIDES.length)}
-        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-2 rounded-l-sm transition cursor-pointer"
-        aria-label="Next Slide"
-      >
-        <ChevronRight className="w-6 h-6" />
-      </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setCurrent((prev) => (prev + 1) % SLIDES.length);
+          }}
+          style={{
+            position: 'absolute',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 20,
+            pointerEvents: 'auto',
+          }}
+          className="right-2 sm:right-4 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-xs transition-colors duration-150 border border-white/20 shadow-lg cursor-pointer focus:outline-hidden m-0 p-0 select-none active:translate-y-[-50%]"
+          aria-label="Next Slide"
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
+      </div>
 
-      {/* Dots */}
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2">
+      {/* Dots Indicator */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 pointer-events-auto">
         {SLIDES.map((s, idx) => (
           <button
             key={s.id}
+            type="button"
             onClick={() => setCurrent(idx)}
-            className={`h-2 rounded-full transition-all cursor-pointer ${
-              idx === current ? 'w-6 bg-[#FF7A00]' : 'w-2 bg-white/50'
+            className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+              idx === current ? 'w-7 bg-[#FF7A00]' : 'w-2 bg-white/50 hover:bg-white/80'
             }`}
             aria-label={`Go to slide ${idx + 1}`}
           />

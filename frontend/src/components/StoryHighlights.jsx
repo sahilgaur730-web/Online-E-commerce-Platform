@@ -92,11 +92,12 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
     },
     {
       id: 'streak',
-      title: 'Streak Coins',
+      title: '+50 Streak Coins',
       categorySlug: 'streak',
       icon: Award,
       color: 'from-amber-400 to-yellow-600',
       badge: '+50',
+      badgeClass: 'bg-[#FF7A00] text-white',
       isStreak: true,
       preview: {
         headline: 'Daily 7-Day SuperCoin Streak Rewards',
@@ -115,33 +116,67 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 pt-2">
-      <div className="bg-white rounded-xs p-3.5 shadow-xs border border-gray-200">
-        <div className="flex items-center gap-4 sm:gap-6 overflow-x-auto pb-1 scrollbar-none">
+    <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 pt-2">
+      <div className="bg-white rounded-md p-4 shadow-xs border border-gray-200">
+        <div
+          style={{
+            scrollSnapType: 'x mandatory',
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+          }}
+          className="flex items-center gap-4 sm:gap-6 overflow-x-auto py-2 scrollbar-none snap-x snap-mandatory"
+        >
           {stories.map((story) => {
             const Icon = story.icon;
+            const badgeClass =
+              story.badgeClass ||
+              (story.badge === 'LIVE'
+                ? 'bg-red-600 text-white animate-pulse'
+                : story.badge === 'NEW'
+                ? 'bg-emerald-600 text-white'
+                : story.badge === 'ASSURED'
+                ? 'bg-[#0A3B74] text-white'
+                : 'bg-[#FF7A00] text-white');
+
             return (
               <button
                 key={story.id}
+                type="button"
+                style={{ scrollSnapAlign: 'start' }}
                 onClick={() => handleStoryClick(story)}
-                className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer group focus:outline-none"
+                className="flex flex-col items-center gap-2 shrink-0 snap-start cursor-pointer group focus:outline-hidden select-none"
               >
-                {/* Circular Gradient Ring */}
-                <div
-                  className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5 bg-gradient-to-tr ${story.color} transition-transform duration-200 group-hover:scale-105 relative shadow-xs`}
-                >
-                  <div className="w-full h-full rounded-full bg-white p-1 flex items-center justify-center">
-                    <div className="w-full h-full rounded-full bg-gray-50 flex items-center justify-center text-gray-800 group-hover:bg-blue-50 transition">
-                      <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-[#0A3B74]" />
+                {/* Circular Gradient Ring with Relative Anchor for Badge */}
+                <div className="relative">
+                  <div
+                    className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5 bg-gradient-to-tr ${story.color} transition-transform duration-200 group-hover:scale-105 shadow-xs`}
+                  >
+                    <div className="w-full h-full rounded-full bg-white p-1 flex items-center justify-center">
+                      <div className="w-full h-full rounded-full bg-gray-50 flex items-center justify-center text-gray-800 group-hover:bg-blue-50 transition">
+                        <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-[#0A3B74]" />
+                      </div>
                     </div>
                   </div>
+
+                  {/* Floating Absolute Pill-Tag Badge */}
                   {story.badge && (
-                    <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-[#FF7A00] text-white text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase tracking-tighter shadow-xs">
+                    <span
+                      style={{
+                        position: 'absolute',
+                        top: '-4px',
+                        right: '-4px',
+                        borderRadius: '9999px',
+                        fontSize: '0.65rem',
+                        padding: '2px 6px',
+                      }}
+                      className={`z-10 font-black tracking-wider uppercase shadow-xs whitespace-nowrap leading-none border border-white ${badgeClass}`}
+                    >
                       {story.badge}
                     </span>
                   )}
                 </div>
-                <span className="text-[11px] font-semibold text-gray-800 text-center truncate max-w-[70px]">
+
+                <span className="text-xs font-semibold text-gray-800 text-center whitespace-nowrap group-hover:text-[#0A3B74] transition">
                   {story.title}
                 </span>
               </button>

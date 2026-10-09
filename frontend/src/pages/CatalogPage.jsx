@@ -129,7 +129,7 @@ export function CatalogPage({ initialCategory, initialKeyword, onSelectProduct, 
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-4">
+    <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 py-4">
       <div className="flex flex-col md:flex-row gap-4 items-start">
         {/* Left Filters Sidebar */}
         <div className="w-full md:w-64 bg-white rounded-xs p-4 shadow-xs border border-gray-200 shrink-0">

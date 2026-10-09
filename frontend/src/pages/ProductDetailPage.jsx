@@ -268,7 +268,7 @@ export function ProductDetailPage({
 
   if (loading || !product) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+      <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 py-16 text-center">
         <div className="inline-block w-8 h-8 border-4 border-[#0A3B74] border-t-transparent rounded-full animate-spin" />
         <p className="text-xs text-gray-500 mt-3 font-semibold">
           Loading ShopKart product details...
@@ -301,7 +301,7 @@ export function ProductDetailPage({
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-4 space-y-4">
+    <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 py-4 space-y-4">
       {/* Physics Fly-to-Cart Projectile */}
       <FlyToCartProjectile
         projectile={projectile}

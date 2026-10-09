@@ -19,12 +19,50 @@
   --sk-border: #E0E0E0;
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background-color: var(--sk-bg);
   color: var(--sk-text-dark);
   -webkit-font-smoothing: antialiased;
+}
+
+/* Cross-Device Normalized Containers */
+.app-container {
+  width: 100%;
+  padding-left: 12px;
+  padding-right: 12px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 768px) {
+  .app-container {
+    max-width: 1280px;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+/* Horizontal Smooth Touch Scrolling Track */
+.touch-scroll-track {
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.touch-scroll-track::-webkit-scrollbar {
+  display: none;
 }
 
 /* Modern Gen-Z Sleek Scrollbar */

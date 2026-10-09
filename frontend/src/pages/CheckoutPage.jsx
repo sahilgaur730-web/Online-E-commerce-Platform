@@ -352,7 +352,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
   const selectedAddr = addresses.find((a) => a.id === selectedAddressId);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
+    <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 py-6">
       {/* 3-Step Checkout Stepper Header */}
       <div className="bg-white p-4 rounded-xs border border-gray-200 shadow-xs mb-6">
         <div className="flex items-center justify-between max-w-2xl mx-auto text-xs font-bold uppercase tracking-wider">

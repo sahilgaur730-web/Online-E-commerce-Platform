@@ -115,7 +115,7 @@ export function HomePage({
       <HeroCarousel onSelectCategory={onSelectCategory} />
 
       {/* Deals of the Day Strip */}
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6">
         <div className="bg-white p-4 rounded-xs shadow-xs">
           <div className="flex flex-wrap items-center justify-between gap-3 pb-3 mb-3 border-b border-gray-100">
             <div className="flex items-center gap-3 flex-wrap">
@@ -167,7 +167,7 @@ export function HomePage({
       </div>
 
       {/* Value Guarantee Strip */}
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6">
         <div className="bg-blue-50/70 border border-blue-200 rounded-xs p-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-[#0A3B74] text-white flex items-center justify-center shrink-0">
@@ -185,7 +185,7 @@ export function HomePage({
       </div>
 
       {/* Featured Products */}
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6">
         <div className="bg-white p-4 rounded-xs shadow-xs">
           <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-100">
             <div>
@@ -217,7 +217,7 @@ export function HomePage({
       </div>
 
       {/* Featured Recommendations Collection */}
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6">
         <div className="bg-white p-4 rounded-xs shadow-xs">
           <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-100">
             <div>

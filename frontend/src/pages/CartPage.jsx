@@ -9,7 +9,7 @@ export function CartPage({ onProceedToCheckout, onViewProduct, onContinueShoppin
 
   if (cart.items.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16">
+      <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 py-16">
         <div className="bg-white rounded-xs p-12 text-center max-w-xl mx-auto shadow-xs border border-gray-200">
           <div className="w-20 h-20 bg-blue-50 text-[#0A3B74] rounded-full flex items-center justify-center mx-auto mb-4">
             <ShoppingBag className="w-10 h-10" />
@@ -30,7 +30,7 @@ export function CartPage({ onProceedToCheckout, onViewProduct, onContinueShoppin
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
+    <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 py-6">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left: Cart Items List */}
         <div className="lg:col-span-8 space-y-4">

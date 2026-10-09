@@ -373,7 +373,7 @@ export function AdminDashboardPage({ onViewOrder }) {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+      <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 py-16 text-center">
         <div className="inline-block w-8 h-8 border-4 border-[#0A3B74] border-t-transparent rounded-full animate-spin" />
         <p className="text-xs text-gray-500 mt-2 font-semibold">
           Loading ShopKart Central Operations & Telemetry...
@@ -383,7 +383,7 @@ export function AdminDashboardPage({ onViewOrder }) {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+    <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 py-6 space-y-6">
       {/* Admin Header */}
       <div className="bg-white rounded-xs p-5 shadow-xs border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
