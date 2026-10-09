@@ -23,7 +23,8 @@ export function CategoryBar({ selectedCategory, onSelectCategory }) {
   return (
     <nav
       aria-label="Product Categories"
-      className="sticky top-[56px] sm:top-[60px] lg:top-[64px] z-30 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-2xs"
+      style={{ top: 'var(--navbar-height, 64px)' }}
+      className="sticky z-30 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-2xs transition-[top] duration-150"
     >
       <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6">
         <div
@@ -32,7 +33,7 @@ export function CategoryBar({ selectedCategory, onSelectCategory }) {
             WebkitOverflowScrolling: 'touch',
             scrollbarWidth: 'none',
           }}
-          className="flex items-center gap-2 sm:gap-3 md:justify-between overflow-x-auto py-2 scrollbar-none snap-x snap-mandatory"
+          className="touch-scroll-track flex items-center gap-2 sm:gap-3 lg:justify-between py-2 snap-x snap-mandatory"
         >
           {CATEGORIES.map((cat) => {
             const Icon = cat.icon;

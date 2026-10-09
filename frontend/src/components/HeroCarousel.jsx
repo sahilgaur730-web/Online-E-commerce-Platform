@@ -55,10 +55,10 @@ export function HeroCarousel({ onSelectCategory }) {
   return (
     <div className="relative overflow-hidden bg-gray-900 text-white select-none">
       <div className={`w-full bg-gradient-to-r ${slide.bg} transition-colors duration-700`}>
-        <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 py-8 md:py-12 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 min-h-[350px] md:min-h-[380px]">
+        <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 py-8 md:py-12 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 min-h-[500px] sm:min-h-[460px] md:min-h-[380px]">
           {/* Text Content */}
-          <div className="max-w-xl space-y-3 z-10">
-            <span className="inline-block bg-[#FF7A00] text-white text-xs font-bold tracking-wider px-3 py-1 rounded-sm uppercase">
+          <div className="w-full max-w-xl space-y-3 z-10 min-h-[220px] sm:min-h-[200px] md:min-h-[190px] flex flex-col justify-center">
+            <span className="inline-block bg-[#FF7A00] text-white text-xs font-bold tracking-wider px-3 py-1 rounded-sm uppercase self-start">
               {slide.badge}
             </span>
             <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white leading-tight">
@@ -83,7 +83,7 @@ export function HeroCarousel({ onSelectCategory }) {
 
           {/* Banner Product Showcase Image */}
           <div className="shrink-0 relative">
-            <div className="w-64 h-56 md:w-80 md:h-64 rounded-sm overflow-hidden bg-black/20 p-2 shadow-lg">
+            <div className="w-64 h-52 sm:h-56 md:w-80 md:h-64 rounded-sm overflow-hidden bg-black/20 p-2 shadow-lg">
               <img
                 src={slide.image}
                 alt={slide.title}
@@ -112,8 +112,12 @@ export function HeroCarousel({ onSelectCategory }) {
             transform: 'translateY(-50%)',
             zIndex: 20,
             pointerEvents: 'auto',
+            margin: 0,
+            padding: 0,
+            outline: 'none',
+            boxSizing: 'border-box',
           }}
-          className="left-2 sm:left-4 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-xs transition-colors duration-150 border border-white/20 shadow-lg cursor-pointer focus:outline-hidden m-0 p-0 select-none active:translate-y-[-50%]"
+          className="left-2 sm:left-4 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-xs transition-colors duration-150 border border-white/20 shadow-lg cursor-pointer focus:outline-none active:outline-none select-none m-0 p-0"
           aria-label="Previous Slide"
         >
           <ChevronLeft className="w-6 h-6" />
@@ -131,8 +135,12 @@ export function HeroCarousel({ onSelectCategory }) {
             transform: 'translateY(-50%)',
             zIndex: 20,
             pointerEvents: 'auto',
+            margin: 0,
+            padding: 0,
+            outline: 'none',
+            boxSizing: 'border-box',
           }}
-          className="right-2 sm:right-4 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-xs transition-colors duration-150 border border-white/20 shadow-lg cursor-pointer focus:outline-hidden m-0 p-0 select-none active:translate-y-[-50%]"
+          className="right-2 sm:right-4 w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center backdrop-blur-xs transition-colors duration-150 border border-white/20 shadow-lg cursor-pointer focus:outline-none active:outline-none select-none m-0 p-0"
           aria-label="Next Slide"
         >
           <ChevronRight className="w-6 h-6" />

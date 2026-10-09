@@ -54,6 +54,7 @@ export function Navbar({
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [suggestedProducts, setSuggestedProducts] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  const headerRef = useRef(null);
   const searchContainerRef = useRef(null);
   const mobileSearchContainerRef = useRef(null);
   const searchInputRef = useRef(null);
@@ -139,7 +140,26 @@ export function Navbar({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Lock body scroll when mobile drawer is open
+  // Synchronize dynamic header height for sticky CategoryBar
+  useEffect(() => {
+    if (!headerRef.current) return;
+    const updateHeaderHeight = () => {
+      if (headerRef.current) {
+        const height = headerRef.current.offsetHeight;
+        document.documentElement.style.setProperty('--navbar-height', `${height}px`);
+      }
+    };
+    updateHeaderHeight();
+    const observer = new ResizeObserver(updateHeaderHeight);
+    observer.observe(headerRef.current);
+    window.addEventListener('resize', updateHeaderHeight);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updateHeaderHeight);
+    };
+  }, []);
+
+  // Lock body scroll when mobile drawer is open, and auto-close when resized to desktop (>= 1024px)
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
@@ -149,6 +169,16 @@ export function Navbar({
     return () => {
       document.body.style.overflow = '';
     };
+  }, [isMobileMenuOpen]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024 && isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, [isMobileMenuOpen]);
 
   // Live Auto-Suggest Query debouncing
@@ -236,7 +266,7 @@ export function Navbar({
         <button
           type="button"
           onClick={() => setSearchTerm('')}
-          className="absolute right-18 text-gray-400 hover:text-gray-700 transition cursor-pointer p-1"
+          className="absolute right-[70px] text-gray-400 hover:text-gray-700 transition cursor-pointer p-1"
           title="Clear search"
         >
           <X className="w-4 h-4" />
@@ -624,15 +654,15 @@ export function Navbar({
   );
 
   return (
-    <header className="bg-gradient-to-r from-[#0A3B74] to-[#002F6C] text-white sticky top-0 z-40 shadow-md border-b border-blue-900/40 w-full">
+    <header ref={headerRef} className="bg-gradient-to-r from-[#0A3B74] to-[#002F6C] text-white sticky top-0 z-40 shadow-md border-b border-blue-900/40 w-full">
       <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6">
         {/* =========================================================================
             DESKTOP HEADER ARCHITECTURE (>= 1024px)
             Fixed horizontal header: Brand Logo, Expandable Search Bar, Action Icons
             ========================================================================= */}
-        <div className="hidden lg:flex items-center justify-between gap-6 py-2.5">
+        <div className="hidden lg:flex items-center justify-between gap-5 py-2.5">
           {/* Brand Logo & Tagline (Isolated from vertical expansion) */}
-          <div className="flex items-center gap-4 shrink-0">
+          <div className="flex items-center gap-3 xl:gap-4 shrink-0">
             <div
               onClick={() => {
                 setCurrentView('home');
@@ -655,14 +685,14 @@ export function Navbar({
               </div>
             </div>
 
-            {/* Universal Persistent Home Button */}
+            {/* Persistent Home Button (Responsive to viewport room) */}
             <button
               type="button"
               onClick={() => {
                 setCurrentView('home');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold text-xs transition cursor-pointer shrink-0 border ${
+              className={`hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold text-xs transition cursor-pointer shrink-0 border ${
                 currentView === 'home'
                   ? 'bg-white/20 text-white border-white/40 shadow-xs'
                   : 'hover:bg-white/10 text-blue-100 hover:text-white border-transparent'
@@ -675,13 +705,16 @@ export function Navbar({
           </div>
 
           {/* Expandable Search Bar */}
-          <div ref={searchContainerRef} className="flex-1 max-w-xl xl:max-w-2xl relative">
+          <div
+            ref={searchContainerRef}
+            className="flex-1 max-w-md lg:focus-within:max-w-xl xl:focus-within:max-w-2xl transition-all duration-300 ease-in-out relative"
+          >
             {renderSearchBar(false)}
             {isSearchFocused && renderSearchDropdown()}
           </div>
 
           {/* Desktop Action Icons */}
-          <div className="flex items-center gap-5 shrink-0 text-sm font-medium">
+          <div className="flex items-center gap-4 xl:gap-5 shrink-0 text-sm font-medium">
             {/* Become a Seller Link */}
             {isSeller || isAdmin ? (
               <button
@@ -733,7 +766,7 @@ export function Navbar({
               >
                 <User className="w-4 h-4" />
                 <span className="max-w-[110px] truncate text-xs font-bold">
-                  {isAuthenticated ? user?.name : 'Account'}
+                  {isAuthenticated ? user?.name : 'Sign In'}
                 </span>
                 <ChevronDown className="w-3.5 h-3.5" />
               </button>
@@ -772,29 +805,29 @@ export function Navbar({
             ========================================================================= */}
         <div className="lg:hidden flex flex-col py-2 gap-2">
           {/* Top Row: Hamburger | Centered Brand Logo | Search + Cart */}
-          <div className="flex items-center justify-between">
+          <div className="relative flex items-center justify-between min-h-[40px]">
             {/* Hamburger Menu Icon */}
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(true)}
-              className="p-1.5 rounded-md text-white hover:bg-white/10 transition cursor-pointer"
+              className="p-1.5 rounded-md text-white hover:bg-white/10 transition cursor-pointer z-10"
               aria-label="Open navigation menu"
             >
               <Menu className="w-6 h-6" />
             </button>
 
-            {/* Centered Brand Logo */}
+            {/* Mathematically Centered Brand Logo */}
             <div
               onClick={() => {
                 setCurrentView('home');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className="flex items-center gap-2 cursor-pointer select-none"
+              className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 cursor-pointer select-none pointer-events-auto"
             >
               <img
                 src="/logo.png"
                 alt="ShopKart"
-                className="w-8 h-8 object-contain rounded-md bg-white p-0.5 shadow-xs"
+                className="w-8 h-8 object-contain rounded-md bg-white p-0.5 shadow-xs shrink-0"
               />
               <span className="font-black text-xl tracking-tight text-white whitespace-nowrap">
                 Shop<span className="text-[#FF7A00]">Kart</span>
@@ -802,7 +835,7 @@ export function Navbar({
             </div>
 
             {/* Right Controls: Search Trigger & Cart Badge */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 z-10">
               <button
                 type="button"
                 onClick={() => {
@@ -813,7 +846,9 @@ export function Navbar({
                     }
                   }, 100);
                 }}
-                className="p-1.5 rounded-md text-white hover:bg-white/10 transition cursor-pointer"
+                className={`p-1.5 rounded-md transition cursor-pointer ${
+                  isMobileSearchOpen ? 'text-amber-300 bg-white/10' : 'text-white hover:bg-white/10'
+                }`}
                 aria-label="Search"
               >
                 <Search className="w-5 h-5" />
@@ -1055,6 +1090,27 @@ export function Navbar({
                 >
                   <Heart className="w-4 h-4 text-[#0A3B74]" /> Wishlist
                 </button>
+
+                {isAuthenticated && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setShowNotifications(true);
+                      loadNotifications();
+                    }}
+                    className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-md hover:bg-gray-100 transition text-gray-800 cursor-pointer text-left"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Bell className="w-4 h-4 text-[#0A3B74]" /> Notifications
+                    </div>
+                    {unreadCount > 0 && (
+                      <span className="bg-[#FF7A00] text-white text-[10px] font-bold rounded-full px-1.5 py-0.5">
+                        {unreadCount} new
+                      </span>
+                    )}
+                  </button>
+                )}
               </div>
 
               <div className="pt-2 space-y-0.5 pb-2">
@@ -1162,6 +1218,52 @@ export function Navbar({
                     <LogOut className="w-4 h-4" /> Log Out
                   </button>
                 </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Notification Modal (Accessible on Mobile Screens) */}
+      {showNotifications && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs lg:hidden">
+          <div className="w-full max-w-sm bg-white text-gray-800 rounded-lg shadow-2xl border border-gray-100 overflow-hidden">
+            <div className="px-4 py-3 bg-[#0A3B74] text-white flex items-center justify-between">
+              <span className="font-bold text-xs uppercase tracking-wider">Notifications ({unreadCount})</span>
+              <div className="flex items-center gap-3">
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={markAllRead}
+                    className="text-xs text-amber-300 hover:underline font-semibold cursor-pointer"
+                  >
+                    Mark all read
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setShowNotifications(false)}
+                  className="p-1 hover:text-amber-300 transition cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            <div className="max-h-80 overflow-y-auto divide-y divide-gray-100">
+              {notifications.length === 0 ? (
+                <div className="p-6 text-center text-gray-400 text-xs">
+                  No notifications yet
+                </div>
+              ) : (
+                notifications.slice(0, 10).map((n) => (
+                  <div
+                    key={n.id}
+                    className={`p-3 text-xs ${n.read ? 'bg-white' : 'bg-blue-50/50'}`}
+                  >
+                    <div className="font-bold text-gray-900">{n.title}</div>
+                    <div className="text-gray-600 mt-0.5">{n.message}</div>
+                  </div>
+                ))
               )}
             </div>
           </div>

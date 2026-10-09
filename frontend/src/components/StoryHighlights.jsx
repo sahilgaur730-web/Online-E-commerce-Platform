@@ -124,7 +124,7 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
             WebkitOverflowScrolling: 'touch',
             scrollbarWidth: 'none',
           }}
-          className="flex items-center gap-4 sm:gap-6 overflow-x-auto py-2 scrollbar-none snap-x snap-mandatory"
+          className="touch-scroll-track flex items-center gap-4 sm:gap-6 py-2 snap-x snap-mandatory"
         >
           {stories.map((story) => {
             const Icon = story.icon;
@@ -144,7 +144,7 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
                 type="button"
                 style={{ scrollSnapAlign: 'start' }}
                 onClick={() => handleStoryClick(story)}
-                className="flex flex-col items-center gap-2 shrink-0 snap-start cursor-pointer group focus:outline-hidden select-none"
+                className="flex flex-col items-center gap-2 shrink-0 snap-start cursor-pointer group focus:outline-none select-none"
               >
                 {/* Circular Gradient Ring with Relative Anchor for Badge */}
                 <div className="relative">
