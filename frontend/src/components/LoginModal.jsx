@@ -65,8 +65,8 @@ export function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
           <X className="w-5 h-5" />
         </button>
 
-        {/* Left Side: Flipkart Signature Blue Branding Banner */}
-        <div className="bg-[#2874F0] text-white p-8 md:w-5/12 flex flex-col justify-between">
+        {/* Left Side: ShopKart Deep Navy Branding Banner */}
+        <div className="bg-gradient-to-b from-[#0A3B74] to-[#002F6C] text-white p-8 md:w-5/12 flex flex-col justify-between">
           <div>
             <h2 className="text-2xl font-bold tracking-tight">
               {mode === 'login'
@@ -86,13 +86,15 @@ export function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
 
           <div className="mt-8 flex items-center gap-2">
             <img
-              src="/favicon.png"
+              src="/logo.png"
               alt="ShopKart"
-              className="w-10 h-10 object-contain bg-white rounded p-1"
+              className="w-11 h-11 object-contain bg-white rounded-md p-1 shadow-sm"
             />
             <div>
-              <div className="font-bold text-sm">ShopKart</div>
-              <div className="text-[11px] text-yellow-300 italic">Shop Smart • Live Better</div>
+              <div className="font-bold text-sm">
+                Shop<span className="text-[#FF7A00]">Kart</span>
+              </div>
+              <div className="text-[11px] text-amber-300 font-medium">Shop Smart • Live Better</div>
             </div>
           </div>
         </div>
@@ -203,7 +205,7 @@ export function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#FB641B] hover:bg-[#e85b17] text-white font-bold py-2.5 rounded shadow-sm transition text-sm cursor-pointer"
+              className="w-full bg-[#FF7A00] hover:bg-[#E66A00] text-white font-bold py-2.5 rounded shadow-sm transition text-sm cursor-pointer"
             >
               {loading
                 ? 'Processing...'
@@ -224,7 +226,7 @@ export function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
               <button
                 type="button"
                 onClick={() => handleQuickDemo('BUYER')}
-                className="text-xs py-1.5 px-2 bg-blue-50 text-[#2874F0] hover:bg-blue-100 font-semibold rounded border border-blue-200 transition text-center cursor-pointer"
+                className="text-xs py-1.5 px-2 bg-blue-50 text-[#0A3B74] hover:bg-blue-100 font-semibold rounded border border-blue-200 transition text-center cursor-pointer"
               >
                 Buyer
               </button>
@@ -251,7 +253,7 @@ export function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
               <button
                 type="button"
                 onClick={() => setMode('register')}
-                className="text-[#2874F0] font-semibold hover:underline cursor-pointer"
+                className="text-[#0A3B74] font-semibold hover:underline cursor-pointer"
               >
                 New to ShopKart? Create an account
               </button>
@@ -259,7 +261,7 @@ export function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
               <button
                 type="button"
                 onClick={() => setMode('login')}
-                className="text-[#2874F0] font-semibold hover:underline cursor-pointer"
+                className="text-[#0A3B74] font-semibold hover:underline cursor-pointer"
               >
                 Existing User? Log in
               </button>

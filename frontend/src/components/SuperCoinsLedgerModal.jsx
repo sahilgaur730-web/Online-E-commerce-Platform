@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Award, ArrowDownLeft, ArrowUpRight, Flame, ShieldCheck, X } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, ShieldCheck, X } from 'lucide-react';
 
 export function SuperCoinsLedgerModal({ isOpen, onClose }) {
   const [balance, setBalance] = useState(120);
@@ -69,17 +69,17 @@ export function SuperCoinsLedgerModal({ isOpen, onClose }) {
             <X className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-full bg-amber-400 text-amber-950 font-black flex items-center justify-center text-sm shadow-xs">
+            <div className="w-9 h-9 rounded-full bg-[#FF7A00] text-white font-black flex items-center justify-center text-sm shadow-xs">
               SK
             </div>
             <div>
               <h2 className="text-lg font-black tracking-tight">SuperCoins Zone</h2>
-              <p className="text-xs text-blue-200">Your Flipkart-style Rewards Wallet & Ledger</p>
+              <p className="text-xs text-blue-200">Your Rewards Wallet & Ledger</p>
             </div>
           </div>
 
           {/* Balance Card */}
-          <div className="mt-4 bg-[#2874F0] p-4 rounded-xs flex items-center justify-between border border-blue-400/40">
+          <div className="mt-4 bg-[#002F6C] p-4 rounded-xs flex items-center justify-between border border-blue-400/30">
             <div>
               <span className="text-[11px] text-blue-100 font-semibold uppercase block">
                 Available SuperCoins Balance
@@ -90,7 +90,7 @@ export function SuperCoinsLedgerModal({ isOpen, onClose }) {
               </div>
             </div>
             <div className="text-right">
-              <span className="text-[10px] bg-amber-400 text-amber-950 px-2 py-0.5 rounded font-bold uppercase inline-block">
+              <span className="text-[10px] bg-[#FF7A00] text-white px-2 py-0.5 rounded font-bold uppercase inline-block">
                 Earning Rate: 4%
               </span>
               <p className="text-[10px] text-blue-100 mt-1">4 Coins per ₹100 spent</p>
@@ -151,7 +151,7 @@ export function SuperCoinsLedgerModal({ isOpen, onClose }) {
           </div>
           <button
             onClick={onClose}
-            className="bg-[#2874F0] text-white font-bold text-xs px-4 py-2 rounded-xs shadow-xs hover:bg-blue-600 transition cursor-pointer"
+            className="bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs px-4 py-2 rounded-xs shadow-xs transition cursor-pointer"
           >
             Done
           </button>

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { api } from '../api/client';
 
 const AuthContext = createContext(null);
@@ -7,6 +7,12 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('shopkart_token'));
   const [loading, setLoading] = useState(true);
+
+  const logout = useCallback(() => {
+    localStorage.removeItem('shopkart_token');
+    setToken(null);
+    setUser(null);
+  }, []);
 
   useEffect(() => {
     async function loadUser() {
@@ -22,7 +28,7 @@ export function AuthProvider({ children }) {
       setLoading(false);
     }
     loadUser();
-  }, [token]);
+  }, [token, logout]);
 
   const login = async (email, password) => {
     const res = await api.login({ email, password });
@@ -50,12 +56,6 @@ export function AuthProvider({ children }) {
       storeName: res.storeName,
     });
     return res;
-  };
-
-  const logout = () => {
-    localStorage.removeItem('shopkart_token');
-    setToken(null);
-    setUser(null);
   };
 
   // Demo user quick login

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Gift, Copy, Check, Sparkles, Award } from 'lucide-react';
+import { Gift, Copy, Check, Award } from 'lucide-react';
 
 export function ScratchCard({
   promoCode = 'SHOPKART200',
@@ -59,7 +59,7 @@ export function ScratchCard({
       }
 
       const percent = (transparentPixels / totalPixels) * 100;
-      if (percent > 40 && !isRevealed) {
+      if (percent > 45 && !isRevealed) {
         setIsRevealed(true);
         if (onRevealed) onRevealed();
       }
@@ -68,32 +68,40 @@ export function ScratchCard({
     }
   };
 
-  const scratch = (clientX, clientY) => {
+  const scratch = (x, y) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || isRevealed) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
-
     ctx.globalCompositeOperation = 'destination-out';
     ctx.beginPath();
-    ctx.arc(x, y, 22, 0, Math.PI * 2);
+    ctx.arc(x, y, 18, 0, Math.PI * 2);
     ctx.fill();
 
     checkScratchPercentage();
   };
 
+  const getCanvasPos = (e) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
+  };
+
   const handleMouseDown = (e) => {
     setIsDrawing(true);
-    scratch(e.clientX, e.clientY);
+    const { x, y } = getCanvasPos(e);
+    scratch(x, y);
   };
 
   const handleMouseMove = (e) => {
     if (!isDrawing) return;
-    scratch(e.clientX, e.clientY);
+    const { x, y } = getCanvasPos(e);
+    scratch(x, y);
   };
 
   const handleMouseUp = () => {
@@ -102,14 +110,24 @@ export function ScratchCard({
 
   const handleTouchStart = (e) => {
     setIsDrawing(true);
-    if (e.touches[0]) {
-      scratch(e.touches[0].clientX, e.touches[0].clientY);
+    if (e.touches && e.touches[0]) {
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.touches[0].clientX - rect.left;
+      const y = e.touches[0].clientY - rect.top;
+      scratch(x, y);
     }
   };
 
   const handleTouchMove = (e) => {
-    if (!isDrawing || !e.touches[0]) return;
-    scratch(e.touches[0].clientX, e.touches[0].clientY);
+    if (!isDrawing) return;
+    if (e.touches && e.touches[0]) {
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.touches[0].clientX - rect.left;
+      const y = e.touches[0].clientY - rect.top;
+      scratch(x, y);
+    }
   };
 
   const handleRevealAll = () => {
@@ -117,6 +135,7 @@ export function ScratchCard({
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     setIsRevealed(true);
     if (onRevealed) onRevealed();
@@ -144,13 +163,13 @@ export function ScratchCard({
       <div className="relative w-72 h-36 mx-auto rounded-xs overflow-hidden border border-gray-300 shadow-md bg-white select-none">
         {/* Underlying Prize */}
         <div className="absolute inset-0 flex flex-col items-center justify-center p-3 bg-gradient-to-r from-blue-50 to-amber-50">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-[#2874F0]">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[#0A3B74]">
             <Award className="w-4 h-4" />
             <span>Bonus: +{coinsBonus} SuperCoins Credited!</span>
           </div>
           <span className="text-xs font-semibold text-gray-700 mt-1">{discountText}</span>
           <div className="mt-2 flex items-center gap-2 bg-white px-3 py-1.5 rounded border border-dashed border-gray-400">
-            <span className="font-mono font-black text-sm tracking-wider text-[#FB641B]">
+            <span className="font-mono font-black text-sm tracking-wider text-[#FF7A00]">
               {promoCode}
             </span>
             <button
@@ -186,7 +205,7 @@ export function ScratchCard({
         {!isRevealed ? (
           <button
             onClick={handleRevealAll}
-            className="text-xs text-[#2874F0] font-bold hover:underline cursor-pointer"
+            className="text-xs text-[#0A3B74] font-bold hover:underline cursor-pointer"
           >
             Auto-Reveal Reward
           </button>

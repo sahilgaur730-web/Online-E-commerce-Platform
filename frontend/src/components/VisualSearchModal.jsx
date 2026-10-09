@@ -6,7 +6,6 @@ import {
   X,
   CheckCircle,
   ShieldCheck,
-  Image as ImageIcon,
   RefreshCw,
   ShoppingCart,
   ArrowRight,
@@ -181,7 +180,7 @@ export function VisualSearchModal({ isOpen, onClose, onSelectProduct }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-xs">
       <div className="bg-white rounded-xs shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-gray-200">
         {/* Header */}
-        <div className="bg-gradient-to-r from-[#0A3B74] to-[#2874F0] p-4 text-white flex items-center justify-between shrink-0">
+        <div className="bg-gradient-to-r from-[#0A3B74] to-[#002F6C] p-4 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-amber-300">
               <Camera className="w-5 h-5" />
@@ -189,7 +188,7 @@ export function VisualSearchModal({ isOpen, onClose, onSelectProduct }) {
             <div>
               <h2 className="text-base font-black tracking-tight flex items-center gap-2">
                 <span>Visual Search / Search by Image</span>
-                <span className="text-[10px] uppercase tracking-wider bg-amber-400 text-amber-950 font-bold px-1.5 py-0.5 rounded-xs">
+                <span className="text-[10px] uppercase tracking-wider bg-[#FF7A00] text-white font-bold px-1.5 py-0.5 rounded-xs">
                   AI Lens
                 </span>
               </h2>
@@ -222,8 +221,8 @@ export function VisualSearchModal({ isOpen, onClose, onSelectProduct }) {
                 onClick={() => fileInputRef.current?.click()}
                 className={`border-2 border-dashed rounded-xs p-8 text-center cursor-pointer transition ${
                   isDragOver
-                    ? 'border-[#2874F0] bg-blue-50/70 scale-[1.01]'
-                    : 'border-gray-300 hover:border-[#2874F0] hover:bg-gray-50'
+                    ? 'border-[#0A3B74] bg-blue-50/70 scale-[1.01]'
+                    : 'border-gray-300 hover:border-[#0A3B74] hover:bg-gray-50'
                 }`}
               >
                 <input
@@ -340,10 +339,10 @@ export function VisualSearchModal({ isOpen, onClose, onSelectProduct }) {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {matchedResults.map(({ product, matchScore, matchedFeatures }) => (
+                      {matchedResults.map(({ product, matchScore }) => (
                         <div
                           key={product.id}
-                          className="border border-gray-200 rounded-xs p-3 hover:border-[#2874F0] hover:shadow-md transition bg-white flex flex-col justify-between"
+                          className="border border-gray-200 rounded-xs p-3 hover:border-[#0A3B74] hover:shadow-md transition bg-white flex flex-col justify-between"
                         >
                           <div className="flex gap-3">
                             <img
@@ -357,8 +356,8 @@ export function VisualSearchModal({ isOpen, onClose, onSelectProduct }) {
                                 <span className="bg-emerald-50 text-[#388E3C] border border-emerald-200 text-[10px] font-black px-1.5 py-0.5 rounded-xs">
                                   {matchScore}% Visual Match
                                 </span>
-                                <div className="flex items-center gap-0.5 text-[10px] text-blue-700 font-bold">
-                                  <ShieldCheck className="w-3 h-3 text-[#2874F0]" />
+                                <div className="flex items-center gap-0.5 text-[10px] text-[#0A3B74] font-bold">
+                                  <ShieldCheck className="w-3 h-3 text-[#0A3B74]" />
                                   <span>Assured</span>
                                 </div>
                               </div>
@@ -387,7 +386,7 @@ export function VisualSearchModal({ isOpen, onClose, onSelectProduct }) {
                                 onSelectProduct(product.id);
                                 onClose();
                               }}
-                              className="text-xs font-bold text-[#2874F0] hover:underline flex items-center gap-1 cursor-pointer"
+                              className="text-xs font-bold text-[#0A3B74] hover:underline flex items-center gap-1 cursor-pointer"
                             >
                               <span>View Product</span>
                               <ArrowRight className="w-3.5 h-3.5" />
@@ -395,7 +394,7 @@ export function VisualSearchModal({ isOpen, onClose, onSelectProduct }) {
 
                             <button
                               onClick={() => handleAddToCart(product)}
-                              className="bg-[#FF7A00] hover:bg-[#e06b00] text-white font-bold text-[11px] px-3 py-1 rounded-xs transition shadow-xs flex items-center gap-1 cursor-pointer"
+                              className="bg-[#FF7A00] hover:bg-[#E66A00] text-white font-bold text-[11px] px-3 py-1 rounded-xs transition shadow-xs flex items-center gap-1 cursor-pointer"
                             >
                               {addedProductId === product.id ? (
                                 <>

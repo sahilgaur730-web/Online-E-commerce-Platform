@@ -44,7 +44,7 @@ export function SellerPortalPage({ onViewProduct }) {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [dragActive, setDragActive] = useState(false);
 
-  const loadSellerData = async () => {
+  const loadSellerData = React.useCallback(async () => {
     try {
       setLoading(true);
       const [statsData, prodsData, ordersData, subOrdersData, catsData] = await Promise.all([
@@ -59,19 +59,19 @@ export function SellerPortalPage({ onViewProduct }) {
       setOrders(ordersData || []);
       setSubOrders(subOrdersData || []);
       setCategories(catsData || []);
-      if (catsData && catsData.length > 0 && !productForm.categoryId) {
-        setProductForm((prev) => ({ ...prev, categoryId: catsData[0].id }));
+      if (catsData && catsData.length > 0) {
+        setProductForm((prev) => (prev.categoryId ? prev : { ...prev, categoryId: catsData[0].id }));
       }
     } catch (err) {
       console.error('Failed to load seller portal data:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadSellerData();
-  }, []);
+  }, [loadSellerData]);
 
   const handleFileUpload = async (files) => {
     if (!files || files.length === 0) return;

@@ -37,7 +37,7 @@ export function AdminDashboardPage({ onViewOrder }) {
   // Analytics Period Filter: '7D', '30D', '1Y'
   const [analyticsPeriod, setAnalyticsPeriod] = useState('7D');
 
-  const loadAdminData = async () => {
+  const loadAdminData = React.useCallback(async () => {
     try {
       setLoading(true);
       const [dash, userList, orderList, logs, lowStockItems] = await Promise.all([
@@ -57,11 +57,11 @@ export function AdminDashboardPage({ onViewOrder }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadAdminData();
-  }, []);
+  }, [loadAdminData]);
 
   // Filter orders across 6 lifecycle states
   const filteredOrders = orders.filter((o) => {

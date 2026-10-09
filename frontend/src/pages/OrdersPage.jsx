@@ -1,17 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api/client';
-import { Package, Search, ChevronRight, CheckCircle, Clock, XCircle, AlertCircle } from 'lucide-react';
+import { Package, Search, ChevronRight, CheckCircle, Clock, XCircle } from 'lucide-react';
 
-export function OrdersPage({ onViewOrder, onViewProduct }) {
+export function OrdersPage({ onViewOrder }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    loadOrders();
-  }, []);
-
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     try {
       setLoading(true);
       const data = await api.getOrders();
@@ -21,7 +17,11 @@ export function OrdersPage({ onViewOrder, onViewProduct }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadOrders();
+  }, [loadOrders]);
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -40,13 +40,13 @@ export function OrdersPage({ onViewOrder, onViewProduct }) {
       case 'SHIPPED':
       case 'OUT_FOR_DELIVERY':
         return (
-          <span className="flex items-center gap-1 text-blue-600 font-bold text-xs">
+          <span className="flex items-center gap-1 text-[#0A3B74] font-bold text-xs">
             <Clock className="w-3.5 h-3.5" /> In Transit
           </span>
         );
       default:
         return (
-          <span className="flex items-center gap-1 text-amber-600 font-bold text-xs">
+          <span className="flex items-center gap-1 text-[#FF7A00] font-bold text-xs">
             <Clock className="w-3.5 h-3.5" /> {status}
           </span>
         );
@@ -73,7 +73,7 @@ export function OrdersPage({ onViewOrder, onViewProduct }) {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search your orders here"
-            className="w-full text-xs p-2 pl-8 bg-white border border-gray-300 rounded focus:border-[#2874F0] focus:outline-none"
+            className="w-full text-xs p-2 pl-8 bg-white border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
           />
           <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-2.5" />
         </div>
@@ -111,7 +111,7 @@ export function OrdersPage({ onViewOrder, onViewProduct }) {
                   />
                 </div>
                 <div className="space-y-1">
-                  <h4 className="text-sm font-semibold text-gray-900 line-clamp-1 hover:text-[#2874F0]">
+                  <h4 className="text-sm font-semibold text-gray-900 line-clamp-1 hover:text-[#0A3B74]">
                     {order.items?.[0]?.productName}
                     {order.items?.length > 1 && ` + ${order.items.length - 1} more items`}
                   </h4>

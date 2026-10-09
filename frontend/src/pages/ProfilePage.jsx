@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../api/client';
-import { User, Phone, Mail, Store, Save, ShieldCheck, MapPin, Plus, Trash2 } from 'lucide-react';
+import { Save, MapPin, Trash2 } from 'lucide-react';
 
 export function ProfilePage() {
   const { user, refreshUser } = useAuth();
@@ -13,6 +13,15 @@ export function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  const loadAddresses = useCallback(async () => {
+    try {
+      const data = await api.getAddresses();
+      setAddresses(data || []);
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
   useEffect(() => {
     if (user) {
       setName(user.name || '');
@@ -21,16 +30,7 @@ export function ProfilePage() {
       setStoreDesc(user.storeDescription || '');
       loadAddresses();
     }
-  }, [user]);
-
-  const loadAddresses = async () => {
-    try {
-      const data = await api.getAddresses();
-      setAddresses(data || []);
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  }, [user, loadAddresses]);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -86,7 +86,7 @@ export function ProfilePage() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full p-2.5 border border-gray-300 rounded focus:border-[#2874F0] focus:outline-none"
+                className="w-full p-2.5 border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
               />
             </div>
 
@@ -107,7 +107,7 @@ export function ProfilePage() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="10-digit mobile number"
-                className="w-full p-2.5 border border-gray-300 rounded focus:border-[#2874F0] focus:outline-none"
+                className="w-full p-2.5 border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
               />
             </div>
 
@@ -119,7 +119,7 @@ export function ProfilePage() {
                     type="text"
                     value={storeName}
                     onChange={(e) => setStoreName(e.target.value)}
-                    className="w-full p-2.5 border border-gray-300 rounded focus:border-[#2874F0] focus:outline-none"
+                    className="w-full p-2.5 border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
                   />
                 </div>
                 <div>
@@ -128,7 +128,7 @@ export function ProfilePage() {
                     rows={2}
                     value={storeDesc}
                     onChange={(e) => setStoreDesc(e.target.value)}
-                    className="w-full p-2.5 border border-gray-300 rounded focus:border-[#2874F0] focus:outline-none"
+                    className="w-full p-2.5 border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
                   />
                 </div>
               </>
@@ -138,7 +138,7 @@ export function ProfilePage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="bg-[#2874F0] hover:bg-blue-600 text-white font-bold text-xs px-6 py-2.5 rounded-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                className="bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs px-6 py-2.5 rounded-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
               >
                 <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Profile'}
               </button>
@@ -150,7 +150,7 @@ export function ProfilePage() {
         <div className="md:col-span-5 space-y-4">
           <div className="bg-white rounded-xs p-5 shadow-xs border border-gray-200 space-y-3">
             <h3 className="font-bold text-xs text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
-              <MapPin className="w-4 h-4 text-[#2874F0]" /> Saved Addresses ({addresses.length})
+              <MapPin className="w-4 h-4 text-[#0A3B74]" /> Saved Addresses ({addresses.length})
             </h3>
 
             <div className="space-y-3 text-xs">

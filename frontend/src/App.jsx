@@ -24,7 +24,7 @@ import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { api } from './api/client';
 
 function MainApp() {
-  const { isAuthenticated, user, isSeller, isAdmin, loginDemo } = useAuth();
+  const { isAuthenticated, loginDemo } = useAuth();
   const [currentView, setCurrentView] = useState('home');
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
@@ -40,22 +40,22 @@ function MainApp() {
   const [referralModalOpen, setReferralModalOpen] = useState(false);
   const [visualSearchOpen, setVisualSearchOpen] = useState(false);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadWishlistIds();
-    } else {
-      setWishlistIds([]);
-    }
-  }, [isAuthenticated]);
-
-  const loadWishlistIds = async () => {
+  const loadWishlistIds = React.useCallback(async () => {
     try {
       const list = await api.getWishlist();
       setWishlistIds((list || []).map((p) => p.id));
     } catch {
       // ignore
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadWishlistIds();
+    } else {
+      setWishlistIds([]);
+    }
+  }, [isAuthenticated, loadWishlistIds]);
 
   const handleWishlistToggle = async (productId) => {
     if (!isAuthenticated) {

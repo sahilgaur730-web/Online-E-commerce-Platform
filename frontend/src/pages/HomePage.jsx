@@ -3,7 +3,12 @@ import { HeroCarousel } from '../components/HeroCarousel';
 import { StoryHighlights } from '../components/StoryHighlights';
 import { ProductCard } from '../components/ProductCard';
 import { api } from '../api/client';
-import { Clock, ChevronRight, Zap, Award, ShieldCheck } from 'lucide-react';
+import {
+  getFallbackDeals,
+  getFallbackFeatured,
+  getFallbackTopOffers,
+} from '../data/fallbackProducts';
+import { Clock, ChevronRight, Zap, ShieldCheck } from 'lucide-react';
 
 export function HomePage({
   onSelectProduct,
@@ -27,11 +32,14 @@ export function HomePage({
           api.getFeaturedProducts(),
           api.getTopOffers(),
         ]);
-        setDeals(dealsData || []);
-        setFeatured(featData || []);
-        setTopOffers(topData || []);
+        setDeals(dealsData && dealsData.length > 0 ? dealsData : getFallbackDeals());
+        setFeatured(featData && featData.length > 0 ? featData : getFallbackFeatured());
+        setTopOffers(topData && topData.length > 0 ? topData : getFallbackTopOffers());
       } catch (err) {
-        console.error('Failed to load homepage data:', err);
+        console.error('Failed to load homepage data, falling back to local catalog:', err);
+        setDeals(getFallbackDeals());
+        setFeatured(getFallbackFeatured());
+        setTopOffers(getFallbackTopOffers());
       } finally {
         setLoading(false);
       }
@@ -41,7 +49,7 @@ export function HomePage({
 
   return (
     <div className="space-y-4 pb-8">
-      {/* Instagram-style circular story highlights carousel (Agent 10) */}
+      {/* Instagram-style circular story highlights carousel */}
       <StoryHighlights
         onSelectCategory={onSelectCategory}
         onOpenStreak={onOpenStreak}
@@ -56,7 +64,7 @@ export function HomePage({
           <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-100">
             <div className="flex items-center gap-3">
               <h2 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
-                <Zap className="w-5 h-5 text-[#2874F0] fill-current" /> Deals of the Day
+                <Zap className="w-5 h-5 text-[#FF7A00] fill-current" /> Deals of the Day
               </h2>
               <div className="hidden sm:flex items-center gap-1.5 text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-xs">
                 <Clock className="w-3.5 h-3.5 text-gray-500" />
@@ -65,7 +73,7 @@ export function HomePage({
             </div>
             <button
               onClick={() => onViewCatalog({ dealOfTheDay: true })}
-              className="bg-[#2874F0] hover:bg-blue-600 text-white font-bold text-xs px-4 py-2 rounded-xs shadow-xs transition flex items-center gap-1 cursor-pointer"
+              className="bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs px-4 py-2 rounded-xs shadow-xs transition flex items-center gap-1 cursor-pointer"
             >
               VIEW ALL <ChevronRight className="w-3.5 h-3.5" />
             </button>
@@ -95,9 +103,9 @@ export function HomePage({
 
       {/* Value Guarantee Strip */}
       <div className="max-w-7xl mx-auto px-4">
-        <div className="bg-[#EBF3FE] border border-blue-200 rounded-xs p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="bg-blue-50/70 border border-blue-200 rounded-xs p-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#2874F0] text-white flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-full bg-[#0A3B74] text-white flex items-center justify-center shrink-0">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
@@ -106,7 +114,7 @@ export function HomePage({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[#2874F0]">Verified Sellers Platform</span>
+            <span className="text-xs font-semibold text-[#0A3B74]">Verified Sellers Platform</span>
           </div>
         </div>
       </div>
@@ -123,7 +131,7 @@ export function HomePage({
             </div>
             <button
               onClick={() => onViewCatalog({ topOffer: true })}
-              className="bg-[#2874F0] hover:bg-blue-600 text-white font-bold text-xs px-4 py-2 rounded-xs shadow-xs transition flex items-center gap-1 cursor-pointer"
+              className="bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs px-4 py-2 rounded-xs shadow-xs transition flex items-center gap-1 cursor-pointer"
             >
               VIEW ALL <ChevronRight className="w-3.5 h-3.5" />
             </button>
@@ -155,7 +163,7 @@ export function HomePage({
             </div>
             <button
               onClick={() => onViewCatalog()}
-              className="bg-[#2874F0] hover:bg-blue-600 text-white font-bold text-xs px-4 py-2 rounded-xs shadow-xs transition flex items-center gap-1 cursor-pointer"
+              className="bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs px-4 py-2 rounded-xs shadow-xs transition flex items-center gap-1 cursor-pointer"
             >
               VIEW ALL <ChevronRight className="w-3.5 h-3.5" />
             </button>

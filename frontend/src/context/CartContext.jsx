@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { api } from '../api/client';
 import { useAuth } from './AuthContext';
 
@@ -17,37 +17,7 @@ export function CartProvider({ children }) {
   });
   const [loading, setLoading] = useState(false);
 
-  const fetchCart = async () => {
-    if (!isAuthenticated) {
-      // Guest cart from local storage
-      const local = JSON.parse(localStorage.getItem('shopkart_guest_cart') || '[]');
-      calculateGuestCart(local);
-      return;
-    }
-    try {
-      setLoading(true);
-      // Merge any pending guest cart items into server cart
-      const guestItems = JSON.parse(localStorage.getItem('shopkart_guest_cart') || '[]');
-      if (guestItems && guestItems.length > 0) {
-        for (const item of guestItems) {
-          try {
-            await api.addToCart(item.productId, item.quantity);
-          } catch (e) {
-            // Ignore if out of stock
-          }
-        }
-        localStorage.removeItem('shopkart_guest_cart');
-      }
-      const data = await api.getCart();
-      setCart(data);
-    } catch (err) {
-      console.error('Failed to load cart:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const calculateGuestCart = (items) => {
+  const calculateGuestCart = useCallback((items) => {
     let originalTotal = 0;
     let finalTotal = 0;
     let totalItems = 0;
@@ -76,11 +46,41 @@ export function CartProvider({ children }) {
       finalTotal: finalTotal + deliveryFee,
       savings: discountTotal,
     });
-  };
+  }, []);
+
+  const fetchCart = useCallback(async () => {
+    if (!isAuthenticated) {
+      // Guest cart from local storage
+      const local = JSON.parse(localStorage.getItem('shopkart_guest_cart') || '[]');
+      calculateGuestCart(local);
+      return;
+    }
+    try {
+      setLoading(true);
+      // Merge any pending guest cart items into server cart
+      const guestItems = JSON.parse(localStorage.getItem('shopkart_guest_cart') || '[]');
+      if (guestItems && guestItems.length > 0) {
+        for (const item of guestItems) {
+          try {
+            await api.addToCart(item.productId, item.quantity);
+          } catch {
+            // Ignore if out of stock
+          }
+        }
+        localStorage.removeItem('shopkart_guest_cart');
+      }
+      const data = await api.getCart();
+      setCart(data);
+    } catch (err) {
+      console.error('Failed to load cart:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [isAuthenticated, calculateGuestCart]);
 
   useEffect(() => {
     fetchCart();
-  }, [isAuthenticated]);
+  }, [fetchCart]);
 
   const addToCart = async (product, quantity = 1) => {
     if (isAuthenticated) {

@@ -17,7 +17,7 @@ export function ReferralModal({ isOpen, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-xs">
       <div className="bg-white rounded-xs shadow-2xl max-w-md w-full overflow-hidden border border-gray-200">
-        <div className="bg-gradient-to-r from-[#2874F0] to-[#0A3B74] text-white p-5 relative">
+        <div className="bg-gradient-to-r from-[#0A3B74] to-[#002F6C] text-white p-5 relative">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-white/80 hover:text-white transition p-1 cursor-pointer"
@@ -45,12 +45,12 @@ export function ReferralModal({ isOpen, onClose }) {
               Your Referral Code
             </span>
             <div className="flex items-center justify-between bg-white border border-blue-300 rounded-xs px-3 py-2">
-              <span className="font-mono font-black text-base text-[#2874F0] tracking-widest">
+              <span className="font-mono font-black text-base text-[#0A3B74] tracking-widest">
                 {referralCode}
               </span>
               <button
                 onClick={handleCopy}
-                className="flex items-center gap-1 text-xs font-bold text-[#2874F0] hover:text-blue-800 transition cursor-pointer"
+                className="flex items-center gap-1 text-xs font-bold text-[#0A3B74] hover:text-[#002F6C] transition cursor-pointer"
               >
                 {copied ? (
                   <>
@@ -67,14 +67,14 @@ export function ReferralModal({ isOpen, onClose }) {
 
           <div className="pt-2 flex items-center justify-between text-xs text-gray-500 border-t border-gray-100">
             <span className="flex items-center gap-1 font-semibold text-gray-700">
-              <Users className="w-4 h-4 text-[#2874F0]" /> 8 Friends Invited
+              <Users className="w-4 h-4 text-[#0A3B74]" /> 8 Friends Invited
             </span>
             <span className="font-bold text-[#388E3C]">₹800 Earned Total</span>
           </div>
 
           <button
             onClick={handleCopy}
-            className="w-full py-3 bg-[#FB641B] hover:bg-[#e05816] text-white font-bold text-xs uppercase tracking-wider rounded-xs shadow-md transition cursor-pointer flex items-center justify-center gap-2"
+            className="w-full py-3 bg-[#FF7A00] hover:bg-[#E66A00] text-white font-bold text-xs uppercase tracking-wider rounded-xs shadow-md transition cursor-pointer flex items-center justify-center gap-2"
           >
             <Share2 className="w-4 h-4" />
             <span>Share Referral Link Now</span>

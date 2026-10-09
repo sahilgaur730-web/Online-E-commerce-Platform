@@ -342,6 +342,279 @@ public class DataInitializer implements CommandLineRunner {
         );
         products.add(p10);
 
+        // 11. Google Pixel 9 Pro
+        Product p11 = createProduct(
+                "Google Pixel 9 Pro 5G (Obsidian, 256 GB, 16 GB RAM)",
+                "Engineered by Google with Tensor G4 processor and Gemini AI built in. Triple pro camera system with 50MP main and 30x Super Res Zoom. 24-hour battery with Extreme Battery Saver.",
+                "Google",
+                new BigDecimal("109999"),
+                new BigDecimal("124999"),
+                12,
+                22,
+                4.7,
+                840,
+                112,
+                catMobiles,
+                seller1,
+                true, false, true,
+                "Display: 6.8-inch Super Actua OLED 1-120Hz\nProcessor: Google Tensor G4 with Titan M2 security\nCamera: 50MP Octa PD + 48MP Quad PD Ultra Wide + 48MP 5x Telephoto\nBattery: 5060 mAh with 45W Fast Charging\nOS: Android 15 with 7 years of OS updates",
+                List.of(
+                        "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=600&q=80",
+                        "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&q=80"
+                )
+        );
+        products.add(p11);
+
+        // 12. Apple AirPods Pro 2
+        Product p12 = createProduct(
+                "Apple AirPods Pro (2nd Generation) with MagSafe Case (USB-C)",
+                "Up to 2x more Active Noise Cancellation than the previous generation. Transparency mode lets you comfortably hear and interact with the world around you. Personalized Spatial Audio with dynamic head tracking.",
+                "Apple",
+                new BigDecimal("20999"),
+                new BigDecimal("24900"),
+                15,
+                40,
+                4.8,
+                4210,
+                630,
+                catElectronics,
+                seller1,
+                true, true, true,
+                "Chip: Apple H2 headphone chip\nNoise Cancellation: Adaptive Audio & Active Noise Cancellation\nCase: MagSafe Charging Case (USB-C) with speaker and lanyard loop\nBattery Life: Up to 6 hours listening time on single charge, up to 30 hours with case\nWater Resistance: IP54 dust, sweat, and water resistant",
+                List.of(
+                        "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=600&q=80",
+                        "https://images.unsplash.com/photo-1588423771073-b8903fbb85b5?w=600&q=80"
+                )
+        );
+        products.add(p12);
+
+        // 13. Bose QuietComfort Ultra
+        Product p13 = createProduct(
+                "Bose QuietComfort Ultra Wireless Noise Cancelling Headphones (Black)",
+                "World-class noise cancellation, quieter than ever before. Breakthrough spatialized audio for more immersive listening that makes music feel more real. CustomTune technology shapes audio to your ears.",
+                "Bose",
+                new BigDecimal("31999"),
+                new BigDecimal("35900"),
+                10,
+                15,
+                4.6,
+                920,
+                140,
+                catElectronics,
+                seller1,
+                false, false, true,
+                "Modes: Quiet, Aware, and Immersion modes\nMicrophones: Advanced microphone array for clear calls\nBattery: Up to 24 hours playback (up to 18 hours with Immersive Audio)\nBluetooth: Bluetooth 5.3 with multipoint connection\nMaterials: Ultra-soft protein leather ear cushions and lightweight aluminum headband",
+                List.of(
+                        "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=600&q=80"
+                )
+        );
+        products.add(p13);
+
+        // 14. Dell XPS 15
+        Product p14 = createProduct(
+                "Dell XPS 15 (9530) Intel Core i7-13700H (16GB RAM/1TB SSD/RTX 4050 6GB/OLED 3.5K Touch)",
+                "Stunning 15.6-inch 3.5K OLED InfinityEdge touch display with 100% DCI-P3 color gamut. Precision-machined CNC aluminum chassis with carbon-fiber palm rest.",
+                "Dell",
+                new BigDecimal("184990"),
+                new BigDecimal("209990"),
+                11,
+                8,
+                4.7,
+                310,
+                45,
+                catElectronics,
+                seller1,
+                true, false, false,
+                "Processor: 13th Gen Intel Core i7-13700H (14 cores, up to 5.0 GHz)\nGraphics: NVIDIA GeForce RTX 4050 6GB GDDR6\nMemory: 16GB DDR5 4800MHz Dual-Channel\nStorage: 1TB M.2 PCIe NVMe Gen 4 SSD\nDisplay: 15.6\" 3.5K (3456x2160) OLED Touch 400-nit\nWeight: 1.92 kg",
+                List.of(
+                        "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=600&q=80",
+                        "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&q=80"
+                )
+        );
+        products.add(p14);
+
+        // 15. Lenovo Legion Pro 5i
+        Product p15 = createProduct(
+                "Lenovo Legion Pro 5i Gen 9 Intel Core i9-14900HX (32GB/1TB SSD/RTX 4070 8GB/240Hz WQXGA)",
+                "Built for hardcore esports and heavy workstation tasks. Features AI-tuned Legion ColdFront 5.0 thermal cooling and Lenovo PureSight 240Hz HDR400 display.",
+                "Lenovo",
+                new BigDecimal("162990"),
+                new BigDecimal("194990"),
+                16,
+                12,
+                4.8,
+                520,
+                88,
+                catElectronics,
+                seller1,
+                false, true, true,
+                "Processor: Intel Core i9-14900HX (24 cores, up to 5.8 GHz)\nGraphics: NVIDIA GeForce RTX 4070 8GB GDDR6 (140W TGP)\nMemory: 32GB (2x 16GB) DDR5 5600MHz\nStorage: 1TB SSD M.2 2280 PCIe Gen4 TLC\nDisplay: 16\" WQXGA (2560x1600) IPS 500nits 240Hz 100% sRGB\nKeyboard: 4-Zone RGB Backlit",
+                List.of(
+                        "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&q=80",
+                        "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=600&q=80"
+                )
+        );
+        products.add(p15);
+
+        // 16. Zara Structured Blazer
+        Product p16 = createProduct(
+                "Zara Men's Tailored Structured Wool-Blend Blazer (Charcoal Navy)",
+                "Slim-fit structured blazer featuring a lapel collar, long sleeves with buttoned cuffs, front flap pockets, chest welt pocket, and back vent. Modern formal elegance.",
+                "Zara",
+                new BigDecimal("6990"),
+                new BigDecimal("9990"),
+                30,
+                35,
+                4.4,
+                680,
+                94,
+                catFashion,
+                seller2,
+                true, false, false,
+                "Outer Shell: 55% Wool, 41% Polyester, 4% Elastane\nLining: 100% Viscose\nFit: Contemporary Slim Fit\nClosure: Double button front fastening\nCare: Dry clean only",
+                List.of(
+                        "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&q=80",
+                        "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&q=80"
+                )
+        );
+        products.add(p16);
+
+        // 17. Ray-Ban Aviators
+        Product p17 = createProduct(
+                "Ray-Ban Aviator Classic Polarized Sunglasses (Gold Frame / G-15 Green Lens)",
+                "Originally designed for U.S. aviators in 1937. Legendary teardrop shaped pilot frames combined with polarized crystal green G-15 lenses providing 100% UV protection and exceptional optical clarity.",
+                "Ray-Ban",
+                new BigDecimal("10190"),
+                new BigDecimal("12590"),
+                19,
+                50,
+                4.7,
+                1840,
+                310,
+                catFashion,
+                seller2,
+                false, true, true,
+                "Frame Material: High-grade Monel Metal (Polished Gold)\nLens Material: Polarized Mineral Glass (Classic Green G-15)\nLens Width & Bridge: 58mm - 14mm\nTemple Length: 135mm\nUV Protection: 100% UV400 Protection",
+                List.of(
+                        "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600&q=80",
+                        "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600&q=80"
+                )
+        );
+        products.add(p17);
+
+        // 18. adidas Ultraboost Light
+        Product p18 = createProduct(
+                "adidas Ultraboost Light Running Shoes (Core Black / Solar Red)",
+                "Experience epic energy in the lightest Ultraboost ever made. Features 30% lighter Light BOOST material engineered with tiny capsules that burst with energy on every stride.",
+                "adidas",
+                new BigDecimal("13999"),
+                new BigDecimal("18999"),
+                26,
+                28,
+                4.6,
+                1450,
+                220,
+                catFashion,
+                seller2,
+                true, false, true,
+                "Upper: adidas PRIMEKNIT+ textile containing 50% Parley Ocean Plastic\nMidsole: Light BOOST cushioning with Linear Energy Push system\nOutsole: Continental Better Rubber for superior grip\nDrop: 10 mm (Heel: 30 mm / Forefoot: 20 mm)\nWeight: 299 g (Size UK 8.5)",
+                List.of(
+                        "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=600&q=80",
+                        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80"
+                )
+        );
+        products.add(p18);
+
+        // 19. Air Jordan Retro 4 "Bred"
+        Product p19 = createProduct(
+                "Nike Air Jordan 4 Retro Reimagined 'Bred' (Black/Fire Red/Cement Grey)",
+                "The icon returns in premium supple leather, celebrating the 35th anniversary of Michael Jordan's legendary 1989 silhouette with the classic 'Nike Air' heel branding.",
+                "Nike",
+                new BigDecimal("19995"),
+                new BigDecimal("22995"),
+                13,
+                10,
+                4.9,
+                780,
+                165,
+                catFashion,
+                seller2,
+                true, false, true,
+                "Upper: Premium full-grain tumbled leather\nMidsole: Polyurethane with visible Air-Sole unit in heel and encapsulated forefoot unit\nOutsole: Herringbone pattern rubber outsole with flex grooves\nCollar: Padded collar and molded eyelets",
+                List.of(
+                        "https://images.unsplash.com/photo-1552346154-21d32810aba3?w=600&q=80",
+                        "https://images.unsplash.com/photo-1575537302964-96cd47c06b1b?w=600&q=80"
+                )
+        );
+        products.add(p19);
+
+        // 20. Dyson V15 Detect
+        Product p20 = createProduct(
+                "Dyson V15 Detect Absolute Cordless Vacuum Cleaner (Yellow/Iron)",
+                "Dyson's most powerful, intelligent cordless vacuum with laser illumination revealing invisible dust on hard floors and piezo sensor that automatically adjusts suction power.",
+                "Dyson",
+                new BigDecimal("57900"),
+                new BigDecimal("65900"),
+                12,
+                18,
+                4.8,
+                650,
+                95,
+                catAppliances,
+                seller1,
+                true, false, true,
+                "Suction Power: 240 AW (Air Watts) Hyperdymium motor\nRun Time: Up to 60 minutes fade-free power\nFiltration: Whole-machine HEPA filtration capturing 99.99% of particles down to 0.1 microns\nDustbin Volume: 0.77 Liters\nWeight: 3.1 kg",
+                List.of(
+                        "https://images.unsplash.com/photo-1558317374-067fb5f30001?w=600&q=80"
+                )
+        );
+        products.add(p20);
+
+        // 21. Instant Pot Duo Plus
+        Product p21 = createProduct(
+                "Instant Pot Duo Plus 9-in-1 Multi-Use Electric Pressure Cooker (5.7 Liter, 1000W)",
+                "Replaces 9 kitchen appliances: pressure cooker, slow cooker, rice cooker, yogurt maker, steamer, sauté pan, sous vide, sterilizer, and food warmer. Easy-release steam switch.",
+                "Instant Pot",
+                new BigDecimal("9499"),
+                new BigDecimal("14999"),
+                36,
+                32,
+                4.7,
+                3820,
+                540,
+                catHome,
+                seller1,
+                false, true, true,
+                "Capacity: 5.7 Liters (Serves up to 6 people)\nPower: 1000 Watts\nSmart Programs: 15 one-touch presets\nInner Pot: Food-grade 304 (18/8) stainless steel with tri-ply bottom\nSafety: Over 10 proven safety features including Overheat Protection",
+                List.of(
+                        "https://images.unsplash.com/photo-1585515320310-259814833e62?w=600&q=80",
+                        "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?w=600&q=80"
+                )
+        );
+        products.add(p21);
+
+        // 22. Samsung 653L Side-by-Side Refrigerator
+        Product p22 = createProduct(
+                "Samsung 653 L Convertible 5-in-1 Digital Inverter Side-by-Side Refrigerator (Gentle Silver Matte)",
+                "AI Energy mode optimizes compressor speed and defrost cycle, saving up to 10% energy. SpaceMax technology creates thinner walls for extra interior capacity without increasing external dimensions.",
+                "Samsung",
+                new BigDecimal("82990"),
+                new BigDecimal("113000"),
+                26,
+                7,
+                4.6,
+                410,
+                62,
+                catAppliances,
+                seller1,
+                true, false, true,
+                "Total Capacity: 653 Liters (Fridge: 409L / Freezer: 244L)\nCompressor: Digital Inverter Compressor with 20 Years Warranty\nCooling: Twin Cooling Plus & Multi Air Flow\nSmart Features: Built-in Wi-Fi & SmartThings app integration\nFinish: Gentle Silver Matte Luxe",
+                List.of(
+                        "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=600&q=80"
+                )
+        );
+        products.add(p22);
+
         // 5. Initial Seed Order for Buyer with full tracking history
         Order initialOrder = new Order();
         initialOrder.setOrderNumber("OD179124802194821");
@@ -401,7 +674,7 @@ public class DataInitializer implements CommandLineRunner {
         reviewRepository.save(r2);
 
         // 7. Audit log initial entries
-        auditLogRepository.save(new AuditLog("SYSTEM_INITIALIZED", "SYSTEM", "Initial database seeded with Flipkart catalog and users", "SYSTEM", 1L));
+        auditLogRepository.save(new AuditLog("SYSTEM_INITIALIZED", "SYSTEM", "Initial database seeded with ShopKart catalog and users", "SYSTEM", 1L));
         auditLogRepository.save(new AuditLog("ORDER_DELIVERED", "SYSTEM", "Order OD179124802194821 delivered to Rahul Sharma", "ORDER", savedOrder.getId()));
     }
 

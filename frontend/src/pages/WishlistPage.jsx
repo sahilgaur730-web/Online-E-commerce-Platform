@@ -1,18 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '../api/client';
 import { useCart } from '../context/CartContext';
-import { Heart, Trash2, ShoppingCart, ChevronRight } from 'lucide-react';
+import { Heart, Trash2, ShoppingCart } from 'lucide-react';
 
 export function WishlistPage({ onSelectProduct, onContinueShopping }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
 
-  useEffect(() => {
-    loadWishlist();
-  }, []);
-
-  const loadWishlist = async () => {
+  const loadWishlist = useCallback(async () => {
     try {
       setLoading(true);
       const data = await api.getWishlist();
@@ -22,7 +18,11 @@ export function WishlistPage({ onSelectProduct, onContinueShopping }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadWishlist();
+  }, [loadWishlist]);
 
   const handleRemove = async (productId) => {
     try {
@@ -47,7 +47,7 @@ export function WishlistPage({ onSelectProduct, onContinueShopping }) {
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-16 text-center">
-        <div className="inline-block w-8 h-8 border-4 border-[#2874F0] border-t-transparent rounded-full animate-spin" />
+        <div className="inline-block w-8 h-8 border-4 border-[#0A3B74] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -70,7 +70,7 @@ export function WishlistPage({ onSelectProduct, onContinueShopping }) {
           </p>
           <button
             onClick={onContinueShopping}
-            className="bg-[#2874F0] text-white font-bold text-xs px-6 py-2.5 rounded-xs"
+            className="bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs px-6 py-2.5 rounded-xs transition cursor-pointer"
           >
             Start Shopping
           </button>
@@ -88,7 +88,7 @@ export function WishlistPage({ onSelectProduct, onContinueShopping }) {
                 </div>
                 <div>
                   <span className="text-[10px] font-bold text-gray-400 uppercase">{prod.brand}</span>
-                  <h3 className="font-semibold text-sm text-gray-900 hover:text-[#2874F0] line-clamp-1">
+                  <h3 className="font-semibold text-sm text-gray-900 hover:text-[#0A3B74] line-clamp-1">
                     {prod.title}
                   </h3>
                   <div className="flex items-baseline gap-2 mt-1">
@@ -107,13 +107,13 @@ export function WishlistPage({ onSelectProduct, onContinueShopping }) {
               <div className="flex items-center gap-3 shrink-0">
                 <button
                   onClick={() => handleMoveToCart(prod)}
-                  className="bg-[#FF9F00] hover:bg-amber-600 text-white font-bold text-xs px-4 py-2 rounded-xs flex items-center gap-1.5 cursor-pointer"
+                  className="bg-[#FF7A00] hover:bg-[#E66A00] text-white font-bold text-xs px-4 py-2 rounded-xs flex items-center gap-1.5 cursor-pointer transition shadow-xs"
                 >
                   <ShoppingCart className="w-3.5 h-3.5" /> Move to Cart
                 </button>
                 <button
                   onClick={() => handleRemove(prod.id)}
-                  className="text-gray-400 hover:text-red-600 p-2 cursor-pointer"
+                  className="text-gray-400 hover:text-red-600 p-2 cursor-pointer transition"
                   title="Remove"
                 >
                   <Trash2 className="w-4 h-4" />

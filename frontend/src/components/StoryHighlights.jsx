@@ -180,7 +180,7 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
                   setActiveStory(null);
                   if (onSelectCategory) onSelectCategory(slug === 'all' ? '' : slug);
                 }}
-                className="w-full py-2.5 bg-[#2874F0] hover:bg-blue-600 text-white font-bold text-xs uppercase tracking-wider rounded-xs shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5"
+                className="w-full py-2.5 bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs uppercase tracking-wider rounded-xs shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <span>Explore {activeStory.title}</span>
                 <ChevronRight className="w-4 h-4" />

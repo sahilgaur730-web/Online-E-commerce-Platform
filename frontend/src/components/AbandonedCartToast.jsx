@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, ArrowRight, X } from 'lucide-react';
+import { ArrowRight, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 export function AbandonedCartToast({ onResumeCheckout }) {
@@ -13,8 +13,6 @@ export function AbandonedCartToast({ onResumeCheckout }) {
         setVisible(true);
       }, 7000); // Trigger re-engagement mock after 7s of browsing
       return () => clearTimeout(timer);
-    } else {
-      setVisible(false);
     }
   }, [cart?.totalItems, dismissed]);
 
@@ -23,7 +21,7 @@ export function AbandonedCartToast({ onResumeCheckout }) {
   const firstItem = cart.items[0];
 
   return (
-    <div className="fixed bottom-5 left-5 z-40 max-w-sm w-full bg-white rounded-xs shadow-2xl border-2 border-[#2874F0] p-4 flex items-center gap-3 animate-bounce-subtle">
+    <div className="fixed bottom-5 left-5 z-40 max-w-sm w-full bg-white rounded-xs shadow-2xl border-2 border-[#0A3B74] p-4 flex items-center gap-3 animate-bounce-subtle">
       <button
         onClick={() => {
           setVisible(false);
@@ -57,7 +55,7 @@ export function AbandonedCartToast({ onResumeCheckout }) {
             setVisible(false);
             if (onResumeCheckout) onResumeCheckout();
           }}
-          className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-extrabold text-[#2874F0] hover:underline cursor-pointer"
+          className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-extrabold text-[#0A3B74] hover:text-[#002F6C] hover:underline cursor-pointer"
         >
           <span>Proceed to Checkout</span>
           <ArrowRight className="w-3 h-3" />

@@ -91,7 +91,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
     };
   }, []);
 
-  const loadAddresses = async () => {
+  const loadAddresses = React.useCallback(async () => {
     try {
       const data = await api.getAddresses();
       setAddresses(data || []);
@@ -102,13 +102,13 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
     } catch (e) {
       console.error(e);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
       loadAddresses();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, loadAddresses]);
 
   const generateCaptcha = () => {
     const code = Math.floor(1000 + Math.random() * 9000).toString();
@@ -554,7 +554,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                 <div className="pt-4 flex justify-end">
                   <button
                     onClick={handleProceedToPayment}
-                    className="bg-[#FB641B] hover:bg-[#e05816] text-white font-bold text-xs uppercase px-8 py-3 rounded-xs shadow-md transition cursor-pointer flex items-center gap-2"
+                    className="bg-[#FF7A00] hover:bg-[#E66A00] text-white font-bold text-xs uppercase px-8 py-3 rounded-xs shadow-md transition cursor-pointer flex items-center gap-2"
                   >
                     <span>Proceed to Payment</span>
                     <ArrowRight className="w-4 h-4" />
@@ -833,7 +833,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                   <button
                     onClick={handlePlaceOrder}
                     disabled={isSubmitting}
-                    className="w-full sm:w-auto bg-[#FB641B] hover:bg-[#e05816] text-white font-bold text-xs uppercase px-10 py-3.5 rounded-xs shadow-md transition cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto bg-[#FF7A00] hover:bg-[#E66A00] text-white font-bold text-xs uppercase px-10 py-3.5 rounded-xs shadow-md transition cursor-pointer flex items-center justify-center gap-2"
                   >
                     {isSubmitting ? (
                       'Processing Order...'

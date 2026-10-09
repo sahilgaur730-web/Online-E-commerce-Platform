@@ -94,7 +94,7 @@ export function Navbar({
     }
   }, [cart?.totalItems]);
 
-  const loadNotifications = async () => {
+  const loadNotifications = React.useCallback(async () => {
     try {
       const list = await api.getNotifications();
       setNotifications(list || []);
@@ -103,13 +103,13 @@ export function Navbar({
     } catch {
       // ignore
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
       loadNotifications();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, loadNotifications]);
 
   // Handle outside click for search suggestions
   useEffect(() => {
@@ -193,24 +193,24 @@ export function Navbar({
   };
 
   return (
-    <header className="bg-[#2874F0] text-white sticky top-0 z-50 shadow-md">
+    <header className="bg-gradient-to-r from-[#0A3B74] to-[#002F6C] text-white sticky top-0 z-50 shadow-md border-b border-blue-900/40">
       <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-4">
-        {/* Brand Logo */}
+        {/* Brand Logo matching official logo */}
         <div
           onClick={() => setCurrentView('home')}
           className="flex items-center gap-2.5 cursor-pointer select-none shrink-0"
         >
           <img
-            src="/favicon.png"
+            src="/logo.png"
             alt="ShopKart"
-            className="w-9 h-9 object-contain rounded bg-white p-0.5 shadow-xs"
+            className="w-10 h-10 object-contain rounded-md bg-white p-0.5 shadow-sm"
           />
           <div className="flex flex-col leading-none">
             <span className="font-black text-xl tracking-tight text-white flex items-center">
               Shop<span className="text-[#FF7A00]">Kart</span>
             </span>
-            <span className="text-[10px] text-amber-200 font-semibold tracking-wider uppercase mt-0.5">
-              Explore Plus
+            <span className="text-[10px] text-amber-300 font-semibold tracking-wider uppercase mt-0.5">
+              Shop Smart • Live Better
             </span>
           </div>
         </div>
@@ -224,7 +224,7 @@ export function Navbar({
               onFocus={() => setIsSearchFocused(true)}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search for Products, Brands and More..."
-              className="w-full bg-white text-gray-900 placeholder-gray-500 text-xs sm:text-sm px-4 py-2.5 rounded-xs focus:outline-none focus:ring-2 focus:ring-yellow-400 pr-24 shadow-xs"
+              className="w-full bg-white text-gray-900 placeholder-gray-500 text-xs sm:text-sm px-4 py-2.5 rounded-xs focus:outline-none focus:ring-2 focus:ring-[#FF7A00] pr-24 shadow-xs"
             />
             {searchTerm && (
               <button
@@ -239,14 +239,14 @@ export function Navbar({
             <button
               type="button"
               onClick={onOpenVisualSearch}
-              className="absolute right-10 text-gray-400 hover:text-[#2874F0] transition p-1 cursor-pointer"
+              className="absolute right-10 text-gray-400 hover:text-[#FF7A00] transition p-1 cursor-pointer"
               title="Visual Search / Search by Image"
             >
               <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
             <button
               type="submit"
-              className="absolute right-2.5 text-[#2874F0] hover:text-blue-800 transition p-1 cursor-pointer"
+              className="absolute right-2.5 text-[#0A3B74] hover:text-[#002F6C] transition p-1 cursor-pointer"
               title="Search"
             >
               <Search className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -355,7 +355,7 @@ export function Navbar({
           {/* SuperCoins Pill */}
           <button
             onClick={onOpenLedger}
-            className="flex items-center gap-1.5 bg-[#0A3B74] hover:bg-blue-900 text-amber-300 px-2.5 py-1 rounded-full text-xs font-black shadow-xs transition cursor-pointer border border-amber-300/30"
+            className="flex items-center gap-1.5 bg-[#002F6C] hover:bg-[#07244C] text-amber-300 px-2.5 py-1 rounded-full text-xs font-black shadow-xs transition cursor-pointer border border-amber-300/30"
             title="View SuperCoins Ledger"
           >
             <span className="w-4 h-4 rounded-full bg-amber-400 text-amber-950 flex items-center justify-center text-[10px]">
@@ -367,7 +367,7 @@ export function Navbar({
           {/* Daily Streak Trigger */}
           <button
             onClick={onOpenStreak}
-            className="flex items-center gap-1 bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 rounded-full text-xs font-bold transition shadow-xs cursor-pointer"
+            className="flex items-center gap-1 bg-[#FF7A00] hover:bg-[#E66A00] text-white px-2.5 py-1 rounded-full text-xs font-bold transition shadow-xs cursor-pointer"
             title="7-Day Daily Streak Check-in"
           >
             <Flame className="w-3.5 h-3.5 fill-current" />
@@ -392,7 +392,7 @@ export function Navbar({
             {isAuthenticated ? (
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-xs hover:bg-blue-600 transition text-white font-medium cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-xs hover:bg-[#002F6C] transition text-white font-medium cursor-pointer"
               >
                 <User className="w-4 h-4" />
                 <span className="max-w-[100px] truncate hidden sm:inline">{user?.name}</span>
@@ -401,7 +401,7 @@ export function Navbar({
             ) : (
               <button
                 onClick={() => openAuthModal('login')}
-                className="bg-white text-[#2874F0] font-bold px-5 sm:px-7 py-1.5 rounded-xs hover:bg-blue-50 transition shadow-xs text-xs sm:text-sm cursor-pointer"
+                className="bg-white text-[#0A3B74] font-bold px-5 sm:px-7 py-1.5 rounded-xs hover:bg-amber-50 transition shadow-xs text-xs sm:text-sm cursor-pointer"
               >
                 Login
               </button>
@@ -416,7 +416,7 @@ export function Navbar({
                 <div className="px-4 py-2 border-b border-gray-100 bg-gray-50">
                   <p className="text-xs text-gray-500">Signed in as</p>
                   <p className="font-semibold text-sm truncate text-gray-900">{user?.email}</p>
-                  <span className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-100 text-[#2874F0]">
+                  <span className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-100 text-[#0A3B74]">
                     {user?.role}
                   </span>
                 </div>
@@ -428,7 +428,7 @@ export function Navbar({
                   }}
                   className="w-full text-left px-4 py-2.5 text-xs hover:bg-gray-50 flex items-center gap-2.5 text-gray-700 cursor-pointer"
                 >
-                  <User className="w-4 h-4 text-[#2874F0]" /> My Profile
+                  <User className="w-4 h-4 text-[#0A3B74]" /> My Profile
                 </button>
 
                 <button
@@ -438,7 +438,7 @@ export function Navbar({
                   }}
                   className="w-full text-left px-4 py-2.5 text-xs hover:bg-gray-50 flex items-center gap-2.5 text-gray-700 cursor-pointer"
                 >
-                  <Package className="w-4 h-4 text-[#2874F0]" /> Orders
+                  <Package className="w-4 h-4 text-[#0A3B74]" /> Orders
                 </button>
 
                 <button
@@ -448,7 +448,7 @@ export function Navbar({
                   }}
                   className="w-full text-left px-4 py-2.5 text-xs hover:bg-gray-50 flex items-center gap-2.5 text-gray-700 cursor-pointer"
                 >
-                  <Heart className="w-4 h-4 text-[#2874F0]" /> Wishlist
+                  <Heart className="w-4 h-4 text-[#0A3B74]" /> Wishlist
                 </button>
 
                 <button
@@ -471,7 +471,7 @@ export function Navbar({
                       onClick={() => handleDemoSwitch('BUYER')}
                       className={`flex-1 text-[10px] py-1 rounded font-semibold ${
                         user?.role === 'BUYER'
-                          ? 'bg-[#2874F0] text-white border-blue-600'
+                          ? 'bg-[#0A3B74] text-white border-blue-800'
                           : 'bg-white text-gray-700 border border-gray-200'
                       }`}
                     >
@@ -481,7 +481,7 @@ export function Navbar({
                       onClick={() => handleDemoSwitch('SELLER')}
                       className={`flex-1 text-[10px] py-1 rounded font-semibold ${
                         user?.role === 'SELLER'
-                          ? 'bg-[#2874F0] text-white border-blue-600'
+                          ? 'bg-[#0A3B74] text-white border-blue-800'
                           : 'bg-white text-gray-700 border border-gray-200'
                       }`}
                     >
@@ -491,7 +491,7 @@ export function Navbar({
                       onClick={() => handleDemoSwitch('ADMIN')}
                       className={`flex-1 text-[10px] py-1 rounded font-semibold ${
                         user?.role === 'ADMIN'
-                          ? 'bg-[#2874F0] text-white border-blue-600'
+                          ? 'bg-[#0A3B74] text-white border-blue-800'
                           : 'bg-white text-gray-700 border border-gray-200'
                       }`}
                     >
@@ -519,7 +519,7 @@ export function Navbar({
           {isSeller || isAdmin ? (
             <button
               onClick={() => setCurrentView('seller')}
-              className="flex items-center gap-1.5 hover:text-yellow-300 transition text-xs font-semibold cursor-pointer"
+              className="flex items-center gap-1.5 hover:text-amber-300 transition text-xs font-semibold cursor-pointer"
               title="Seller Portal"
             >
               <Store className="w-4 h-4" />
@@ -531,7 +531,7 @@ export function Navbar({
                 if (!isAuthenticated) openAuthModal('seller_reg');
                 else handleDemoSwitch('SELLER');
               }}
-              className="flex items-center gap-1.5 hover:text-yellow-300 transition text-xs font-semibold cursor-pointer"
+              className="flex items-center gap-1.5 hover:text-amber-300 transition text-xs font-semibold cursor-pointer"
             >
               <Store className="w-4 h-4" />
               <span className="hidden sm:inline">Become Seller</span>
@@ -542,7 +542,7 @@ export function Navbar({
           {isAdmin && (
             <button
               onClick={() => setCurrentView('admin')}
-              className="flex items-center gap-1.5 bg-yellow-400 text-gray-900 font-bold px-2.5 py-1 rounded-xs hover:bg-yellow-300 transition text-xs cursor-pointer shadow-xs"
+              className="flex items-center gap-1.5 bg-[#FF7A00] text-white font-bold px-2.5 py-1 rounded-xs hover:bg-[#E66A00] transition text-xs cursor-pointer shadow-xs"
             >
               <ShieldCheck className="w-4 h-4" />
               <span>Admin</span>
@@ -557,12 +557,12 @@ export function Navbar({
                   setShowNotifications(!showNotifications);
                   if (!showNotifications) loadNotifications();
                 }}
-                className="relative p-1 hover:text-yellow-300 transition flex items-center cursor-pointer"
+                className="relative p-1 hover:text-amber-300 transition flex items-center cursor-pointer"
                 title="Notifications"
               >
                 <Bell className="w-5 h-5" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-[#FB641B] text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-[#FF7A00] text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                     {unreadCount}
                   </span>
                 )}
@@ -576,7 +576,7 @@ export function Navbar({
                     {unreadCount > 0 && (
                       <button
                         onClick={markAllRead}
-                        className="text-xs text-[#2874F0] hover:underline font-semibold cursor-pointer"
+                        className="text-xs text-[#0A3B74] hover:underline font-semibold cursor-pointer"
                       >
                         Mark all as read
                       </button>
@@ -608,13 +608,13 @@ export function Navbar({
           <button
             id="navbar-cart-btn"
             onClick={() => setCurrentView('cart')}
-            className="flex items-center gap-1.5 hover:text-yellow-300 transition relative cursor-pointer"
+            className="flex items-center gap-1.5 hover:text-amber-300 transition relative cursor-pointer"
           >
             <div className="relative">
               <ShoppingCart className="w-5 h-5" />
               {cart.totalItems > 0 && (
                 <span
-                  className={`absolute -top-2 -right-2 bg-[#FB641B] text-white text-[10px] font-extrabold rounded-full w-4 h-4 flex items-center justify-center shadow-xs ${
+                  className={`absolute -top-2 -right-2 bg-[#FF7A00] text-white text-[10px] font-extrabold rounded-full w-4 h-4 flex items-center justify-center shadow-xs ${
                     badgeBouncing ? 'animate-cart-bounce' : ''
                   }`}
                 >

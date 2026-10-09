@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ProductCard } from '../components/ProductCard';
 import { api } from '../api/client';
+import { FALLBACK_CATEGORIES, filterFallbackProducts } from '../data/fallbackProducts';
 import { Filter, Star, X, RotateCcw } from 'lucide-react';
 
 export function CatalogPage({ initialCategory, initialKeyword, onSelectProduct, onWishlistToggle, wishlistIds = [] }) {
@@ -22,26 +23,28 @@ export function CatalogPage({ initialCategory, initialKeyword, onSelectProduct, 
   // Available brands list
   const [availableBrands, setAvailableBrands] = useState([]);
 
-  const loadCategories = async () => {
+  const loadCategories = useCallback(async () => {
     try {
       const data = await api.getCategories();
-      setCategories(data || []);
+      setCategories(data && data.length > 0 ? data : FALLBACK_CATEGORIES);
       const brands = await api.getBrands();
-      setAvailableBrands(brands || ['Apple', 'Samsung', 'Sony', 'OnePlus', 'Nike', "Levi's", 'Philips', 'LG', 'ASUS']);
+      setAvailableBrands(brands || ['Apple', 'Samsung', 'Sony', 'OnePlus', 'Nike', "Levi's", 'Philips', 'LG', 'ASUS', 'Google', 'Bose', 'Dell', 'Lenovo', 'Zara', 'Ray-Ban', 'adidas', 'Jordan', 'Dyson', 'Instant Pot']);
     } catch (e) {
-      console.error(e);
+      console.error('Failed to load categories, using fallback:', e);
+      setCategories(FALLBACK_CATEGORIES);
+      setAvailableBrands(['Apple', 'Samsung', 'Sony', 'OnePlus', 'Nike', "Levi's", 'Philips', 'LG', 'ASUS', 'Google', 'Bose', 'Dell', 'Lenovo', 'Zara', 'Ray-Ban', 'adidas', 'Jordan', 'Dyson', 'Instant Pot']);
     }
-  };
+  }, []);
 
-  const fetchFilteredProducts = async () => {
+  const fetchFilteredProducts = useCallback(async () => {
+    let catId = undefined;
+    if (selectedCategory) {
+      const matched = categories.find((c) => c.slug === selectedCategory);
+      if (matched) catId = matched.id;
+    }
+
     try {
       setLoading(true);
-      let catId = undefined;
-      if (selectedCategory) {
-        const matched = categories.find((c) => c.slug === selectedCategory);
-        if (matched) catId = matched.id;
-      }
-
       const res = await api.getProducts({
         keyword: keyword || undefined,
         categoryId: catId,
@@ -54,18 +57,50 @@ export function CatalogPage({ initialCategory, initialKeyword, onSelectProduct, 
         size: 30,
       });
 
-      setProducts(res?.content || []);
-      setTotalCount(res?.totalElements || 0);
+      if (res && res.content && res.content.length > 0) {
+        setProducts(res.content);
+        setTotalCount(res.totalElements);
+      } else {
+        // Fallback filter
+        const fallbackRes = filterFallbackProducts({
+          keyword,
+          categoryId: catId,
+          categorySlug: selectedCategory,
+          brand: selectedBrand,
+          minPrice,
+          maxPrice,
+          minRating,
+          sortBy,
+          sortDir,
+          size: 30,
+        });
+        setProducts(fallbackRes.content);
+        setTotalCount(fallbackRes.totalElements);
+      }
     } catch (err) {
-      console.error('Failed to load catalog products:', err);
+      console.error('Failed to load catalog products, falling back to local dataset:', err);
+      const fallbackRes = filterFallbackProducts({
+        keyword,
+        categoryId: catId,
+        categorySlug: selectedCategory,
+        brand: selectedBrand,
+        minPrice,
+        maxPrice,
+        minRating,
+        sortBy,
+        sortDir,
+        size: 30,
+      });
+      setProducts(fallbackRes.content);
+      setTotalCount(fallbackRes.totalElements);
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedCategory, categories, keyword, selectedBrand, minPrice, maxPrice, minRating, sortBy, sortDir]);
 
   useEffect(() => {
     loadCategories();
-  }, []);
+  }, [loadCategories]);
 
   useEffect(() => {
     setSelectedCategory(initialCategory || '');
@@ -74,7 +109,7 @@ export function CatalogPage({ initialCategory, initialKeyword, onSelectProduct, 
 
   useEffect(() => {
     fetchFilteredProducts();
-  }, [selectedCategory, keyword, selectedBrand, minPrice, maxPrice, minRating, sortBy, sortDir, categories]);
+  }, [fetchFilteredProducts]);
 
   const handleClearFilters = () => {
     setSelectedCategory('');
@@ -105,7 +140,7 @@ export function CatalogPage({ initialCategory, initialKeyword, onSelectProduct, 
             {(selectedCategory || selectedBrand || minPrice || maxPrice || minRating || keyword) && (
               <button
                 onClick={handleClearFilters}
-                className="text-xs text-[#2874F0] font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-xs text-[#0A3B74] font-semibold hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <RotateCcw className="w-3 h-3" /> CLEAR ALL
               </button>
@@ -142,8 +177,8 @@ export function CatalogPage({ initialCategory, initialKeyword, onSelectProduct, 
             <div className="space-y-1.5 max-h-40 overflow-y-auto">
               <button
                 onClick={() => setSelectedCategory('')}
-                className={`w-full text-left text-xs py-1 px-1.5 rounded transition ${
-                  selectedCategory === '' ? 'bg-blue-50 font-bold text-[#2874F0]' : 'text-gray-700 hover:bg-gray-50'
+                className={`w-full text-left text-xs py-1 px-1.5 rounded transition cursor-pointer ${
+                  selectedCategory === '' ? 'bg-blue-50 font-bold text-[#0A3B74]' : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 All Categories
@@ -152,8 +187,8 @@ export function CatalogPage({ initialCategory, initialKeyword, onSelectProduct, 
                 <button
                   key={c.id}
                   onClick={() => setSelectedCategory(c.slug)}
-                  className={`w-full text-left text-xs py-1 px-1.5 rounded transition ${
-                    selectedCategory === c.slug ? 'bg-blue-50 font-bold text-[#2874F0]' : 'text-gray-700 hover:bg-gray-50'
+                  className={`w-full text-left text-xs py-1 px-1.5 rounded transition cursor-pointer ${
+                    selectedCategory === c.slug ? 'bg-blue-50 font-bold text-[#0A3B74]' : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
                   {c.name}
@@ -172,7 +207,7 @@ export function CatalogPage({ initialCategory, initialKeyword, onSelectProduct, 
                   placeholder="Min"
                   value={minPrice}
                   onChange={(e) => setMinPrice(e.target.value)}
-                  className="w-full text-xs p-1.5 border border-gray-300 rounded focus:border-[#2874F0] focus:outline-none"
+                  className="w-full text-xs p-1.5 border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
                 />
               </div>
               <div>
@@ -181,26 +216,26 @@ export function CatalogPage({ initialCategory, initialKeyword, onSelectProduct, 
                   placeholder="Max"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
-                  className="w-full text-xs p-1.5 border border-gray-300 rounded focus:border-[#2874F0] focus:outline-none"
+                  className="w-full text-xs p-1.5 border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
                 />
               </div>
             </div>
             <div className="flex gap-1.5 mt-2">
               <button
                 onClick={() => { setMinPrice('0'); setMaxPrice('10000'); }}
-                className="text-[10px] bg-gray-100 hover:bg-gray-200 px-2 py-0.5 rounded text-gray-700"
+                className="text-[10px] bg-gray-100 hover:bg-gray-200 px-2 py-0.5 rounded text-gray-700 cursor-pointer"
               >
                 Under ₹10k
               </button>
               <button
                 onClick={() => { setMinPrice('10000'); setMaxPrice('50000'); }}
-                className="text-[10px] bg-gray-100 hover:bg-gray-200 px-2 py-0.5 rounded text-gray-700"
+                className="text-[10px] bg-gray-100 hover:bg-gray-200 px-2 py-0.5 rounded text-gray-700 cursor-pointer"
               >
                 ₹10k - ₹50k
               </button>
               <button
                 onClick={() => { setMinPrice('50000'); setMaxPrice(''); }}
-                className="text-[10px] bg-gray-100 hover:bg-gray-200 px-2 py-0.5 rounded text-gray-700"
+                className="text-[10px] bg-gray-100 hover:bg-gray-200 px-2 py-0.5 rounded text-gray-700 cursor-pointer"
               >
                 ₹50k+
               </button>
@@ -218,7 +253,7 @@ export function CatalogPage({ initialCategory, initialKeyword, onSelectProduct, 
                     name="ratingFilter"
                     checked={minRating === String(r)}
                     onChange={() => setMinRating(String(r))}
-                    className="text-[#2874F0] focus:ring-0"
+                    className="text-[#0A3B74] focus:ring-0"
                   />
                   <span className="flex items-center gap-1 font-medium">
                     <span>{r}</span>
@@ -240,7 +275,7 @@ export function CatalogPage({ initialCategory, initialKeyword, onSelectProduct, 
                     type="checkbox"
                     checked={selectedBrand.toLowerCase() === brand.toLowerCase()}
                     onChange={(e) => setSelectedBrand(e.target.checked ? brand : '')}
-                    className="rounded text-[#2874F0] focus:ring-0"
+                    className="rounded text-[#0A3B74] focus:ring-0"
                   />
                   <span>{brand}</span>
                 </label>
@@ -276,7 +311,7 @@ export function CatalogPage({ initialCategory, initialKeyword, onSelectProduct, 
                     }}
                     className={`text-xs px-3 py-1.5 font-medium transition rounded-xs whitespace-nowrap cursor-pointer ${
                       isActive
-                        ? 'text-[#2874F0] font-bold border-b-2 border-[#2874F0]'
+                        ? 'text-[#0A3B74] font-bold border-b-2 border-[#0A3B74]'
                         : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
@@ -302,7 +337,7 @@ export function CatalogPage({ initialCategory, initialKeyword, onSelectProduct, 
               </p>
               <button
                 onClick={handleClearFilters}
-                className="bg-[#2874F0] hover:bg-blue-600 text-white text-xs font-bold px-5 py-2 rounded-xs transition"
+                className="bg-[#0A3B74] hover:bg-[#002F6C] text-white text-xs font-bold px-5 py-2 rounded-xs transition cursor-pointer"
               >
                 Reset All Filters
               </button>

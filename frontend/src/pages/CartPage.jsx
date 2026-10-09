@@ -4,14 +4,14 @@ import { useAuth } from '../context/AuthContext';
 import { Trash2, Plus, Minus, ShieldCheck, ShoppingBag, ArrowRight } from 'lucide-react';
 
 export function CartPage({ onProceedToCheckout, onViewProduct, onContinueShopping }) {
-  const { cart, updateQuantity, removeFromCart, clearCart } = useCart();
+  const { cart, updateQuantity, removeFromCart } = useCart();
   const { user } = useAuth();
 
   if (cart.items.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16">
         <div className="bg-white rounded-xs p-12 text-center max-w-xl mx-auto shadow-xs border border-gray-200">
-          <div className="w-20 h-20 bg-blue-50 text-[#2874F0] rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-20 h-20 bg-blue-50 text-[#0A3B74] rounded-full flex items-center justify-center mx-auto mb-4">
             <ShoppingBag className="w-10 h-10" />
           </div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">Your cart is empty!</h2>
@@ -20,7 +20,7 @@ export function CartPage({ onProceedToCheckout, onViewProduct, onContinueShoppin
           </p>
           <button
             onClick={onContinueShopping}
-            className="bg-[#2874F0] hover:bg-blue-600 text-white font-bold text-xs px-8 py-3 rounded-xs shadow-xs transition"
+            className="bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs px-8 py-3 rounded-xs shadow-xs transition cursor-pointer"
           >
             Shop Now
           </button>
@@ -42,7 +42,7 @@ export function CartPage({ onProceedToCheckout, onViewProduct, onContinueShoppin
                 {user ? `${user.name}, 560103` : 'Bengaluru - 560103'}
               </span>
             </div>
-            <span className="text-[#2874F0] font-bold">Standard Delivery</span>
+            <span className="text-[#0A3B74] font-bold">Standard Delivery</span>
           </div>
 
           {/* Cart Items Container */}
@@ -65,7 +65,7 @@ export function CartPage({ onProceedToCheckout, onViewProduct, onContinueShoppin
                 <div className="flex-1 space-y-1.5">
                   <h3
                     onClick={() => onViewProduct(item.productId)}
-                    className="text-sm font-semibold text-gray-900 hover:text-[#2874F0] cursor-pointer line-clamp-2"
+                    className="text-sm font-semibold text-gray-900 hover:text-[#0A3B74] cursor-pointer line-clamp-2"
                   >
                     {item.title}
                   </h3>
@@ -95,7 +95,7 @@ export function CartPage({ onProceedToCheckout, onViewProduct, onContinueShoppin
                     <div className="flex items-center border border-gray-300 rounded-xs">
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="w-7 h-7 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition disabled:opacity-50"
+                        className="w-7 h-7 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition disabled:opacity-50 cursor-pointer"
                         title="Decrease Quantity"
                       >
                         <Minus className="w-3.5 h-3.5" />
@@ -105,7 +105,7 @@ export function CartPage({ onProceedToCheckout, onViewProduct, onContinueShoppin
                       </span>
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="w-7 h-7 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition"
+                        className="w-7 h-7 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition cursor-pointer"
                         title="Increase Quantity"
                       >
                         <Plus className="w-3.5 h-3.5" />
@@ -114,7 +114,7 @@ export function CartPage({ onProceedToCheckout, onViewProduct, onContinueShoppin
 
                     <button
                       onClick={() => removeFromCart(item.id)}
-                      className="text-xs font-bold text-gray-700 hover:text-red-600 uppercase flex items-center gap-1 transition"
+                      className="text-xs font-bold text-gray-700 hover:text-red-600 uppercase flex items-center gap-1 transition cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" /> Remove
                     </button>
@@ -133,7 +133,7 @@ export function CartPage({ onProceedToCheckout, onViewProduct, onContinueShoppin
             <div className="p-4 bg-white flex justify-end">
               <button
                 onClick={onProceedToCheckout}
-                className="bg-[#FB641B] hover:bg-[#e05816] text-white font-bold text-sm px-8 py-3 rounded-xs shadow-md uppercase tracking-wide flex items-center gap-2 cursor-pointer"
+                className="bg-[#FF7A00] hover:bg-[#E66A00] text-white font-bold text-sm px-8 py-3 rounded-xs shadow-md uppercase tracking-wide flex items-center gap-2 cursor-pointer transition"
               >
                 Place Order <ArrowRight className="w-4 h-4" />
               </button>

@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { Star, Heart, ShoppingCart, Check, ShieldCheck } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
 
 export function ProductCard({ product, onSelectProduct, onWishlistToggle, isWishlisted }) {
   const { addToCart } = useCart();
-  const { isAuthenticated } = useAuth();
   const [added, setAdded] = useState(false);
   const [loadingAdd, setLoadingAdd] = useState(false);
 
@@ -33,7 +31,7 @@ export function ProductCard({ product, onSelectProduct, onWishlistToggle, isWish
   return (
     <div
       onClick={() => onSelectProduct(product.id)}
-      className="bg-white rounded-xl p-3.5 border border-slate-200/80 hover:border-blue-400/80 hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between group relative overflow-hidden tap-highlight-none hover:-translate-y-0.5"
+      className="bg-white rounded-xl p-3.5 border border-slate-200/80 hover:border-[#0A3B74]/80 hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between group relative overflow-hidden tap-highlight-none hover:-translate-y-0.5"
     >
       {/* Wishlist Heart Button */}
       <button
@@ -65,7 +63,7 @@ export function ProductCard({ product, onSelectProduct, onWishlistToggle, isWish
         </span>
 
         {/* Product Title */}
-        <h3 className="text-sm font-semibold text-slate-900 group-hover:text-[#2874F0] line-clamp-2 leading-snug mt-0.5 transition-colors">
+        <h3 className="text-sm font-semibold text-slate-900 group-hover:text-[#0A3B74] line-clamp-2 leading-snug mt-0.5 transition-colors">
           {product.title}
         </h3>
 
@@ -79,7 +77,7 @@ export function ProductCard({ product, onSelectProduct, onWishlistToggle, isWish
             ({product.ratingCount || 120})
           </span>
           <span className="text-[10px] bg-blue-50 text-[#0A3B74] font-bold px-1.5 py-0.5 rounded-full border border-blue-200/60 ml-auto flex items-center gap-0.5">
-            <ShieldCheck className="w-2.5 h-2.5 text-[#2874F0]" /> Verified
+            <ShieldCheck className="w-2.5 h-2.5 text-[#0A3B74]" /> Verified
           </span>
         </div>
 
@@ -132,7 +130,7 @@ export function ProductCard({ product, onSelectProduct, onWishlistToggle, isWish
               ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
               : added
               ? 'bg-[#388E3C] text-white'
-              : 'bg-[#FF7A00] hover:bg-[#FB641B] text-white'
+              : 'bg-[#FF7A00] hover:bg-[#E66A00] text-white'
           }`}
         >
           {added ? (

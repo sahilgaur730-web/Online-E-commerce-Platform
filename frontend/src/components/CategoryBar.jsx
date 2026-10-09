@@ -7,7 +7,6 @@ import {
   Tv,
   Dumbbell,
   Tag,
-  ChevronRight,
 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -33,15 +32,15 @@ export function CategoryBar({ selectedCategory, onSelectCategory }) {
                 key={cat.id}
                 onClick={() => onSelectCategory(cat.slug)}
                 className={`flex flex-col items-center justify-center min-w-[90px] px-2 py-1 rounded transition group cursor-pointer text-center ${
-                  isSelected ? 'text-[#2874F0]' : 'text-gray-700 hover:text-[#2874F0]'
+                  isSelected ? 'text-[#0A3B74]' : 'text-gray-700 hover:text-[#0A3B74]'
                 }`}
               >
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center transition mb-1 ${
                     isSelected
-                      ? 'bg-blue-50 text-[#2874F0]'
-                      : 'text-gray-600 group-hover:bg-blue-50 group-hover:text-[#2874F0]'
-                  } ${cat.special ? 'text-[#FB641B]' : ''}`}
+                      ? 'bg-blue-50 text-[#0A3B74]'
+                      : 'text-gray-600 group-hover:bg-blue-50 group-hover:text-[#0A3B74]'
+                  } ${cat.special ? 'text-[#FF7A00]' : ''}`}
                 >
                   <Icon className="w-5 h-5" />
                 </div>

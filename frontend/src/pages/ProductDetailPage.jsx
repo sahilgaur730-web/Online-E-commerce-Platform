@@ -20,6 +20,7 @@ import {
   X,
 } from 'lucide-react';
 import { api } from '../api/client';
+import { getFallbackProductById } from '../data/fallbackProducts';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { FlyToCartProjectile } from '../components/FlyToCartProjectile';
@@ -103,7 +104,11 @@ export function ProductDetailPage({
         const revs = await api.getReviews(productId);
         setReviews(revs || []);
       } catch (err) {
-        console.error('Failed to load product:', err);
+        console.error('Failed to load product, falling back to local dataset:', err);
+        const fallback = getFallbackProductById(productId);
+        setProduct(fallback);
+        setActiveImage(fallback.primaryImage || (fallback.imageUrls && fallback.imageUrls[0]) || '');
+        setReviews([]);
       } finally {
         setLoading(false);
       }
@@ -395,7 +400,7 @@ export function ProductDetailPage({
                     setAlertMode('BACK_IN_STOCK');
                     setShowAlertModal(true);
                   }}
-                  className="w-full py-2.5 px-4 bg-[#2874F0] hover:bg-blue-600 text-white font-bold text-xs uppercase rounded-xs transition shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-2.5 px-4 bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs uppercase rounded-xs transition shadow-xs flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <BellRing className="w-3.5 h-3.5" />
                   <span>Notify Me When Back in Stock</span>
@@ -424,7 +429,7 @@ export function ProductDetailPage({
 
                 <button
                   onClick={handleBuyNow}
-                  className="py-3.5 px-4 rounded-xs font-bold text-xs uppercase flex items-center justify-center gap-2 shadow-sm transition cursor-pointer active:scale-98 bg-[#FB641B] hover:bg-[#e05816] text-white"
+                  className="py-3.5 px-4 rounded-xs font-bold text-xs uppercase flex items-center justify-center gap-2 shadow-sm transition cursor-pointer active:scale-98 bg-[#FF7A00] hover:bg-[#E66A00] text-white"
                 >
                   <Zap className="w-4 h-4 fill-current" /> Buy Now
                 </button>
@@ -824,7 +829,7 @@ export function ProductDetailPage({
           </button>
           <button
             onClick={handleBuyNow}
-            className="bg-[#FB641B] text-white font-bold text-xs px-5 py-2.5 rounded-xs uppercase shadow-xs"
+            className="bg-[#FF7A00] hover:bg-[#E66A00] text-white font-bold text-xs px-5 py-2.5 rounded-xs uppercase shadow-xs cursor-pointer transition"
           >
             Buy Now
           </button>
@@ -1056,7 +1061,7 @@ export function ProductDetailPage({
               </button>
               <button
                 onClick={handleBuyNow}
-                className="py-2 px-4 bg-[#FB641B] hover:bg-[#e05816] text-white font-bold text-xs uppercase rounded-xs shadow-xs transition flex items-center gap-1 cursor-pointer"
+                className="py-2 px-4 bg-[#FF7A00] hover:bg-[#E66A00] text-white font-bold text-xs uppercase rounded-xs shadow-xs transition flex items-center gap-1 cursor-pointer"
               >
                 <Zap className="w-3.5 h-3.5 fill-current" />
                 <span>Buy Now</span>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Award, CheckCircle, Flame, Gift, Sparkles, X } from 'lucide-react';
+import { Award, CheckCircle, Flame, Gift, X } from 'lucide-react';
 
 function getEvaluatedStreak() {
   const saved = localStorage.getItem('shopkart_streak_data');
@@ -100,7 +100,7 @@ export function DailyStreakModal({ isOpen, onClose, onCoinsClaimed }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-xs">
       <div className="bg-white rounded-xs shadow-2xl max-w-md w-full overflow-hidden border border-gray-200">
         {/* Header Strip */}
-        <div className="bg-gradient-to-r from-[#0A3B74] to-[#2874F0] p-5 text-white relative">
+        <div className="bg-gradient-to-r from-[#0A3B74] to-[#002F6C] p-5 text-white relative">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-white/80 hover:text-white transition p-1 cursor-pointer"
@@ -131,7 +131,6 @@ export function DailyStreakModal({ isOpen, onClose, onCoinsClaimed }) {
             {rewards.map((r) => {
               const isPast = r.day < streakData.currentStreak;
               const isCurrent = r.day === streakData.currentStreak;
-              const isFuture = r.day > streakData.currentStreak;
 
               return (
                 <div
@@ -171,7 +170,7 @@ export function DailyStreakModal({ isOpen, onClose, onCoinsClaimed }) {
               <button
                 onClick={handleClaim}
                 disabled={isClaiming}
-                className="w-full py-3 bg-[#FF7A00] hover:bg-[#e06b00] disabled:bg-gray-300 text-white font-bold text-xs uppercase tracking-wider rounded-xs shadow-md transition cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-3 bg-[#FF7A00] hover:bg-[#E66A00] disabled:bg-gray-300 text-white font-bold text-xs uppercase tracking-wider rounded-xs shadow-md transition cursor-pointer flex items-center justify-center gap-2"
               >
                 <Gift className="w-4 h-4" />
                 <span>{isClaiming ? 'Claiming...' : `Claim Day ${streakData.currentStreak} (${rewards[streakData.currentStreak - 1]?.coins} SuperCoins)`}</span>

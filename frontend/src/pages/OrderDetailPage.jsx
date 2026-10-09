@@ -16,7 +16,7 @@ export function OrderDetailPage({ orderId, onBack, onViewProduct }) {
   const [cancelReason, setCancelReason] = useState('Found better price elsewhere');
   const [cancelling, setCancelling] = useState(false);
 
-  const loadOrder = async () => {
+  const loadOrder = React.useCallback(async () => {
     try {
       setLoading(true);
       const data = await api.getOrderById(orderId);
@@ -26,13 +26,13 @@ export function OrderDetailPage({ orderId, onBack, onViewProduct }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orderId]);
 
   useEffect(() => {
     if (orderId) {
       loadOrder();
     }
-  }, [orderId]);
+  }, [orderId, loadOrder]);
 
   const handleCancelOrder = async () => {
     try {
@@ -51,7 +51,7 @@ export function OrderDetailPage({ orderId, onBack, onViewProduct }) {
   if (loading || !order) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-16 text-center">
-        <div className="inline-block w-8 h-8 border-4 border-[#2874F0] border-t-transparent rounded-full animate-spin" />
+        <div className="inline-block w-8 h-8 border-4 border-[#0A3B74] border-t-transparent rounded-full animate-spin" />
         <p className="text-xs text-gray-500 mt-2">Loading order details...</p>
       </div>
     );
@@ -83,7 +83,7 @@ export function OrderDetailPage({ orderId, onBack, onViewProduct }) {
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-4">
       <button
         onClick={onBack}
-        className="flex items-center gap-1.5 text-xs font-bold text-[#2874F0] hover:underline cursor-pointer"
+        className="flex items-center gap-1.5 text-xs font-bold text-[#0A3B74] hover:underline cursor-pointer"
       >
         <ArrowLeft className="w-3.5 h-3.5" /> Back to My Orders
       </button>
@@ -181,7 +181,7 @@ export function OrderDetailPage({ orderId, onBack, onViewProduct }) {
             <div className="space-y-2">
               {order.trackingEvents.map((t) => (
                 <div key={t.id} className="text-xs flex items-start gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#2874F0] mt-1.5 shrink-0" />
+                  <span className="w-2 h-2 rounded-full bg-[#0A3B74] mt-1.5 shrink-0" />
                   <div>
                     <span className="font-semibold text-gray-900">{t.title}</span>
                     <span className="text-gray-400 text-[10px] ml-2">
@@ -289,7 +289,7 @@ export function OrderDetailPage({ orderId, onBack, onViewProduct }) {
                   <div>
                     <h4
                       onClick={() => item.productId && onViewProduct && onViewProduct(item.productId)}
-                      className="font-semibold text-gray-900 hover:text-[#2874F0] cursor-pointer line-clamp-1"
+                      className="font-semibold text-gray-900 hover:text-[#0A3B74] cursor-pointer line-clamp-1"
                     >
                       {item.productName}
                     </h4>
@@ -310,7 +310,7 @@ export function OrderDetailPage({ orderId, onBack, onViewProduct }) {
           {/* Shipping Address */}
           <div className="bg-white rounded-xs p-4 shadow-xs border border-gray-200 space-y-2 text-xs">
             <h4 className="font-bold text-gray-500 uppercase tracking-wider pb-2 border-b border-gray-100 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-[#2874F0]" /> Delivery Address
+              <MapPin className="w-3.5 h-3.5 text-[#0A3B74]" /> Delivery Address
             </h4>
             <p className="text-gray-800 leading-relaxed font-medium">
               {order.shippingAddressSnapshot}

@@ -8,7 +8,7 @@ on:
 
 jobs:
   backend-tests:
-    name: Backend Test Suite (18 Integration Tests)
+    name: Backend Test Suite (25 Integration Tests)
     runs-on: ubuntu-latest
 
     services:

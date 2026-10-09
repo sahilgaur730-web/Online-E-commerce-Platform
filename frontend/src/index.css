@@ -2,10 +2,14 @@
 
 :root {
   --sk-navy: #0A3B74;
-  --sk-blue: #2874F0;
+  --sk-navy-dark: #002F6C;
+  --sk-navy-light: #0D4E96;
+  --sk-blue: #0A3B74;
   --sk-blue-light: #EFF6FF;
-  --sk-orange: #FB641B;
-  --sk-amber: #FF7A00;
+  --sk-orange: #FF7A00;
+  --sk-orange-dark: #E66A00;
+  --sk-orange-light: #FF9433;
+  --sk-amber: #FF8A00;
   --sk-amber-light: #FFF7ED;
   --sk-green: #388E3C;
   --sk-bg: #F1F3F6;
@@ -121,9 +125,9 @@ body {
   touch-action: none;
 }
 
-/* Story Highlights Gradient Ring */
+/* Story Highlights Gradient Ring matching Logo (#0A3B74, #FF7A00, #FF8A00) */
 .story-ring {
-  background: linear-gradient(45deg, #2874F0, #FF7A00, #FB641B);
+  background: linear-gradient(45deg, #0A3B74, #FF7A00, #FF8A00);
   padding: 2.5px;
   border-radius: 9999px;
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -144,7 +148,7 @@ body {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, transparent, #2874F0, #FF7A00, #2874F0, transparent);
-  box-shadow: 0 0 15px 3px rgba(40, 116, 240, 0.7);
+  background: linear-gradient(90deg, transparent, #0A3B74, #FF7A00, #0A3B74, transparent);
+  box-shadow: 0 0 15px 3px rgba(10, 59, 116, 0.7);
   animation: scannerSweep 2.2s ease-in-out infinite;
 }

@@ -58,7 +58,7 @@ export function HeroCarousel({ onSelectCategory }) {
         <div className="max-w-7xl mx-auto px-6 py-10 md:py-14 flex flex-col md:flex-row items-center justify-between gap-8 min-h-[300px]">
           {/* Text Content */}
           <div className="max-w-xl space-y-3 z-10">
-            <span className="inline-block bg-[#FB641B] text-white text-xs font-bold tracking-wider px-3 py-1 rounded-sm uppercase">
+            <span className="inline-block bg-[#FF7A00] text-white text-xs font-bold tracking-wider px-3 py-1 rounded-sm uppercase">
               {slide.badge}
             </span>
             <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white leading-tight">
