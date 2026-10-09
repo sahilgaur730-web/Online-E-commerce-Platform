@@ -184,7 +184,7 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
             WebkitOverflowScrolling: 'touch',
             scrollbarWidth: 'none',
           }}
-          className="touch-scroll-track flex lg:grid lg:grid-cols-7 items-center overflow-x-auto lg:overflow-visible gap-5 lg:gap-4 px-4 py-3 lg:p-0 snap-x snap-mandatory lg:snap-none"
+          className="touch-scroll-track flex lg:grid lg:grid-cols-7 items-center overflow-x-auto lg:overflow-visible gap-5 lg:gap-4 px-4 py-3 lg:p-0 snap-x snap-mandatory lg:snap-none w-full"
         >
           {stories.map((story) => {
             const Icon = story.icon;
@@ -196,13 +196,12 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
                 aria-label={story.title}
                 style={{
                   scrollSnapAlign: 'start',
-                  transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
                 onClick={() => handleStoryClick(story)}
-                className="flex flex-col items-center justify-start gap-2 w-[84px] sm:w-[92px] shrink-0 lg:w-full lg:shrink cursor-pointer group focus:outline-none select-none hover:[transform:translateY(-2px)] active:[transform:translateY(0)]"
+                className="flex flex-col items-center justify-start gap-2 w-[100px] shrink-0 lg:w-full cursor-pointer group focus:outline-none select-none category-item-lift snap-start lg:snap-none"
               >
                 {/* 48x48px Squircle Card Container */}
-                <div className="relative w-12 h-12 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center shrink-0 shadow-2xs group-hover:border-[#0A3B74]/30 group-hover:bg-blue-50/50 transition-colors duration-200">
+                <div className="relative w-12 h-12 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center shrink-0 shadow-xs group-hover:border-[#0A3B74]/30 group-hover:bg-blue-50/50 transition-colors duration-200">
                   <Icon className="w-5 h-5 text-[#0A3B74] group-hover:text-[#FF7A00] transition-colors duration-200" />
 
                   {/* Absolute Floating Pill Badge */}
@@ -212,7 +211,7 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
                 {/* Uniform Baseline Typography */}
                 <span
                   style={{ fontSize: '0.8125rem' }}
-                  className="font-medium text-slate-700 group-hover:text-[#0A3B74] text-center w-full truncate leading-tight tracking-tight transition-colors duration-150"
+                  className="font-medium text-slate-700 group-hover:text-[#0A3B74] text-center w-full truncate leading-5 h-5 flex items-center justify-center tracking-tight transition-colors duration-150"
                 >
                   {story.title}
                 </span>
@@ -224,7 +223,7 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
 
       {/* Story Spotlight Modal */}
       {activeStory && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
           <div className="bg-white rounded-xs shadow-2xl max-w-sm w-full overflow-hidden border border-gray-200 relative animate-in fade-in zoom-in-95 duration-200">
             <button
               onClick={() => setActiveStory(null)}
