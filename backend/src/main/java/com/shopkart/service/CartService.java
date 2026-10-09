@@ -76,7 +76,7 @@ public class CartService {
             discountTotal = BigDecimal.ZERO;
         }
 
-        // Flipkart delivery rule: Free over ₹500, else ₹40
+        // Standard delivery rule: Free over ₹500, else ₹40
         BigDecimal deliveryFee = BigDecimal.ZERO;
         if (finalTotal.compareTo(BigDecimal.ZERO) > 0 && finalTotal.compareTo(BigDecimal.valueOf(500)) < 0) {
             deliveryFee = BigDecimal.valueOf(40);

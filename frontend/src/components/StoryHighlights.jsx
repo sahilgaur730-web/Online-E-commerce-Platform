@@ -23,7 +23,7 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
       color: 'from-amber-500 to-red-500',
       badge: 'LIVE',
       preview: {
-        headline: 'Big Billion Days Flash Deals',
+        headline: 'Mega Deals Flash Offers',
         subhead: 'Up to 75% Off on Flagship Electronics & Audio',
         tag: 'Ending in 3h 42m',
       },

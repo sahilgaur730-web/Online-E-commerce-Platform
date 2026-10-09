@@ -28,16 +28,19 @@ public class AdminController {
     private final UserService userService;
     private final AuditService auditService;
     private final InventoryService inventoryService;
+    private final com.shopkart.service.ProductService productService;
 
     public AdminController(
             DashboardService dashboardService,
             UserService userService,
             AuditService auditService,
-            InventoryService inventoryService) {
+            InventoryService inventoryService,
+            com.shopkart.service.ProductService productService) {
         this.dashboardService = dashboardService;
         this.userService = userService;
         this.auditService = auditService;
         this.inventoryService = inventoryService;
+        this.productService = productService;
     }
 
     @GetMapping("/dashboard")
@@ -86,5 +89,42 @@ public class AdminController {
         int newStock = body.getOrDefault("stock", 0);
         Product updated = inventoryService.updateStockManually(productId, newStock, principal.getEmail());
         return ResponseEntity.ok(ApiResponse.ok("Stock updated successfully", updated));
+    }
+
+    @GetMapping("/catalog")
+    public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<com.shopkart.dto.ProductDto>>> getCatalog(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) java.math.BigDecimal minPrice,
+            @RequestParam(required = false) java.math.BigDecimal maxPrice,
+            @RequestParam(required = false) Double minRating,
+            @RequestParam(required = false, defaultValue = "popularity") String sortBy,
+            @RequestParam(required = false, defaultValue = "desc") String sortDir,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(ApiResponse.ok(productService.searchProducts(
+                keyword, categoryId, brand, minPrice, maxPrice, minRating, sortBy, sortDir, page, size)));
+    }
+
+    @PutMapping("/catalog/{productId}/flags")
+    public ResponseEntity<ApiResponse<com.shopkart.dto.ProductDto>> updateProductFlags(
+            @PathVariable Long productId,
+            @RequestBody Map<String, Boolean> body,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        Boolean featured = body.get("featured");
+        Boolean dealOfTheDay = body.get("dealOfTheDay");
+        Boolean topOffer = body.get("topOffer");
+        com.shopkart.dto.ProductDto updated = productService.updateProductFlags(
+                productId, featured, dealOfTheDay, topOffer, principal.getEmail());
+        return ResponseEntity.ok(ApiResponse.ok("Product flags updated successfully", updated));
+    }
+
+    @DeleteMapping("/catalog/{productId}")
+    public ResponseEntity<ApiResponse<Void>> deleteCatalogProduct(
+            @PathVariable Long productId,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        productService.deleteProduct(productId, principal.getId(), true);
+        return ResponseEntity.ok(ApiResponse.ok("Product removed from catalog", null));
     }
 }

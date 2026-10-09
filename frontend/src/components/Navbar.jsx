@@ -16,6 +16,7 @@ import {
   X,
   Share2,
   Camera,
+  Home,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -214,6 +215,24 @@ export function Navbar({
             </span>
           </div>
         </div>
+
+        {/* Universal Persistent Home Button */}
+        <button
+          type="button"
+          onClick={() => {
+            setCurrentView('home');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold text-xs sm:text-sm transition cursor-pointer shrink-0 border ${
+            currentView === 'home'
+              ? 'bg-white/20 text-white border-white/40 shadow-xs'
+              : 'hover:bg-white/10 text-blue-100 hover:text-white border-transparent'
+          }`}
+          title="Go to Home"
+        >
+          <Home className="w-4 h-4" />
+          <span className="font-bold">Home</span>
+        </button>
 
         {/* Predictive Auto-Suggest Search Bar */}
         <div ref={searchContainerRef} className="flex-1 max-w-2xl relative">

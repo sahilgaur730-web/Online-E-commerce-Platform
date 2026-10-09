@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { HeroCarousel } from '../components/HeroCarousel';
 import { StoryHighlights } from '../components/StoryHighlights';
 import { ProductCard } from '../components/ProductCard';
+import { FlashDealTimer } from '../components/FlashDealTimer';
 import { api } from '../api/client';
 import {
   getFallbackDeals,
   getFallbackFeatured,
   getFallbackTopOffers,
 } from '../data/fallbackProducts';
-import { Clock, ChevronRight, Zap, ShieldCheck } from 'lucide-react';
+import { ChevronRight, Zap, ShieldCheck } from 'lucide-react';
 
 export function HomePage({
   onSelectProduct,
@@ -19,6 +20,13 @@ export function HomePage({
   onOpenStreak,
 }) {
   const [deals, setDeals] = useState([]);
+  const [dealSync, setDealSync] = useState({
+    serverTime: null,
+    endTime: null,
+    remainingSeconds: 0,
+    status: 'ACTIVE',
+  });
+  const [isDealExpired, setIsDealExpired] = useState(false);
   const [featured, setFeatured] = useState([]);
   const [topOffers, setTopOffers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,12 +35,52 @@ export function HomePage({
     async function loadData() {
       try {
         setLoading(true);
-        const [dealsData, featData, topData] = await Promise.all([
-          api.getDeals(),
-          api.getFeaturedProducts(),
-          api.getTopOffers(),
+        const [flashDealsData, featData, topData] = await Promise.all([
+          api.getActiveFlashDeals().catch(() => null),
+          api.getFeaturedProducts().catch(() => null),
+          api.getTopOffers().catch(() => null),
         ]);
-        setDeals(dealsData && dealsData.length > 0 ? dealsData : getFallbackDeals());
+
+        if (flashDealsData && flashDealsData.deals && flashDealsData.deals.length > 0) {
+          setDealSync({
+            serverTime: flashDealsData.serverTime,
+            endTime: flashDealsData.endTime,
+            remainingSeconds: flashDealsData.remainingSeconds,
+            status: flashDealsData.status,
+          });
+          setIsDealExpired(flashDealsData.status === 'EXPIRED' || flashDealsData.remainingSeconds <= 0);
+
+          const mappedDeals = flashDealsData.deals.map((d) => ({
+            id: d.productId || d.id,
+            title: d.productTitle,
+            brand: d.productBrand,
+            categoryName: d.categoryName,
+            price: d.dealPrice,
+            originalPrice: d.originalPrice,
+            discountPercentage: d.discountPercentage,
+            stock: d.remainingStock !== undefined ? d.remainingStock : d.stockLimit,
+            primaryImage: d.primaryImage,
+            rating: d.rating || 4.2,
+            ratingCount: 120,
+            dealOfTheDay: true,
+            expired: d.expired || flashDealsData.status === 'EXPIRED',
+          }));
+          setDeals(mappedDeals);
+        } else {
+          // Fallback to standard deals endpoint
+          const fallbackList = await api.getDeals().catch(() => null);
+          const list = fallbackList && fallbackList.length > 0 ? fallbackList : getFallbackDeals();
+          setDeals(list);
+          const now = new Date();
+          const defaultEnd = new Date(now.getTime() + 14 * 3600000 + 22 * 60000 + 45000);
+          setDealSync({
+            serverTime: now.toISOString(),
+            endTime: defaultEnd.toISOString(),
+            remainingSeconds: 51765,
+            status: 'ACTIVE',
+          });
+        }
+
         setFeatured(featData && featData.length > 0 ? featData : getFallbackFeatured());
         setTopOffers(topData && topData.length > 0 ? topData : getFallbackTopOffers());
       } catch (err) {
@@ -46,6 +94,11 @@ export function HomePage({
     }
     loadData();
   }, []);
+
+  const handleDealExpired = () => {
+    setIsDealExpired(true);
+    setDeals((prev) => prev.map((p) => ({ ...p, expired: true })));
+  };
 
   return (
     <div className="space-y-4 pb-8">
@@ -61,36 +114,45 @@ export function HomePage({
       {/* Deals of the Day Strip */}
       <div className="max-w-7xl mx-auto px-4">
         <div className="bg-white p-4 rounded-xs shadow-xs">
-          <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-100">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 mb-3 border-b border-gray-100">
+            <div className="flex items-center gap-3 flex-wrap">
               <h2 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
-                <Zap className="w-5 h-5 text-[#FF7A00] fill-current" /> Deals of the Day
+                <Zap className="w-5 h-5 text-[#FF7A00] fill-current" /> Mega Deals of the Day
               </h2>
-              <div className="hidden sm:flex items-center gap-1.5 text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-xs">
-                <Clock className="w-3.5 h-3.5 text-gray-500" />
-                <span>14h : 22m : 45s Left</span>
-              </div>
+
+              {/* Synchronized Flash Deal Countdown Timer */}
+              {dealSync.serverTime && dealSync.endTime && (
+                <FlashDealTimer
+                  serverTime={dealSync.serverTime}
+                  endTime={dealSync.endTime}
+                  onExpire={handleDealExpired}
+                />
+              )}
             </div>
+
             <button
               onClick={() => onViewCatalog({ dealOfTheDay: true })}
-              className="bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs px-4 py-2 rounded-xs shadow-xs transition flex items-center gap-1 cursor-pointer"
+              className="bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs px-4 py-2 rounded-xs shadow-xs transition flex items-center gap-1 cursor-pointer shrink-0"
             >
               VIEW ALL <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 py-6">
+            <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3 sm:gap-4 py-6">
               {[1, 2, 3, 4, 5].map((n) => (
                 <div key={n} className="h-64 bg-gray-100 animate-pulse rounded-xs" />
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3 sm:gap-4">
               {deals.map((prod) => (
                 <ProductCard
                   key={prod.id}
-                  product={prod}
+                  product={{
+                    ...prod,
+                    expired: isDealExpired || prod.expired,
+                  }}
                   onSelectProduct={onSelectProduct}
                   onWishlistToggle={onWishlistToggle}
                   isWishlisted={wishlistIds.includes(prod.id)}
@@ -131,13 +193,13 @@ export function HomePage({
             </div>
             <button
               onClick={() => onViewCatalog({ topOffer: true })}
-              className="bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs px-4 py-2 rounded-xs shadow-xs transition flex items-center gap-1 cursor-pointer"
+              className="bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs px-4 py-2 rounded-xs shadow-xs transition flex items-center gap-1 cursor-pointer shrink-0"
             >
               VIEW ALL <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3 sm:gap-4">
             {topOffers.map((prod) => (
               <ProductCard
                 key={prod.id}
@@ -163,13 +225,13 @@ export function HomePage({
             </div>
             <button
               onClick={() => onViewCatalog()}
-              className="bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs px-4 py-2 rounded-xs shadow-xs transition flex items-center gap-1 cursor-pointer"
+              className="bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs px-4 py-2 rounded-xs shadow-xs transition flex items-center gap-1 cursor-pointer shrink-0"
             >
               VIEW ALL <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3 sm:gap-4">
             {featured.map((prod) => (
               <ProductCard
                 key={prod.id}

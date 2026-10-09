@@ -63,6 +63,7 @@ export const api = {
   getProductById: (id) => apiRequest(`/products/${id}`),
   getFeaturedProducts: () => apiRequest('/products/featured'),
   getDeals: () => apiRequest('/products/deals'),
+  getActiveFlashDeals: () => apiRequest('/deals/active'),
   getTopOffers: () => apiRequest('/products/top-offers'),
   getBrands: (categoryId) =>
     apiRequest(`/products/brands${categoryId ? `?categoryId=${categoryId}` : ''}`),
@@ -232,4 +233,38 @@ export const api = {
     }),
   getAllOrders: (page = 0, size = 20) =>
     apiRequest(`/orders/all?page=${page}&size=${size}`),
+
+  // Flash Deals (Admin)
+  getAdminDeals: () => apiRequest('/admin/deals'),
+  createAdminDeal: (data) =>
+    apiRequest('/admin/deals', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  toggleAdminDeal: (id) =>
+    apiRequest(`/admin/deals/${id}/toggle`, {
+      method: 'PUT',
+    }),
+  deleteAdminDeal: (id) =>
+    apiRequest(`/admin/deals/${id}`, {
+      method: 'DELETE',
+    }),
+
+  // Sitewide Catalog Controls (Admin)
+  getAdminCatalog: (params = {}) => {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') query.append(k, v);
+    });
+    return apiRequest(`/admin/catalog?${query.toString()}`);
+  },
+  updateAdminCatalogFlags: (productId, flags) =>
+    apiRequest(`/admin/catalog/${productId}/flags`, {
+      method: 'PUT',
+      body: JSON.stringify(flags),
+    }),
+  deleteAdminCatalogProduct: (productId) =>
+    apiRequest(`/admin/catalog/${productId}`, {
+      method: 'DELETE',
+    }),
 };

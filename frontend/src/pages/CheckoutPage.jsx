@@ -254,7 +254,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
 
     return (
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-        {/* Flipkart Green Banner */}
+        {/* Order Success Banner */}
         <div className="bg-white rounded-xs shadow-md border border-gray-200 p-8 text-center space-y-4">
           <div className="w-16 h-16 bg-green-100 text-[#388E3C] rounded-full flex items-center justify-center mx-auto">
             <CheckCircle className="w-10 h-10" />

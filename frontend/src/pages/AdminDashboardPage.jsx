@@ -12,6 +12,13 @@ import {
   BarChart2,
   Calendar,
   X,
+  Zap,
+  Search,
+  Trash2,
+  Plus,
+  Clock,
+  Star,
+  Package,
 } from 'lucide-react';
 
 export function AdminDashboardPage({ onViewOrder }) {
@@ -20,7 +27,24 @@ export function AdminDashboardPage({ onViewOrder }) {
   const [orders, setOrders] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
   const [lowStock, setLowStock] = useState([]);
-  const [activeTab, setActiveTab] = useState('analytics'); // 'analytics', 'orders', 'users', 'inventory', 'audit'
+  const [deals, setDeals] = useState([]);
+  const [showCreateDealModal, setShowCreateDealModal] = useState(false);
+  const [newDealForm, setNewDealForm] = useState({
+    productId: '',
+    dealPrice: '',
+    originalPrice: '',
+    discountPercentage: 20,
+    stockLimit: 50,
+    durationHours: 24,
+  });
+  const [creatingDeal, setCreatingDeal] = useState(false);
+
+  // Sitewide Catalog Controls State
+  const [catalogProducts, setCatalogProducts] = useState([]);
+  const [catalogSearch, setCatalogSearch] = useState('');
+  const [catalogLoading, setCatalogLoading] = useState(false);
+
+  const [activeTab, setActiveTab] = useState('analytics'); // 'analytics', 'orders', 'users', 'inventory', 'audit', 'deals', 'catalog'
   const [loading, setLoading] = useState(true);
 
   // 6 Lifecycle States Filter: 'ALL', 'PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'RETURN_REFUND'
@@ -40,18 +64,22 @@ export function AdminDashboardPage({ onViewOrder }) {
   const loadAdminData = React.useCallback(async () => {
     try {
       setLoading(true);
-      const [dash, userList, orderList, logs, lowStockItems] = await Promise.all([
+      const [dash, userList, orderList, logs, lowStockItems, dealsList, catalogRes] = await Promise.all([
         api.getAdminDashboard(),
         api.getAdminUsers(),
         api.getAllOrders(0, 50),
         api.getAdminAuditLogs(),
         api.getAdminLowStock(15),
+        api.getAdminDeals().catch(() => []),
+        api.getAdminCatalog({ size: 50 }).catch(() => null),
       ]);
       setStats(dash);
       setUsers(userList || []);
       setOrders(orderList?.content || []);
       setAuditLogs(logs || []);
       setLowStock(lowStockItems || []);
+      setDeals(dealsList || []);
+      setCatalogProducts(catalogRes?.content || catalogRes || []);
     } catch (err) {
       console.error('Failed to load admin dashboard:', err);
     } finally {
@@ -188,6 +216,89 @@ export function AdminDashboardPage({ onViewOrder }) {
       } catch (err) {
         alert(err.message || 'Failed to update stock');
       }
+    }
+  };
+
+  const handleToggleDeal = async (id) => {
+    try {
+      await api.toggleAdminDeal(id);
+      loadAdminData();
+    } catch (err) {
+      alert(err.message || 'Failed to toggle deal status');
+    }
+  };
+
+  const handleDeleteDeal = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this flash deal?')) return;
+    try {
+      await api.deleteAdminDeal(id);
+      loadAdminData();
+      alert('Flash deal deleted');
+    } catch (err) {
+      alert(err.message || 'Failed to delete deal');
+    }
+  };
+
+  const handleCreateDeal = async (e) => {
+    e.preventDefault();
+    if (!newDealForm.productId) {
+      alert('Please select a product');
+      return;
+    }
+    try {
+      setCreatingDeal(true);
+      const now = new Date();
+      const endTime = new Date(now.getTime() + (Number(newDealForm.durationHours) || 24) * 3600000);
+      const payload = {
+        productId: Number(newDealForm.productId),
+        dealPrice: Number(newDealForm.dealPrice),
+        originalPrice: newDealForm.originalPrice ? Number(newDealForm.originalPrice) : Number(newDealForm.dealPrice),
+        discountPercentage: Number(newDealForm.discountPercentage) || 0,
+        stockLimit: Number(newDealForm.stockLimit) || 50,
+        startTime: now.toISOString(),
+        endTime: endTime.toISOString(),
+      };
+      await api.createAdminDeal(payload);
+      setShowCreateDealModal(false);
+      loadAdminData();
+      alert('Flash deal created successfully!');
+    } catch (err) {
+      alert(err.message || 'Failed to create flash deal');
+    } finally {
+      setCreatingDeal(false);
+    }
+  };
+
+  const handleCatalogSearch = async (e) => {
+    if (e) e.preventDefault();
+    try {
+      setCatalogLoading(true);
+      const res = await api.getAdminCatalog({ keyword: catalogSearch, size: 50 });
+      setCatalogProducts(res?.content || res || []);
+    } catch (err) {
+      alert(err.message || 'Failed to search catalog');
+    } finally {
+      setCatalogLoading(false);
+    }
+  };
+
+  const handleToggleCatalogFlag = async (productId, flagName, currentValue) => {
+    try {
+      await api.updateAdminCatalogFlags(productId, { [flagName]: !currentValue });
+      loadAdminData();
+    } catch (err) {
+      alert(err.message || 'Failed to update product flag');
+    }
+  };
+
+  const handleDeleteCatalogProduct = async (productId) => {
+    if (!window.confirm('Are you sure you want to remove this product from the platform?')) return;
+    try {
+      await api.deleteAdminCatalogProduct(productId);
+      loadAdminData();
+      alert('Product removed from catalog');
+    } catch (err) {
+      alert(err.message || 'Failed to delete product');
     }
   };
 
@@ -360,6 +471,30 @@ export function AdminDashboardPage({ onViewOrder }) {
         >
           <FileText className="w-4 h-4" />
           <span>Audit Logs ({auditLogs.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('deals')}
+          className={`pb-3 cursor-pointer transition shrink-0 flex items-center gap-1.5 ${
+            activeTab === 'deals'
+              ? 'text-amber-600 border-b-2 border-amber-600 font-bold'
+              : 'text-gray-500 hover:text-amber-600'
+          }`}
+        >
+          <Zap className="w-4 h-4 text-amber-500" />
+          <span>Deal Management ({deals.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('catalog')}
+          className={`pb-3 cursor-pointer transition shrink-0 flex items-center gap-1.5 ${
+            activeTab === 'catalog'
+              ? 'text-[#0A3B74] border-b-2 border-[#0A3B74] font-bold'
+              : 'text-gray-500 hover:text-gray-900'
+          }`}
+        >
+          <Package className="w-4 h-4 text-[#0A3B74]" />
+          <span>Catalog Controls ({catalogProducts.length})</span>
         </button>
       </div>
 
@@ -818,6 +953,352 @@ export function AdminDashboardPage({ onViewOrder }) {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 6: FLASH DEAL MANAGEMENT                             */}
+      {/* ======================================================== */}
+      {activeTab === 'deals' && (
+        <div className="space-y-4">
+          <div className="bg-white rounded-xs border border-gray-200 p-4 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h3 className="font-extrabold text-base text-gray-900 flex items-center gap-2">
+                <Zap className="w-5 h-5 text-amber-500 fill-current" /> Flash Deals & Promotion Scheduling
+              </h3>
+              <p className="text-xs text-gray-500">
+                Server-synchronized UTC countdown campaigns across the global marketplace.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                if (catalogProducts.length > 0) {
+                  setNewDealForm((prev) => ({
+                    ...prev,
+                    productId: catalogProducts[0].id,
+                    dealPrice: catalogProducts[0].price,
+                    originalPrice: catalogProducts[0].originalPrice || catalogProducts[0].price,
+                  }));
+                }
+                setShowCreateDealModal(true);
+              }}
+              className="bg-[#0A3B74] hover:bg-[#082d59] text-white font-bold text-xs px-4 py-2 rounded-xs flex items-center gap-1.5 shadow-xs cursor-pointer"
+            >
+              <Plus className="w-4 h-4" /> Schedule New Deal
+            </button>
+          </div>
+
+          <div className="bg-white rounded-xs border border-gray-200 shadow-xs overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-gray-50 text-gray-600 font-bold border-b border-gray-200 uppercase text-[10px]">
+                <tr>
+                  <th className="p-3">Deal ID</th>
+                  <th className="p-3">Product</th>
+                  <th className="p-3">Deal Price</th>
+                  <th className="p-3">Discount</th>
+                  <th className="p-3">Stock Limit</th>
+                  <th className="p-3">Status</th>
+                  <th className="p-3">End Time (UTC)</th>
+                  <th className="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {deals.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="p-12 text-center text-gray-400 font-medium">
+                      No active flash deals scheduled. Click 'Schedule New Deal' to launch one.
+                    </td>
+                  </tr>
+                ) : (
+                  deals.map((d) => (
+                    <tr key={d.id} className="hover:bg-gray-50 transition">
+                      <td className="p-3 font-mono font-bold text-[#0A3B74]">#{d.id}</td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-2.5">
+                          <img
+                            src={d.primaryImage || 'https://placehold.co/40x40'}
+                            alt=""
+                            className="w-9 h-9 object-contain rounded border border-gray-200 bg-white p-0.5"
+                          />
+                          <div>
+                            <p className="font-bold text-gray-900 line-clamp-1 max-w-xs">{d.productTitle}</p>
+                            <span className="text-[10px] text-gray-400 capitalize">{d.productBrand} • {d.categoryName}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-3 font-black text-gray-900">₹{d.dealPrice?.toLocaleString('en-IN')}</td>
+                      <td className="p-3 font-bold text-emerald-600">{d.discountPercentage}% OFF</td>
+                      <td className="p-3 font-semibold text-gray-700">{d.remainingStock ?? d.stockLimit} units left</td>
+                      <td className="p-3">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            d.expired
+                              ? 'bg-rose-100 text-rose-800'
+                              : d.active
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-gray-100 text-gray-600'
+                          }`}
+                        >
+                          {d.expired ? 'EXPIRED' : d.active ? 'ACTIVE' : 'PAUSED'}
+                        </span>
+                      </td>
+                      <td className="p-3 font-mono text-[11px] text-gray-600">
+                        {d.endTime ? new Date(d.endTime).toUTCString() : '—'}
+                      </td>
+                      <td className="p-3 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => handleToggleDeal(d.id)}
+                            className="text-xs font-bold text-[#0A3B74] hover:underline px-2 py-1 cursor-pointer"
+                          >
+                            {d.active ? 'Pause' : 'Activate'}
+                          </button>
+                          <button
+                            onClick={() => handleDeleteDeal(d.id)}
+                            className="text-rose-600 hover:text-rose-800 p-1 rounded hover:bg-rose-50 cursor-pointer"
+                            title="Delete Deal"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 7: SITEWIDE CATALOG CONTROLS                         */}
+      {/* ======================================================== */}
+      {activeTab === 'catalog' && (
+        <div className="space-y-4">
+          <div className="bg-white rounded-xs border border-gray-200 p-4 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h3 className="font-extrabold text-base text-gray-900 flex items-center gap-2">
+                <Package className="w-5 h-5 text-[#0A3B74]" /> Sitewide Product Catalog Moderation
+              </h3>
+              <p className="text-xs text-gray-500">
+                Audit, toggle promotions, inspect stock, and remove violation listings across all marketplace vendors.
+              </p>
+            </div>
+            <form onSubmit={handleCatalogSearch} className="flex items-center gap-2 w-full sm:w-auto">
+              <input
+                type="text"
+                placeholder="Search catalog products..."
+                value={catalogSearch}
+                onChange={(e) => setCatalogSearch(e.target.value)}
+                className="p-2 border border-gray-300 rounded-xs text-xs focus:outline-none focus:border-[#0A3B74] w-full sm:w-64"
+              />
+              <button
+                type="submit"
+                className="bg-[#0A3B74] hover:bg-[#082d59] text-white px-3 py-2 rounded-xs text-xs font-bold transition cursor-pointer"
+              >
+                <Search className="w-3.5 h-3.5" />
+              </button>
+            </form>
+          </div>
+
+          <div className="bg-white rounded-xs border border-gray-200 shadow-xs overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-gray-50 text-gray-600 font-bold border-b border-gray-200 uppercase text-[10px]">
+                <tr>
+                  <th className="p-3">Product</th>
+                  <th className="p-3">Category</th>
+                  <th className="p-3">Price</th>
+                  <th className="p-3">Stock</th>
+                  <th className="p-3">Seller</th>
+                  <th className="p-3">Badges & Flags</th>
+                  <th className="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {catalogLoading ? (
+                  <tr>
+                    <td colSpan={7} className="p-12 text-center text-gray-400">Loading catalog...</td>
+                  </tr>
+                ) : catalogProducts.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="p-12 text-center text-gray-400">No products found matching query.</td>
+                  </tr>
+                ) : (
+                  catalogProducts.map((p) => (
+                    <tr key={p.id} className="hover:bg-gray-50 transition">
+                      <td className="p-3">
+                        <div className="flex items-center gap-2.5">
+                          <img
+                            src={p.primaryImage || 'https://placehold.co/40x40'}
+                            alt=""
+                            className="w-9 h-9 object-contain rounded border border-gray-200 bg-white p-0.5"
+                          />
+                          <div>
+                            <p className="font-bold text-gray-900 line-clamp-1 max-w-xs">{p.title}</p>
+                            <span className="text-[10px] text-gray-400 capitalize">{p.brand}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-3 text-gray-600 font-medium">{p.categoryName}</td>
+                      <td className="p-3 font-bold text-gray-900">₹{p.price?.toLocaleString('en-IN')}</td>
+                      <td className="p-3 font-semibold text-gray-800">{p.stock} units</td>
+                      <td className="p-3 text-gray-500 font-medium">{p.sellerName || 'Marketplace Seller'}</td>
+                      <td className="p-3">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <button
+                            onClick={() => handleToggleCatalogFlag(p.id, 'featured', p.featured)}
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition ${
+                              p.featured ? 'bg-blue-100 text-blue-800 border border-blue-300' : 'bg-gray-100 text-gray-500'
+                            }`}
+                            title="Toggle Featured"
+                          >
+                            Featured
+                          </button>
+                          <button
+                            onClick={() => handleToggleCatalogFlag(p.id, 'dealOfTheDay', p.dealOfTheDay)}
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition ${
+                              p.dealOfTheDay ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-gray-100 text-gray-500'
+                            }`}
+                            title="Toggle Flash Deal"
+                          >
+                            Deal
+                          </button>
+                          <button
+                            onClick={() => handleToggleCatalogFlag(p.id, 'topOffer', p.topOffer)}
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition ${
+                              p.topOffer ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-gray-100 text-gray-500'
+                            }`}
+                            title="Toggle Top Offer"
+                          >
+                            Top Offer
+                          </button>
+                        </div>
+                      </td>
+                      <td className="p-3 text-right">
+                        <button
+                          onClick={() => handleDeleteCatalogProduct(p.id)}
+                          className="text-rose-600 hover:text-rose-800 p-1.5 rounded hover:bg-rose-50 cursor-pointer"
+                          title="Remove from Catalog"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Schedule Flash Deal Modal */}
+      {showCreateDealModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 space-y-4">
+            <div className="flex justify-between items-center pb-3 border-b border-gray-200">
+              <h3 className="font-extrabold text-base text-gray-900 tracking-tight flex items-center gap-2">
+                <Zap className="w-4 h-4 text-amber-500 fill-current" /> Schedule Flash Deal
+              </h3>
+              <button onClick={() => setShowCreateDealModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateDeal} className="space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-gray-700 mb-1">Select Product</label>
+                <select
+                  required
+                  value={newDealForm.productId}
+                  onChange={(e) => {
+                    const selected = catalogProducts.find((p) => p.id === Number(e.target.value));
+                    setNewDealForm((prev) => ({
+                      ...prev,
+                      productId: e.target.value,
+                      dealPrice: selected ? Math.round(selected.price * 0.8) : prev.dealPrice,
+                      originalPrice: selected ? selected.price : prev.originalPrice,
+                    }));
+                  }}
+                  className="w-full p-2.5 border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
+                >
+                  {catalogProducts.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.title} (₹{p.price})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Deal Price (₹)</label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    value={newDealForm.dealPrice}
+                    onChange={(e) => setNewDealForm({ ...newDealForm, dealPrice: e.target.value })}
+                    className="w-full p-2.5 border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Discount %</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="99"
+                    value={newDealForm.discountPercentage}
+                    onChange={(e) => setNewDealForm({ ...newDealForm, discountPercentage: e.target.value })}
+                    className="w-full p-2.5 border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Stock Quota</label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    value={newDealForm.stockLimit}
+                    onChange={(e) => setNewDealForm({ ...newDealForm, stockLimit: e.target.value })}
+                    className="w-full p-2.5 border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Duration (Hours)</label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    value={newDealForm.durationHours}
+                    onChange={(e) => setNewDealForm({ ...newDealForm, durationHours: e.target.value })}
+                    className="w-full p-2.5 border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateDealModal(false)}
+                  className="px-4 py-2 font-bold text-gray-600 hover:bg-gray-100 rounded cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={creatingDeal}
+                  className="bg-[#0A3B74] hover:bg-[#082d59] text-white font-bold px-6 py-2 rounded cursor-pointer transition shadow-xs disabled:opacity-50"
+                >
+                  {creatingDeal ? 'Scheduling...' : 'Launch Flash Deal'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 

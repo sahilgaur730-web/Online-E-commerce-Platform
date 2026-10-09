@@ -275,6 +275,21 @@ public class ProductService {
         return toDto(saved);
     }
 
+    @Transactional
+    @CacheEvict(value = "products", allEntries = true)
+    public ProductDto updateProductFlags(Long productId, Boolean featured, Boolean dealOfTheDay, Boolean topOffer, String adminEmail) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
+        if (featured != null) product.setFeatured(featured);
+        if (dealOfTheDay != null) product.setDealOfTheDay(dealOfTheDay);
+        if (topOffer != null) product.setTopOffer(topOffer);
+        product.setUpdatedAt(LocalDateTime.now());
+        Product saved = productRepository.save(product);
+        auditService.log("PRODUCT_FLAGS_UPDATED", adminEmail,
+                "Updated flags for product: " + saved.getTitle(), "PRODUCT", saved.getId());
+        return toDto(saved);
+    }
+
     public ProductDto toDto(Product p) {
         ProductDto dto = new ProductDto();
         dto.setId(p.getId());

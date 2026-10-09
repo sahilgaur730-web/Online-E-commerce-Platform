@@ -4,8 +4,8 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 const SLIDES = [
   {
     id: 1,
-    title: 'THE BIG BILLION DAYS',
-    subtitle: 'India’s Biggest Shopping Celebration is LIVE!',
+    title: 'MEGA DEALS FESTIVAL',
+    subtitle: 'Exclusive Flash Offers on Top Tech & Lifestyle Brands',
     badge: 'UP TO 80% OFF',
     desc: 'Laptops, Flagship Mobiles, Wireless Headphones & Smart Accessories',
     cta: 'Shop Mega Deals',

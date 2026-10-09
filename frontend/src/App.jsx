@@ -108,40 +108,7 @@ function MainApp() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F1F3F6] text-[#212121]">
-      {/* Top Demo Bar for quick reviewer evaluation */}
-      <div className="bg-[#0A3B74] text-white text-[11px] py-1.5 px-4 flex flex-wrap items-center justify-between border-b border-blue-900/60 shadow-xs">
-        <div className="flex items-center gap-2">
-          <span className="font-black text-amber-300">ShopKart Modular Monolith:</span>
-          <span className="text-blue-100 hidden sm:inline">
-            Spring Boot 3.3.4 (Java 26) + React 19 Vite + Tailwind
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-blue-200">Test Personas:</span>
-          <button
-            onClick={() => loginDemo('BUYER')}
-            className="hover:text-yellow-300 font-bold cursor-pointer underline"
-          >
-            Buyer (Rahul)
-          </button>
-          <span className="text-blue-400">|</span>
-          <button
-            onClick={() => loginDemo('SELLER')}
-            className="hover:text-yellow-300 font-bold cursor-pointer underline"
-          >
-            Seller (Tech Retail)
-          </button>
-          <span className="text-blue-400">|</span>
-          <button
-            onClick={() => loginDemo('ADMIN')}
-            className="hover:text-yellow-300 font-bold cursor-pointer underline"
-          >
-            Admin (Operations)
-          </button>
-        </div>
-      </div>
-
-      {/* Flipkart Navbar with Auto-suggest & Loyalty */}
+      {/* Global Navigation Bar */}
       <Navbar
         onSearch={handleSearch}
         currentView={currentView}
@@ -246,7 +213,7 @@ function MainApp() {
         )}
       </main>
 
-      {/* Flipkart Footer */}
+      {/* Footer */}
       <Footer />
 
       {/* Automated Abandoned Cart Toast Mock (Agent 13) */}

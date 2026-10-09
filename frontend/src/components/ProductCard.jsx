@@ -50,8 +50,12 @@ export function ProductCard({ product, onSelectProduct, onWishlistToggle, isWish
         {/* Product Image */}
         <div className="w-full h-44 overflow-hidden rounded-lg flex items-center justify-center p-2 mb-2.5 bg-slate-50/60 group-hover:bg-blue-50/30 transition-colors duration-300">
           <img
-            src={product.primaryImage}
+            src={product.primaryImage || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80'}
             alt={product.title}
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80';
+            }}
             className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300 ease-out"
             loading="lazy"
           />
@@ -108,26 +112,30 @@ export function ProductCard({ product, onSelectProduct, onWishlistToggle, isWish
         </div>
 
         {/* Low Stock Warning */}
-        {product.stock > 0 && product.stock <= 5 && (
+        {/* Low Stock or Expired Warning */}
+        {product.expired ? (
+          <div className="text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded mt-1.5 inline-block border border-rose-200">
+            Deal Expired
+          </div>
+        ) : product.stock > 0 && product.stock <= 5 ? (
           <div className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded mt-1.5 inline-block">
             Only {product.stock} left in stock!
           </div>
-        )}
-        {product.stock === 0 && (
+        ) : product.stock === 0 ? (
           <div className="text-[11px] font-bold text-rose-600 mt-1.5">
             Out of Stock
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Action Footer: Add to Cart button */}
       <div className="mt-3.5 pt-2.5 border-t border-slate-100">
         <button
           onClick={handleAddToCart}
-          disabled={product.stock === 0 || loadingAdd}
+          disabled={product.stock === 0 || product.expired || loadingAdd}
           className={`w-full text-xs font-bold py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-98 ${
-            product.stock === 0
-              ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+            product.stock === 0 || product.expired
+              ? 'bg-slate-200 text-slate-500 cursor-not-allowed shadow-none'
               : added
               ? 'bg-[#388E3C] text-white'
               : 'bg-[#FF7A00] hover:bg-[#E66A00] text-white'
@@ -137,6 +145,10 @@ export function ProductCard({ product, onSelectProduct, onWishlistToggle, isWish
             <>
               <Check className="w-3.5 h-3.5" /> Added to Cart
             </>
+          ) : product.expired ? (
+            'Deal Expired'
+          ) : product.stock === 0 ? (
+            'Out of Stock'
           ) : (
             <>
               <ShoppingCart className="w-3.5 h-3.5" /> Add to Cart

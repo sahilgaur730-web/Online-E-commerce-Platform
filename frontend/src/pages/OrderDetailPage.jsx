@@ -117,7 +117,7 @@ export function OrderDetailPage({ orderId, onBack, onViewProduct }) {
         </div>
       </div>
 
-      {/* Flipkart Live Tracking Stepper */}
+      {/* Live Tracking Stepper */}
       <div className="bg-white rounded-xs p-6 shadow-xs border border-gray-200">
         <h3 className="text-sm font-bold text-gray-900 mb-6 uppercase tracking-wider">
           Order Tracking Status

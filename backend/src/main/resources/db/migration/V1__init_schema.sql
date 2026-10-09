@@ -177,6 +177,20 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     timestamp TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS flash_deals (
+    id BIGSERIAL PRIMARY KEY,
+    product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    deal_price NUMERIC(12, 2) NOT NULL,
+    original_price NUMERIC(12, 2),
+    discount_percentage INT DEFAULT 0,
+    start_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    end_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    stock_limit INT DEFAULT 50,
+    sold_count INT DEFAULT 0,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Performance Indexes
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
 CREATE INDEX IF NOT EXISTS idx_products_seller ON products(seller_id);
@@ -189,3 +203,4 @@ CREATE INDEX IF NOT EXISTS idx_cart_items_user ON cart_items(user_id);
 CREATE INDEX IF NOT EXISTS idx_wishlist_user ON wishlist_items(user_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_timestamp ON audit_logs(timestamp);
+CREATE INDEX IF NOT EXISTS idx_flash_deals_active_end ON flash_deals(active, end_time);

@@ -25,6 +25,7 @@ public class DataInitializer implements CommandLineRunner {
     private final SubOrderRepository subOrderRepository;
     private final ReviewRepository reviewRepository;
     private final AuditLogRepository auditLogRepository;
+    private final FlashDealRepository flashDealRepository;
     private final PasswordEncoder passwordEncoder;
 
     public DataInitializer(
@@ -39,6 +40,7 @@ public class DataInitializer implements CommandLineRunner {
             SubOrderRepository subOrderRepository,
             ReviewRepository reviewRepository,
             AuditLogRepository auditLogRepository,
+            FlashDealRepository flashDealRepository,
             PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.addressRepository = addressRepository;
@@ -51,6 +53,7 @@ public class DataInitializer implements CommandLineRunner {
         this.subOrderRepository = subOrderRepository;
         this.reviewRepository = reviewRepository;
         this.auditLogRepository = auditLogRepository;
+        this.flashDealRepository = flashDealRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -860,6 +863,25 @@ public class DataInitializer implements CommandLineRunner {
         // 7. Audit log initial entries
         auditLogRepository.save(new AuditLog("SYSTEM_INITIALIZED", "SYSTEM", "Initial database seeded with ShopKart catalog and users", "SYSTEM", 1L));
         auditLogRepository.save(new AuditLog("ORDER_DELIVERED", "SYSTEM", "Order OD179124802194821 delivered to Rahul Sharma", "ORDER", savedOrder.getId()));
+
+        // 8. Seed Initial Live Flash Deals synchronized with UTC
+        java.time.Instant nowUtc = java.time.Instant.now();
+        java.time.Instant dealEndUtc = nowUtc.plus(14, java.time.temporal.ChronoUnit.HOURS)
+                .plus(22, java.time.temporal.ChronoUnit.MINUTES)
+                .plus(45, java.time.temporal.ChronoUnit.SECONDS);
+        List<Product> dealProducts = productRepository.findByDealOfTheDayTrue();
+        for (Product dp : dealProducts) {
+            FlashDeal fd = new FlashDeal(
+                    dp,
+                    dp.getPrice(),
+                    dp.getOriginalPrice() != null ? dp.getOriginalPrice() : dp.getPrice(),
+                    dp.getDiscountPercentage(),
+                    nowUtc.minus(2, java.time.temporal.ChronoUnit.HOURS),
+                    dealEndUtc,
+                    Math.max(dp.getStock(), 30)
+            );
+            flashDealRepository.save(fd);
+        }
     }
 
     private Product createProduct(
