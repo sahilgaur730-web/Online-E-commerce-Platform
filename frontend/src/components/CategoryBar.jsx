@@ -33,7 +33,7 @@ export function CategoryBar({ selectedCategory, onSelectCategory }) {
             WebkitOverflowScrolling: 'touch',
             scrollbarWidth: 'none',
           }}
-          className="touch-scroll-track flex items-center gap-2 sm:gap-3 lg:justify-between py-2 snap-x snap-mandatory"
+          className="touch-scroll-track flex lg:grid lg:grid-cols-7 items-center gap-2 sm:gap-3 lg:gap-2.5 py-2 snap-x snap-mandatory lg:snap-none w-full"
         >
           {CATEGORIES.map((cat) => {
             const Icon = cat.icon;
@@ -43,9 +43,14 @@ export function CategoryBar({ selectedCategory, onSelectCategory }) {
               <button
                 key={cat.id}
                 type="button"
-                style={{ scrollSnapAlign: 'start' }}
+                aria-label={cat.name}
+                style={{
+                  scrollSnapAlign: 'start',
+                  transition:
+                    'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease',
+                }}
                 onClick={() => onSelectCategory(cat.slug)}
-                className={`snap-start shrink-0 inline-flex items-center gap-2 px-3 py-1.5 md:px-3.5 md:py-2 rounded-full md:rounded-md transition-all duration-200 cursor-pointer select-none border md:border-transparent ${
+                className={`snap-start shrink-0 lg:w-full inline-flex items-center justify-center gap-2 px-3 py-1.5 md:px-3.5 md:py-2 rounded-full md:rounded-md cursor-pointer select-none border md:border-transparent hover:[transform:translateY(-2px)] active:[transform:translateY(0)] ${
                   isSelected
                     ? 'bg-[#0A3B74] text-white border-[#0A3B74] shadow-xs'
                     : 'bg-gray-50 md:bg-transparent text-gray-700 hover:text-[#0A3B74] hover:bg-blue-50/70 border-gray-200'
@@ -62,7 +67,7 @@ export function CategoryBar({ selectedCategory, onSelectCategory }) {
                 >
                   <Icon className="w-4 h-4 md:w-4.5 md:h-4.5" />
                 </div>
-                <span className="text-xs font-semibold whitespace-nowrap">
+                <span className="text-xs font-semibold whitespace-nowrap truncate">
                   {cat.name}
                 </span>
               </button>

@@ -97,7 +97,6 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
       icon: Award,
       color: 'from-amber-400 to-yellow-600',
       badge: '+50',
-      badgeClass: 'bg-[#FF7A00] text-white',
       isStreak: true,
       preview: {
         headline: 'Daily 7-Day SuperCoin Streak Rewards',
@@ -106,6 +105,67 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
       },
     },
   ];
+
+  const renderBadge = (badge) => {
+    if (!badge) return null;
+
+    let badgeContent = null;
+    let badgeBgClass = '';
+
+    switch (badge) {
+      case 'LIVE':
+        badgeBgClass = 'bg-[#EF4444] text-white shadow-xs';
+        badgeContent = (
+          <span className="inline-flex items-center gap-1 leading-none">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
+            </span>
+            <span>LIVE</span>
+          </span>
+        );
+        break;
+
+      case 'NEW':
+        badgeBgClass = 'bg-[#2563EB] text-white shadow-xs';
+        badgeContent = <span className="leading-none">NEW</span>;
+        break;
+
+      case 'ASSURED':
+        badgeBgClass = 'bg-[#059669] text-white shadow-xs';
+        badgeContent = (
+          <span className="inline-flex items-center gap-0.5 leading-none">
+            <ShieldCheck className="w-2.5 h-2.5 shrink-0" />
+            <span>ASSURED</span>
+          </span>
+        );
+        break;
+
+      case '+50':
+        badgeBgClass = 'bg-[#D97706] text-white shadow-xs';
+        badgeContent = <span className="leading-none">+50</span>;
+        break;
+
+      default:
+        badgeBgClass = 'bg-gray-800 text-white shadow-xs';
+        badgeContent = <span className="leading-none">{badge}</span>;
+        break;
+    }
+
+    return (
+      <span
+        style={{
+          position: 'absolute',
+          top: '-6px',
+          right: '-8px',
+          zIndex: 10,
+        }}
+        className={`font-black tracking-wider uppercase text-[9px] px-1.5 py-0.5 rounded-full border border-white whitespace-nowrap select-none pointer-events-none shadow-xs ${badgeBgClass}`}
+      >
+        {badgeContent}
+      </span>
+    );
+  };
 
   const handleStoryClick = (story) => {
     if (story.isStreak && onOpenStreak) {
@@ -117,66 +177,43 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 pt-2">
-      <div className="bg-white rounded-md p-4 shadow-xs border border-gray-200">
+      <div className="bg-white rounded-md shadow-xs border border-gray-200 lg:p-4 overflow-hidden lg:overflow-visible">
         <div
           style={{
             scrollSnapType: 'x mandatory',
             WebkitOverflowScrolling: 'touch',
             scrollbarWidth: 'none',
           }}
-          className="touch-scroll-track flex items-center gap-4 sm:gap-6 py-2 snap-x snap-mandatory"
+          className="touch-scroll-track flex lg:grid lg:grid-cols-7 items-center overflow-x-auto lg:overflow-visible gap-5 lg:gap-4 px-4 py-3 lg:p-0 snap-x snap-mandatory lg:snap-none"
         >
           {stories.map((story) => {
             const Icon = story.icon;
-            const badgeClass =
-              story.badgeClass ||
-              (story.badge === 'LIVE'
-                ? 'bg-red-600 text-white animate-pulse'
-                : story.badge === 'NEW'
-                ? 'bg-emerald-600 text-white'
-                : story.badge === 'ASSURED'
-                ? 'bg-[#0A3B74] text-white'
-                : 'bg-[#FF7A00] text-white');
 
             return (
               <button
                 key={story.id}
                 type="button"
-                style={{ scrollSnapAlign: 'start' }}
+                aria-label={story.title}
+                style={{
+                  scrollSnapAlign: 'start',
+                  transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                }}
                 onClick={() => handleStoryClick(story)}
-                className="flex flex-col items-center gap-2 shrink-0 snap-start cursor-pointer group focus:outline-none select-none"
+                className="flex flex-col items-center justify-start gap-2 w-[84px] sm:w-[92px] shrink-0 lg:w-full lg:shrink cursor-pointer group focus:outline-none select-none hover:[transform:translateY(-2px)] active:[transform:translateY(0)]"
               >
-                {/* Circular Gradient Ring with Relative Anchor for Badge */}
-                <div className="relative">
-                  <div
-                    className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5 bg-gradient-to-tr ${story.color} transition-transform duration-200 group-hover:scale-105 shadow-xs`}
-                  >
-                    <div className="w-full h-full rounded-full bg-white p-1 flex items-center justify-center">
-                      <div className="w-full h-full rounded-full bg-gray-50 flex items-center justify-center text-gray-800 group-hover:bg-blue-50 transition">
-                        <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-[#0A3B74]" />
-                      </div>
-                    </div>
-                  </div>
+                {/* 48x48px Squircle Card Container */}
+                <div className="relative w-12 h-12 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center shrink-0 shadow-2xs group-hover:border-[#0A3B74]/30 group-hover:bg-blue-50/50 transition-colors duration-200">
+                  <Icon className="w-5 h-5 text-[#0A3B74] group-hover:text-[#FF7A00] transition-colors duration-200" />
 
-                  {/* Floating Absolute Pill-Tag Badge */}
-                  {story.badge && (
-                    <span
-                      style={{
-                        position: 'absolute',
-                        top: '-4px',
-                        right: '-4px',
-                        borderRadius: '9999px',
-                        fontSize: '0.65rem',
-                        padding: '2px 6px',
-                      }}
-                      className={`z-10 font-black tracking-wider uppercase shadow-xs whitespace-nowrap leading-none border border-white ${badgeClass}`}
-                    >
-                      {story.badge}
-                    </span>
-                  )}
+                  {/* Absolute Floating Pill Badge */}
+                  {renderBadge(story.badge)}
                 </div>
 
-                <span className="text-xs font-semibold text-gray-800 text-center whitespace-nowrap group-hover:text-[#0A3B74] transition">
+                {/* Uniform Baseline Typography */}
+                <span
+                  style={{ fontSize: '0.8125rem' }}
+                  className="font-medium text-slate-700 group-hover:text-[#0A3B74] text-center w-full truncate leading-tight tracking-tight transition-colors duration-150"
+                >
                   {story.title}
                 </span>
               </button>
