@@ -181,7 +181,7 @@ export function SellerPortalPage({ onViewProduct }) {
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-        <div className="inline-block w-8 h-8 border-4 border-[#2874F0] border-t-transparent rounded-full animate-spin" />
+        <div className="inline-block w-8 h-8 border-4 border-[#0A3B74] border-t-transparent rounded-full animate-spin" />
         <p className="text-xs text-slate-500 mt-2">Loading Seller Dashboard...</p>
       </div>
     );
@@ -207,7 +207,7 @@ export function SellerPortalPage({ onViewProduct }) {
 
         <button
           onClick={() => setShowAddModal(true)}
-          className="bg-[#2874F0] hover:bg-[#0A3B74] text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+          className="bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
         >
           <Plus className="w-4 h-4" /> Add New Product
         </button>
@@ -246,7 +246,7 @@ export function SellerPortalPage({ onViewProduct }) {
           onClick={() => setActiveTab('products')}
           className={`pb-3 cursor-pointer transition-all ${
             activeTab === 'products'
-              ? 'text-[#0A3B74] border-b-2 border-[#2874F0]'
+              ? 'text-[#0A3B74] border-b-2 border-[#0A3B74]'
               : 'text-slate-500 hover:text-slate-900'
           }`}
         >
@@ -256,18 +256,18 @@ export function SellerPortalPage({ onViewProduct }) {
           onClick={() => setActiveTab('packages')}
           className={`pb-3 cursor-pointer transition-all flex items-center gap-1.5 ${
             activeTab === 'packages'
-              ? 'text-[#0A3B74] border-b-2 border-[#2874F0]'
+              ? 'text-[#0A3B74] border-b-2 border-[#0A3B74]'
               : 'text-slate-500 hover:text-slate-900'
           }`}
         >
-          <Package className="w-4 h-4 text-[#2874F0]" />
+          <Package className="w-4 h-4 text-[#0A3B74]" />
           Vendor Packages ({subOrders.length})
         </button>
         <button
           onClick={() => setActiveTab('orders')}
           className={`pb-3 cursor-pointer transition-all ${
             activeTab === 'orders'
-              ? 'text-[#0A3B74] border-b-2 border-[#2874F0]'
+              ? 'text-[#0A3B74] border-b-2 border-[#0A3B74]'
               : 'text-slate-500 hover:text-slate-900'
           }`}
         >
@@ -310,7 +310,7 @@ export function SellerPortalPage({ onViewProduct }) {
                         <div>
                           <p
                             onClick={() => onViewProduct(p.id)}
-                            className="font-bold text-slate-900 hover:text-[#2874F0] cursor-pointer line-clamp-1 max-w-xs"
+                            className="font-bold text-slate-900 hover:text-[#0A3B74] cursor-pointer line-clamp-1 max-w-xs"
                           >
                             {p.title}
                           </p>
@@ -362,7 +362,7 @@ export function SellerPortalPage({ onViewProduct }) {
         <div className="space-y-4">
           <div className="bg-blue-50/70 border border-blue-200/80 rounded-xl p-4 flex items-center justify-between text-xs text-[#0A3B74]">
             <div className="flex items-center gap-2">
-              <Layers className="w-4 h-4 text-[#2874F0]" />
+              <Layers className="w-4 h-4 text-[#0A3B74]" />
               <span className="font-semibold">
                 Multi-Seller Package Splitting: Your dispatches operate independently from other sellers in the same customer order.
               </span>
@@ -449,7 +449,7 @@ export function SellerPortalPage({ onViewProduct }) {
                             <>
                               <button
                                 onClick={() => handleUpdatePackageStatus(so.id, 'SHIPPED')}
-                                className="bg-[#2874F0] hover:bg-[#0A3B74] text-white font-bold px-3 py-1.5 rounded-md text-xs cursor-pointer shadow-2xs flex items-center gap-1"
+                                className="bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold px-3 py-1.5 rounded-md text-xs cursor-pointer shadow-2xs flex items-center gap-1"
                               >
                                 <Truck className="w-3.5 h-3.5" /> Mark Shipped
                               </button>
@@ -609,7 +609,7 @@ export function SellerPortalPage({ onViewProduct }) {
                     placeholder="e.g. Sony WH-1000XM5 Wireless Headphones"
                     value={productForm.title}
                     onChange={(e) => setProductForm({ ...productForm, title: e.target.value })}
-                    className="w-full p-2.5 border border-slate-300 rounded-lg focus:border-[#2874F0] focus:outline-none"
+                    className="w-full p-2.5 border border-slate-300 rounded-lg focus:border-[#0A3B74] focus:outline-none"
                   />
                 </div>
                 <div>
@@ -620,7 +620,7 @@ export function SellerPortalPage({ onViewProduct }) {
                     placeholder="e.g. Sony, Apple, Samsung"
                     value={productForm.brand}
                     onChange={(e) => setProductForm({ ...productForm, brand: e.target.value })}
-                    className="w-full p-2.5 border border-slate-300 rounded-lg focus:border-[#2874F0] focus:outline-none"
+                    className="w-full p-2.5 border border-slate-300 rounded-lg focus:border-[#0A3B74] focus:outline-none"
                   />
                 </div>
               </div>
@@ -630,7 +630,7 @@ export function SellerPortalPage({ onViewProduct }) {
                 <select
                   value={productForm.categoryId}
                   onChange={(e) => setProductForm({ ...productForm, categoryId: e.target.value })}
-                  className="w-full p-2.5 border border-slate-300 rounded-lg focus:border-[#2874F0] focus:outline-none"
+                  className="w-full p-2.5 border border-slate-300 rounded-lg focus:border-[#0A3B74] focus:outline-none"
                 >
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -649,7 +649,7 @@ export function SellerPortalPage({ onViewProduct }) {
                     placeholder="4499"
                     value={productForm.price}
                     onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
-                    className="w-full p-2.5 border border-slate-300 rounded-lg focus:border-[#2874F0] focus:outline-none"
+                    className="w-full p-2.5 border border-slate-300 rounded-lg focus:border-[#0A3B74] focus:outline-none"
                   />
                 </div>
                 <div>
@@ -659,7 +659,7 @@ export function SellerPortalPage({ onViewProduct }) {
                     placeholder="5999"
                     value={productForm.originalPrice}
                     onChange={(e) => setProductForm({ ...productForm, originalPrice: e.target.value })}
-                    className="w-full p-2.5 border border-slate-300 rounded-lg focus:border-[#2874F0] focus:outline-none"
+                    className="w-full p-2.5 border border-slate-300 rounded-lg focus:border-[#0A3B74] focus:outline-none"
                   />
                 </div>
                 <div>
@@ -670,7 +670,7 @@ export function SellerPortalPage({ onViewProduct }) {
                     min={1}
                     value={productForm.stock}
                     onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })}
-                    className="w-full p-2.5 border border-slate-300 rounded-lg focus:border-[#2874F0] focus:outline-none"
+                    className="w-full p-2.5 border border-slate-300 rounded-lg focus:border-[#0A3B74] focus:outline-none"
                   />
                 </div>
               </div>
@@ -684,11 +684,11 @@ export function SellerPortalPage({ onViewProduct }) {
                   onDragLeave={handleDragLeave}
                   className={`border-2 border-dashed rounded-xl p-5 text-center transition-all ${
                     dragActive
-                      ? 'border-[#2874F0] bg-blue-50/50'
-                      : 'border-slate-300 hover:border-[#2874F0] bg-slate-50/50'
+                      ? 'border-[#0A3B74] bg-blue-50/50'
+                      : 'border-slate-300 hover:border-[#0A3B74] bg-slate-50/50'
                   }`}
                 >
-                  <UploadCloud className="w-8 h-8 text-[#2874F0] mx-auto mb-2" />
+                  <UploadCloud className="w-8 h-8 text-[#0A3B74] mx-auto mb-2" />
                   <p className="font-semibold text-slate-800">
                     {uploadingImage ? 'Streaming physical image to storage...' : 'Drag & drop physical product image here'}
                   </p>
@@ -734,7 +734,7 @@ export function SellerPortalPage({ onViewProduct }) {
                   placeholder="Detailed product features..."
                   value={productForm.description}
                   onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
-                  className="w-full p-2.5 border border-slate-300 rounded-lg focus:border-[#2874F0] focus:outline-none"
+                  className="w-full p-2.5 border border-slate-300 rounded-lg focus:border-[#0A3B74] focus:outline-none"
                 />
               </div>
 
@@ -745,7 +745,7 @@ export function SellerPortalPage({ onViewProduct }) {
                   placeholder="Battery: 50 Hours&#10;Connectivity: Bluetooth 5.2&#10;Weight: 147g"
                   value={productForm.specifications}
                   onChange={(e) => setProductForm({ ...productForm, specifications: e.target.value })}
-                  className="w-full p-2.5 border border-slate-300 rounded-lg focus:border-[#2874F0] focus:outline-none font-mono"
+                  className="w-full p-2.5 border border-slate-300 rounded-lg focus:border-[#0A3B74] focus:outline-none font-mono"
                 />
               </div>
 
@@ -779,7 +779,7 @@ export function SellerPortalPage({ onViewProduct }) {
                 <button
                   type="submit"
                   disabled={savingProduct || uploadingImage}
-                  className="bg-[#2874F0] hover:bg-[#0A3B74] text-white font-bold px-6 py-2 rounded-lg cursor-pointer transition shadow-xs disabled:opacity-50"
+                  className="bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold px-6 py-2 rounded-lg cursor-pointer transition shadow-xs disabled:opacity-50"
                 >
                   {savingProduct ? 'Publishing...' : 'Publish Product'}
                 </button>

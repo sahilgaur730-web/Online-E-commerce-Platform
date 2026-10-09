@@ -3,24 +3,24 @@ import { ShieldCheck, HelpCircle, Gift, Award, Briefcase } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="bg-[#172337] text-white text-xs mt-12">
+    <footer className="bg-[#001D44] text-white text-xs mt-12">
       {/* Top Value Propositions */}
-      <div className="border-b border-gray-700 py-6 bg-[#21314d]">
+      <div className="border-b border-blue-900/60 py-6 bg-[#0A3B74]">
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           <div className="flex items-center justify-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-yellow-400" />
+            <ShieldCheck className="w-5 h-5 text-[#FF7A00]" />
             <span className="font-semibold text-gray-200">100% Authentic Products</span>
           </div>
           <div className="flex items-center justify-center gap-2">
-            <Award className="w-5 h-5 text-yellow-400" />
+            <Award className="w-5 h-5 text-[#FF7A00]" />
             <span className="font-semibold text-gray-200">7 Days Easy Return Policy</span>
           </div>
           <div className="flex items-center justify-center gap-2">
-            <Gift className="w-5 h-5 text-yellow-400" />
+            <Gift className="w-5 h-5 text-[#FF7A00]" />
             <span className="font-semibold text-gray-200">Free Delivery Above ₹500</span>
           </div>
           <div className="flex items-center justify-center gap-2">
-            <HelpCircle className="w-5 h-5 text-yellow-400" />
+            <HelpCircle className="w-5 h-5 text-[#FF7A00]" />
             <span className="font-semibold text-gray-200">24x7 Customer Support</span>
           </div>
         </div>
@@ -84,13 +84,13 @@ export function Footer() {
       {/* Bottom Copyright & Security */}
       <div className="max-w-7xl mx-auto px-4 py-5 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-gray-400">
         <div className="flex items-center gap-6">
-          <span className="flex items-center gap-1.5 text-yellow-400 font-semibold">
+          <span className="flex items-center gap-1.5 text-[#FF7A00] font-semibold">
             <Briefcase className="w-3.5 h-3.5" /> Become a Seller
           </span>
-          <span className="flex items-center gap-1.5 text-yellow-400 font-semibold">
+          <span className="flex items-center gap-1.5 text-[#FF7A00] font-semibold">
             <Gift className="w-3.5 h-3.5" /> Gift Cards
           </span>
-          <span className="flex items-center gap-1.5 text-yellow-400 font-semibold">
+          <span className="flex items-center gap-1.5 text-[#FF7A00] font-semibold">
             <HelpCircle className="w-3.5 h-3.5" /> Help Center
           </span>
         </div>

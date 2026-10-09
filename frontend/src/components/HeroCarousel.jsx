@@ -73,7 +73,7 @@ export function HeroCarousel({ onSelectCategory }) {
             <div className="pt-2">
               <button
                 onClick={() => onSelectCategory(slide.category)}
-                className="bg-[#FFE500] hover:bg-yellow-400 text-gray-900 font-bold px-6 py-2.5 rounded-sm shadow-sm transition text-sm cursor-pointer"
+                className="bg-[#FF7A00] hover:bg-[#E66A00] text-white font-bold px-6 py-2.5 rounded-sm shadow-md transition text-sm cursor-pointer"
               >
                 {slide.cta}
               </button>
@@ -117,7 +117,7 @@ export function HeroCarousel({ onSelectCategory }) {
             key={s.id}
             onClick={() => setCurrent(idx)}
             className={`h-2 rounded-full transition-all cursor-pointer ${
-              idx === current ? 'w-6 bg-[#FFE500]' : 'w-2 bg-white/50'
+              idx === current ? 'w-6 bg-[#FF7A00]' : 'w-2 bg-white/50'
             }`}
             aria-label={`Go to slide ${idx + 1}`}
           />

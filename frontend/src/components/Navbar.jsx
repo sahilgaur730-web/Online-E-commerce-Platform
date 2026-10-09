@@ -269,7 +269,7 @@ export function Navbar({
                       setIsSearchFocused(false);
                       if (onSearch) onSearch(c.label);
                     }}
-                    className="text-[11px] font-semibold bg-white border border-gray-200 hover:border-[#2874F0] hover:text-[#2874F0] px-2.5 py-0.5 rounded-full transition cursor-pointer"
+                    className="text-[11px] font-semibold bg-white border border-gray-200 hover:border-[#0A3B74] hover:text-[#0A3B74] px-2.5 py-0.5 rounded-full transition cursor-pointer"
                   >
                     {c.label}
                   </button>

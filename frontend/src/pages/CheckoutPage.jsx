@@ -312,7 +312,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
           <div className="flex justify-center gap-4 pt-4">
             <button
               onClick={() => onOrderPlaced && onOrderPlaced(orderData.id || 1)}
-              className="bg-[#2874F0] hover:bg-blue-600 text-white font-bold text-xs uppercase px-6 py-2.5 rounded-xs shadow-xs transition cursor-pointer"
+              className="bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs uppercase px-6 py-2.5 rounded-xs shadow-xs transition cursor-pointer"
             >
               Track Order Live
             </button>
@@ -340,7 +340,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
           </p>
           <button
             onClick={onViewOrders}
-            className="bg-[#2874F0] text-white font-bold text-xs px-6 py-2.5 rounded-xs cursor-pointer uppercase"
+            className="bg-[#0A3B74] text-white font-bold text-xs px-6 py-2.5 rounded-xs cursor-pointer uppercase"
           >
             View My Orders
           </button>
@@ -359,12 +359,12 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
           <div
             onClick={() => setActiveStep(1)}
             className={`flex items-center gap-2 cursor-pointer ${
-              activeStep >= 1 ? 'text-[#2874F0]' : 'text-gray-400'
+              activeStep >= 1 ? 'text-[#0A3B74]' : 'text-gray-400'
             }`}
           >
             <span
               className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white ${
-                activeStep > 1 ? 'bg-[#388E3C]' : 'bg-[#2874F0]'
+                activeStep > 1 ? 'bg-[#388E3C]' : 'bg-[#0A3B74]'
               }`}
             >
               {activeStep > 1 ? <Check className="w-3.5 h-3.5" /> : '1'}
@@ -374,7 +374,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
 
           <div className="h-0.5 flex-1 mx-4 bg-gray-200">
             <div
-              className={`h-full bg-[#2874F0] transition-all duration-300 ${
+              className={`h-full bg-[#0A3B74] transition-all duration-300 ${
                 activeStep >= 2 ? 'w-full' : 'w-0'
               }`}
             />
@@ -382,12 +382,12 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
 
           <div
             className={`flex items-center gap-2 ${
-              activeStep >= 2 ? 'text-[#2874F0]' : 'text-gray-400'
+              activeStep >= 2 ? 'text-[#0A3B74]' : 'text-gray-400'
             }`}
           >
             <span
               className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white ${
-                activeStep === 2 ? 'bg-[#2874F0]' : activeStep > 2 ? 'bg-[#388E3C]' : 'bg-gray-300'
+                activeStep === 2 ? 'bg-[#0A3B74]' : activeStep > 2 ? 'bg-[#388E3C]' : 'bg-gray-300'
               }`}
             >
               2
@@ -397,7 +397,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
 
           <div className="h-0.5 flex-1 mx-4 bg-gray-200">
             <div
-              className={`h-full bg-[#2874F0] transition-all duration-300 ${
+              className={`h-full bg-[#0A3B74] transition-all duration-300 ${
                 activeStep === 3 ? 'w-full' : 'w-0'
               }`}
             />
@@ -426,9 +426,9 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
           {/* STEP 1: DELIVERY ADDRESS */}
           {activeStep === 1 && (
             <div className="bg-white rounded-xs shadow-xs border border-gray-200 overflow-hidden">
-              <div className="p-4 bg-[#2874F0] text-white flex items-center justify-between">
+              <div className="p-4 bg-[#0A3B74] text-white flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-full bg-white text-[#2874F0] text-xs font-bold flex items-center justify-center">
+                  <span className="w-6 h-6 rounded-full bg-white text-[#0A3B74] text-xs font-bold flex items-center justify-center">
                     1
                   </span>
                   <span className="font-bold text-sm uppercase">SELECT DELIVERY ADDRESS</span>
@@ -449,7 +449,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                       name="address"
                       checked={selectedAddressId === addr.id}
                       onChange={() => setSelectedAddressId(addr.id)}
-                      className="mt-1 text-[#2874F0]"
+                      className="mt-1 text-[#0A3B74]"
                     />
                     <div className="flex-1 text-xs">
                       <div className="flex items-center gap-2">
@@ -471,7 +471,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                 {!showNewAddressForm ? (
                   <button
                     onClick={() => setShowNewAddressForm(true)}
-                    className="w-full text-left py-3.5 px-2 text-xs font-bold text-[#2874F0] hover:text-blue-800 flex items-center gap-2 cursor-pointer"
+                    className="w-full text-left py-3.5 px-2 text-xs font-bold text-[#0A3B74] hover:text-[#002F6C] flex items-center gap-2 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" /> Add a new delivery address
                   </button>
@@ -535,7 +535,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                     <div className="flex gap-2">
                       <button
                         type="submit"
-                        className="bg-[#2874F0] text-white font-bold text-xs px-4 py-2 rounded-xs"
+                        className="bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs px-4 py-2 rounded-xs"
                       >
                         Save & Deliver Here
                       </button>
@@ -567,9 +567,9 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
           {/* STEP 2: PAYMENT METHOD */}
           {activeStep === 2 && (
             <div className="bg-white rounded-xs shadow-xs border border-gray-200 overflow-hidden">
-              <div className="p-4 bg-[#2874F0] text-white flex items-center justify-between">
+              <div className="p-4 bg-[#0A3B74] text-white flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-full bg-white text-[#2874F0] text-xs font-bold flex items-center justify-center">
+                  <span className="w-6 h-6 rounded-full bg-white text-[#0A3B74] text-xs font-bold flex items-center justify-center">
                     2
                   </span>
                   <span className="font-bold text-sm uppercase">PAYMENT OPTIONS</span>
@@ -581,7 +581,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                 </div>
                 <button
                   onClick={() => setActiveStep(1)}
-                  className="bg-white text-[#2874F0] font-bold text-xs px-3 py-1 rounded-xs cursor-pointer"
+                  className="bg-white text-[#0A3B74] font-bold text-xs px-3 py-1 rounded-xs cursor-pointer"
                 >
                   Change Address
                 </button>
@@ -629,7 +629,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                         onClick={() => setPaymentMethod(gw.id)}
                         className={`p-3 rounded-xs border text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition cursor-pointer ${
                           paymentMethod === gw.id
-                            ? 'border-[#2874F0] bg-blue-50 text-[#2874F0] ring-1 ring-[#2874F0]'
+                            ? 'border-[#0A3B74] bg-blue-50 text-[#0A3B74] ring-1 ring-[#0A3B74]'
                             : 'border-gray-200 text-gray-700 hover:border-gray-300'
                         }`}
                       >
@@ -669,7 +669,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                           />
                           <button
                             onClick={() => setUpiVerified(true)}
-                            className="bg-[#2874F0] text-white text-xs font-bold px-4 py-2 rounded-xs"
+                            className="bg-[#0A3B74] hover:bg-[#002F6C] text-white text-xs font-bold px-4 py-2 rounded-xs"
                           >
                             Verify
                           </button>
@@ -704,7 +704,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                 {paymentMethod === 'CARD' && (
                   <div className="p-4 bg-gray-50 border border-gray-200 rounded-xs space-y-4">
                     {/* Realistic ATM Card Mock */}
-                    <div className="max-w-xs mx-auto bg-gradient-to-tr from-[#0A3B74] to-[#2874F0] text-white p-4 rounded-xl shadow-lg space-y-4 select-none">
+                    <div className="max-w-xs mx-auto bg-gradient-to-tr from-[#0A3B74] to-[#002F6C] text-white p-4 rounded-xl shadow-lg space-y-4 select-none">
                       <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-wider">
                         <span>ShopKart Platinum</span>
                         <span>VISA</span>
@@ -784,7 +784,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                             onClick={() => setSelectedBank(b)}
                             className={`p-3 rounded border text-left font-bold transition ${
                               selectedBank === b
-                                ? 'border-[#2874F0] bg-blue-50 text-[#2874F0]'
+                                ? 'border-[#0A3B74] bg-blue-50 text-[#0A3B74]'
                                 : 'bg-white border-gray-200 text-gray-800'
                             }`}
                           >
@@ -902,7 +902,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
 
           <div className="text-[11px] text-gray-500 space-y-1 pt-2 border-t border-gray-100">
             <div className="flex items-center gap-1.5 text-gray-600">
-              <ShieldCheck className="w-4 h-4 text-[#2874F0]" />
+              <ShieldCheck className="w-4 h-4 text-[#0A3B74]" />
               <span>Safe and Secure Payments. 100% Authentic Products.</span>
             </div>
           </div>

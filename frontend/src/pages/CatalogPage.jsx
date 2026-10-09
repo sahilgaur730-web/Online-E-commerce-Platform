@@ -28,11 +28,11 @@ export function CatalogPage({ initialCategory, initialKeyword, onSelectProduct, 
       const data = await api.getCategories();
       setCategories(data && data.length > 0 ? data : FALLBACK_CATEGORIES);
       const brands = await api.getBrands();
-      setAvailableBrands(brands || ['Apple', 'Samsung', 'Sony', 'OnePlus', 'Nike', "Levi's", 'Philips', 'LG', 'ASUS', 'Google', 'Bose', 'Dell', 'Lenovo', 'Zara', 'Ray-Ban', 'adidas', 'Jordan', 'Dyson', 'Instant Pot']);
+      setAvailableBrands(brands || ['Apple', 'Samsung', 'Sony', 'OnePlus', 'Nike', "Levi's", 'Philips', 'LG', 'ASUS', 'Google', 'Bose', 'Dell', 'Lenovo', 'Zara', 'Ray-Ban', 'adidas', 'Jordan', 'Dyson', 'Instant Pot', 'Bowflex', 'Garmin', 'Decathlon', 'Lululemon']);
     } catch (e) {
       console.error('Failed to load categories, using fallback:', e);
       setCategories(FALLBACK_CATEGORIES);
-      setAvailableBrands(['Apple', 'Samsung', 'Sony', 'OnePlus', 'Nike', "Levi's", 'Philips', 'LG', 'ASUS', 'Google', 'Bose', 'Dell', 'Lenovo', 'Zara', 'Ray-Ban', 'adidas', 'Jordan', 'Dyson', 'Instant Pot']);
+      setAvailableBrands(['Apple', 'Samsung', 'Sony', 'OnePlus', 'Nike', "Levi's", 'Philips', 'LG', 'ASUS', 'Google', 'Bose', 'Dell', 'Lenovo', 'Zara', 'Ray-Ban', 'adidas', 'Jordan', 'Dyson', 'Instant Pot', 'Bowflex', 'Garmin', 'Decathlon', 'Lululemon']);
     }
   }, []);
 

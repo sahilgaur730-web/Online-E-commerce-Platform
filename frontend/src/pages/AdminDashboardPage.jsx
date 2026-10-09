@@ -220,7 +220,7 @@ export function AdminDashboardPage({ onViewOrder }) {
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-        <div className="inline-block w-8 h-8 border-4 border-[#2874F0] border-t-transparent rounded-full animate-spin" />
+        <div className="inline-block w-8 h-8 border-4 border-[#0A3B74] border-t-transparent rounded-full animate-spin" />
         <p className="text-xs text-gray-500 mt-2 font-semibold">
           Loading ShopKart Central Operations & Telemetry...
         </p>
@@ -306,7 +306,7 @@ export function AdminDashboardPage({ onViewOrder }) {
           onClick={() => setActiveTab('analytics')}
           className={`pb-3 cursor-pointer transition shrink-0 flex items-center gap-1.5 ${
             activeTab === 'analytics'
-              ? 'text-[#2874F0] border-b-2 border-[#2874F0]'
+              ? 'text-[#0A3B74] border-b-2 border-[#0A3B74]'
               : 'text-gray-500 hover:text-gray-900'
           }`}
         >
@@ -318,7 +318,7 @@ export function AdminDashboardPage({ onViewOrder }) {
           onClick={() => setActiveTab('orders')}
           className={`pb-3 cursor-pointer transition shrink-0 flex items-center gap-1.5 ${
             activeTab === 'orders'
-              ? 'text-[#2874F0] border-b-2 border-[#2874F0]'
+              ? 'text-[#0A3B74] border-b-2 border-[#0A3B74]'
               : 'text-gray-500 hover:text-gray-900'
           }`}
         >
@@ -330,7 +330,7 @@ export function AdminDashboardPage({ onViewOrder }) {
           onClick={() => setActiveTab('users')}
           className={`pb-3 cursor-pointer transition shrink-0 flex items-center gap-1.5 ${
             activeTab === 'users'
-              ? 'text-[#2874F0] border-b-2 border-[#2874F0]'
+              ? 'text-[#0A3B74] border-b-2 border-[#0A3B74]'
               : 'text-gray-500 hover:text-gray-900'
           }`}
         >
@@ -342,7 +342,7 @@ export function AdminDashboardPage({ onViewOrder }) {
           onClick={() => setActiveTab('inventory')}
           className={`pb-3 cursor-pointer transition shrink-0 flex items-center gap-1.5 ${
             activeTab === 'inventory'
-              ? 'text-[#2874F0] border-b-2 border-[#2874F0]'
+              ? 'text-[#0A3B74] border-b-2 border-[#0A3B74]'
               : 'text-gray-500 hover:text-gray-900'
           }`}
         >
@@ -354,7 +354,7 @@ export function AdminDashboardPage({ onViewOrder }) {
           onClick={() => setActiveTab('audit')}
           className={`pb-3 cursor-pointer transition shrink-0 flex items-center gap-1.5 ${
             activeTab === 'audit'
-              ? 'text-[#2874F0] border-b-2 border-[#2874F0]'
+              ? 'text-[#0A3B74] border-b-2 border-[#0A3B74]'
               : 'text-gray-500 hover:text-gray-900'
           }`}
         >
@@ -371,7 +371,7 @@ export function AdminDashboardPage({ onViewOrder }) {
           {/* Period Filter */}
           <div className="flex items-center justify-between bg-white p-3.5 rounded-xs border border-gray-200">
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-[#2874F0]" />
+              <Calendar className="w-4 h-4 text-[#0A3B74]" />
               <span className="text-xs font-bold text-gray-800">Telemetry Sampling Window:</span>
             </div>
             <div className="flex gap-1.5">
@@ -381,7 +381,7 @@ export function AdminDashboardPage({ onViewOrder }) {
                   onClick={() => setAnalyticsPeriod(p)}
                   className={`text-xs px-3 py-1 rounded-xs font-bold transition cursor-pointer ${
                     analyticsPeriod === p
-                      ? 'bg-[#2874F0] text-white shadow-xs'
+                      ? 'bg-[#0A3B74] text-white shadow-xs'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -419,7 +419,7 @@ export function AdminDashboardPage({ onViewOrder }) {
                         ₹{(rev / 1000).toFixed(0)}k
                       </span>
                       <div
-                        className="w-full bg-gradient-to-t from-[#0A3B74] to-[#2874F0] rounded-t-xs transition-all duration-300 group-hover:from-blue-600 group-hover:to-blue-400"
+                        className="w-full bg-gradient-to-t from-[#0A3B74] to-[#0D4E96] rounded-t-xs transition-all duration-300 group-hover:from-blue-700 group-hover:to-blue-500"
                         style={{ height: `${heightPct}%` }}
                       />
                       <span className="text-[10px] text-gray-500 font-semibold">
@@ -440,7 +440,7 @@ export function AdminDashboardPage({ onViewOrder }) {
                   </h3>
                   <p className="text-xs text-gray-500">Order count alongside visitor sessions</p>
                 </div>
-                <span className="text-xs font-black text-[#2874F0] bg-blue-50 px-2 py-0.5 rounded">
+                <span className="text-xs font-black text-[#0A3B74] bg-blue-50 px-2 py-0.5 rounded">
                   Conv: 3.7%
                 </span>
               </div>
@@ -455,7 +455,7 @@ export function AdminDashboardPage({ onViewOrder }) {
                         {ord} orders
                       </span>
                       <div
-                        className="w-full bg-gradient-to-t from-[#FF7A00] to-[#FB641B] rounded-t-xs transition-all duration-300 group-hover:from-amber-600 group-hover:to-orange-400"
+                        className="w-full bg-gradient-to-t from-[#FF7A00] to-[#FF8A00] rounded-t-xs transition-all duration-300 group-hover:from-amber-600 group-hover:to-orange-400"
                         style={{ height: `${heightPct}%` }}
                       />
                       <span className="text-[10px] text-gray-500 font-semibold">
@@ -480,11 +480,11 @@ export function AdminDashboardPage({ onViewOrder }) {
                   <div key={idx} className="space-y-1">
                     <div className="flex justify-between text-xs font-bold text-gray-800">
                       <span className="truncate max-w-xs">{item.name}</span>
-                      <span className="text-[#2874F0]">{item.views.toLocaleString()} views</span>
+                      <span className="text-[#0A3B74]">{item.views.toLocaleString()} views</span>
                     </div>
                     <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-[#2874F0] rounded-full"
+                        className="h-full bg-[#0A3B74] rounded-full"
                         style={{ width: `${(item.views / 14000) * 100}%` }}
                       />
                     </div>
@@ -506,7 +506,7 @@ export function AdminDashboardPage({ onViewOrder }) {
                 {bestSellers.map((prod, idx) => (
                   <div key={idx} className="py-2.5 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <span className="w-5 h-5 rounded-full bg-blue-50 text-[#2874F0] font-black flex items-center justify-center text-[10px]">
+                      <span className="w-5 h-5 rounded-full bg-blue-50 text-[#0A3B74] font-black flex items-center justify-center text-[10px]">
                         {idx + 1}
                       </span>
                       <div className="min-w-0">
@@ -584,7 +584,7 @@ export function AdminDashboardPage({ onViewOrder }) {
                 <button
                   onClick={handleExecuteBatchStatus}
                   disabled={batchProcessing}
-                  className="bg-[#2874F0] hover:bg-blue-600 text-white font-bold text-xs px-4 py-1.5 rounded-xs shadow-xs cursor-pointer"
+                  className="bg-[#0A3B74] hover:bg-[#082d59] text-white font-bold text-xs px-4 py-1.5 rounded-xs shadow-xs cursor-pointer"
                 >
                   {batchProcessing ? 'Executing...' : 'Apply Status to Selected'}
                 </button>
@@ -600,7 +600,7 @@ export function AdminDashboardPage({ onViewOrder }) {
                   <th className="p-3 w-8">
                     <button onClick={handleSelectAll} className="cursor-pointer">
                       {selectedOrderIds.length === filteredOrders.length && filteredOrders.length > 0 ? (
-                        <CheckSquare className="w-4 h-4 text-[#2874F0]" />
+                        <CheckSquare className="w-4 h-4 text-[#0A3B74]" />
                       ) : (
                         <Square className="w-4 h-4 text-gray-400" />
                       )}
@@ -630,7 +630,7 @@ export function AdminDashboardPage({ onViewOrder }) {
                           className="cursor-pointer"
                         >
                           {selectedOrderIds.includes(o.id) ? (
-                            <CheckSquare className="w-4 h-4 text-[#2874F0]" />
+                            <CheckSquare className="w-4 h-4 text-[#0A3B74]" />
                           ) : (
                             <Square className="w-4 h-4 text-gray-400" />
                           )}
@@ -655,7 +655,7 @@ export function AdminDashboardPage({ onViewOrder }) {
                               ? 'bg-green-100 text-[#388E3C]'
                               : o.orderStatus === 'CANCELLED'
                               ? 'bg-red-100 text-red-700'
-                              : 'bg-blue-100 text-[#2874F0]'
+                              : 'bg-blue-100 text-[#0A3B74]'
                           }`}
                         >
                           {o.orderStatus}
@@ -670,7 +670,7 @@ export function AdminDashboardPage({ onViewOrder }) {
                         </button>
                         <button
                           onClick={() => onViewOrder && onViewOrder(o.id)}
-                          className="text-xs font-bold text-[#2874F0] hover:underline cursor-pointer"
+                          className="text-xs font-bold text-[#0A3B74] hover:underline cursor-pointer"
                         >
                           Tracking
                         </button>
@@ -831,7 +831,7 @@ export function AdminDashboardPage({ onViewOrder }) {
             <div className="flex items-center justify-between border-b pb-4">
               <div>
                 <h2 className="text-base font-black text-gray-900">Order Inspection Drawer</h2>
-                <span className="font-mono text-xs font-bold text-[#2874F0]">
+                <span className="font-mono text-xs font-bold text-[#0A3B74]">
                   #{inspectingOrder.orderNumber}
                 </span>
               </div>
@@ -849,7 +849,7 @@ export function AdminDashboardPage({ onViewOrder }) {
                 <span className="text-[10px] font-bold text-gray-500 uppercase block">
                   Current Status
                 </span>
-                <span className="text-sm font-black text-[#2874F0]">
+                <span className="text-sm font-black text-[#0A3B74]">
                   {inspectingOrder.orderStatus}
                 </span>
               </div>
@@ -858,7 +858,7 @@ export function AdminDashboardPage({ onViewOrder }) {
                 {inspectingOrder.orderStatus === 'PLACED' && (
                   <button
                     onClick={() => handleSingleStatusUpdate(inspectingOrder.id, 'CONFIRMED')}
-                    className="bg-[#2874F0] text-white font-bold text-xs px-3 py-1.5 rounded-xs"
+                    className="bg-[#0A3B74] hover:bg-[#082d59] text-white font-bold text-xs px-3 py-1.5 rounded-xs"
                   >
                     Confirm Order
                   </button>

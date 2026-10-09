@@ -121,7 +121,7 @@ export function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Enter your name"
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded focus:border-[#2874F0] focus:outline-none"
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
                   />
                 </div>
               </div>
@@ -140,7 +140,7 @@ export function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
                     value={storeName}
                     onChange={(e) => setStoreName(e.target.value)}
                     placeholder="e.g. Apex Electronics Hub"
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded focus:border-[#2874F0] focus:outline-none"
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
                   />
                 </div>
               </div>
@@ -158,7 +158,7 @@ export function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter email address"
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded focus:border-[#2874F0] focus:outline-none"
+                  className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
                 />
               </div>
             </div>
@@ -175,7 +175,7 @@ export function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="10-digit mobile number"
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded focus:border-[#2874F0] focus:outline-none"
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
                   />
                 </div>
               </div>
@@ -193,7 +193,7 @@ export function LoginModal({ isOpen, onClose, initialMode = 'login' }) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="At least 6 characters"
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded focus:border-[#2874F0] focus:outline-none"
+                  className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
                 />
               </div>
             </div>

@@ -132,7 +132,7 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
                 >
                   <div className="w-full h-full rounded-full bg-white p-1 flex items-center justify-center">
                     <div className="w-full h-full rounded-full bg-gray-50 flex items-center justify-center text-gray-800 group-hover:bg-blue-50 transition">
-                      <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-[#2874F0]" />
+                      <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-[#0A3B74]" />
                     </div>
                   </div>
                   {story.badge && (

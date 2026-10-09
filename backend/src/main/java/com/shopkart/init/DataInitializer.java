@@ -615,6 +615,190 @@ public class DataInitializer implements CommandLineRunner {
         );
         products.add(p22);
 
+        // 23. Bowflex SelectTech 552 Dumbbells (Sports & Fitness)
+        Product p23 = createProduct(
+                "Bowflex SelectTech 552 Adjustable Dumbbells (Pair, 2kg - 24kg)",
+                "Combines 15 sets of weights into one with unique dial system. Easily switch from 2 kg to 24 kg with the turn of a dial. Space-efficient and durable molding.",
+                "Bowflex",
+                new BigDecimal("29999"),
+                new BigDecimal("39999"),
+                25,
+                15,
+                4.8,
+                840,
+                112,
+                catSports,
+                seller1,
+                true, false, true,
+                "Weight Range: 2 to 24 kg (5 to 52.5 lbs) per dumbbell\nWeight Settings: 15 increments\nDimensions: 43 x 21 x 23 cm\nMaterial: High-durability steel with thermoplastic rubber coating\nWarranty: 2 Years Manufacturer Warranty",
+                List.of(
+                        "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=600&q=80",
+                        "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=600&q=80"
+                )
+        );
+        products.add(p23);
+
+        // 24. Garmin Forerunner 265 (Sports & Fitness)
+        Product p24 = createProduct(
+                "Garmin Forerunner 265 Running Smartwatch (Black / Powder Grey AMOLED)",
+                "Brilliant AMOLED touchscreen display with traditional button controls. Advanced training metrics, recovery insights, Morning Report, and up to 13 days of battery life.",
+                "Garmin",
+                new BigDecimal("42990"),
+                new BigDecimal("50490"),
+                15,
+                20,
+                4.7,
+                520,
+                78,
+                catSports,
+                seller1,
+                true, true, true,
+                "Display: 1.3-inch AMOLED (416 x 416 pixels) with Gorilla Glass 3\nBattery Life: Up to 13 days smartwatch mode / 20 hours GPS mode\nSensors: Multi-band GPS, Wrist-based Heart Rate, Pulse Ox, Barometric Altimeter\nWater Rating: 5 ATM (50 meters)\nWeight: 47 g",
+                List.of(
+                        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80",
+                        "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=600&q=80"
+                )
+        );
+        products.add(p24);
+
+        // 25. Decathlon Triban RC 120 Disc Road Bike (Sports & Fitness)
+        Product p25 = createProduct(
+                "Decathlon Triban RC 120 Disc Road Bike (Navy Blue / Medium Frame)",
+                "Versatile road bike designed for long distance touring and fitness riding. Equipped with mechanical disc brakes, ergonomic aluminum frame, and carbon fork for vibration dampening.",
+                "Decathlon",
+                new BigDecimal("34999"),
+                new BigDecimal("39999"),
+                13,
+                10,
+                4.5,
+                310,
+                45,
+                catSports,
+                seller2,
+                false, false, true,
+                "Frame: 6061 T6 Aluminum comfort-oriented geometry\nFork: Carbon blades with aluminum 1-1/8\" headset\nDrivetrain: Microshift 2x8 speed with integrated brake levers\nBrakes: Promax DSK-300R mechanical disc brakes (160mm rotors)\nTires: Triban Resist Protect 700x28c puncture-resistant",
+                List.of(
+                        "https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=600&q=80",
+                        "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?w=600&q=80"
+                )
+        );
+        products.add(p25);
+
+        // 26. Lululemon The Mat 5mm (Sports & Fitness)
+        Product p26 = createProduct(
+                "Lululemon The Mat 5mm Premium Natural Rubber Yoga Mat (Midnight Shadow)",
+                "Designed for yoga and intensive floor workouts. Features a grippy natural rubber base and polyurethane top layer that absorbs sweat for superior traction during sweaty sessions.",
+                "Lululemon",
+                new BigDecimal("7990"),
+                new BigDecimal("9490"),
+                16,
+                35,
+                4.8,
+                680,
+                92,
+                catSports,
+                seller2,
+                false, true, false,
+                "Dimensions: 66 cm x 180 cm (26\" x 71\")\nThickness: 5 mm (extra cushioning for joints)\nMaterial: 61% Natural Rubber, 17% Synthetic Rubber, 15% Polyurethane, 5% Polyester\nFeatures: Anti-microbial additive, reversible textured grip\nWeight: 2.38 kg",
+                List.of(
+                        "https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=600&q=80",
+                        "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&q=80"
+                )
+        );
+        products.add(p26);
+
+        // 27. Sony PlayStation 5 Slim (Electronics)
+        Product p27 = createProduct(
+                "Sony PlayStation 5 Slim Digital Edition Console (1TB SSD, DualSense Wireless)",
+                "Slimmed-down design packing powerful gaming performance. Harness the power of a custom CPU, GPU, and ultra-high-speed SSD with integrated I/O that rewrite the rules of what a PlayStation console can do.",
+                "Sony",
+                new BigDecimal("44990"),
+                new BigDecimal("49990"),
+                10,
+                18,
+                4.9,
+                2950,
+                410,
+                catElectronics,
+                seller1,
+                true, false, true,
+                "Storage: 1TB Custom NVMe SSD (up to 5.5GB/s raw)\nResolution: 4K 120Hz output with HDR & Ray Tracing support\nAudio: Tempest 3D AudioTech\nConnectivity: Wi-Fi 6, Gigabit Ethernet, 2x USB-C ports\nIn the Box: PS5 Slim Console, DualSense Wireless Controller, HDMI 2.1 cable",
+                List.of(
+                        "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=600&q=80",
+                        "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=600&q=80"
+                )
+        );
+        products.add(p27);
+
+        // 28. Apple iPad Air 11-inch M2 (Mobiles & Tablets)
+        Product p28 = createProduct(
+                "Apple iPad Air 11-inch (M2 Chip, Wi-Fi, 128GB - Space Grey)",
+                "Supercharged by the blazing-fast Apple M2 chip. Features an 11-inch Liquid Retina display, landscape 12MP front camera with Center Stage, and support for Apple Pencil Pro.",
+                "Apple",
+                new BigDecimal("59900"),
+                new BigDecimal("64900"),
+                8,
+                25,
+                4.8,
+                1120,
+                145,
+                catMobiles,
+                seller1,
+                true, false, true,
+                "Chip: Apple M2 (8-core CPU, 10-core GPU, 16-core Neural Engine)\nDisplay: 11-inch Liquid Retina with P3 wide color and True Tone\nCamera: 12MP Wide back camera, landscape 12MP Ultra Wide front camera\nSecurity: Touch ID built into top button\nBattery: Up to 10 hours of web surfing on Wi-Fi",
+                List.of(
+                        "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=600&q=80",
+                        "https://images.unsplash.com/photo-1561154464-82e9adf32764?w=600&q=80"
+                )
+        );
+        products.add(p28);
+
+        // 29. Philips Hue Gradient Lightstrip (Home & Kitchen)
+        Product p29 = createProduct(
+                "Philips Hue Play Gradient Smart Lightstrip for 55-65\" TV (RGB Bluetooth + Zigbee)",
+                "Takes surround lighting to the next level with seamless gradient color blending. Syncs with screen content and music for an immersive entertainment setup.",
+                "Philips",
+                new BigDecimal("17999"),
+                new BigDecimal("22999"),
+                22,
+                14,
+                4.6,
+                390,
+                52,
+                catHome,
+                seller1,
+                false, true, false,
+                "Compatibility: Designed for 55 to 65 inch TVs\nColor Capabilities: 16 Million Colors + Multiple colors displayed simultaneously\nLifetime: 25,000 hours\nSmart Connectivity: Bluetooth & Philips Hue Bridge (Zigbee)\nPower: 20W LED fixture",
+                List.of(
+                        "https://images.unsplash.com/photo-1550985616-10810253b84d?w=600&q=80",
+                        "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600&q=80"
+                )
+        );
+        products.add(p29);
+
+        // 30. LG 55\" OLED evo C3 TV (Appliances)
+        Product p30 = createProduct(
+                "LG 55-inch OLED evo C3 Series 4K Smart TV (OLED55C3PSA, 120Hz, Dolby Vision)",
+                "Self-lit OLED pixels with Brightness Booster. α9 AI Processor Gen6 delivers enhanced clarity and depth. Ultra-slim bezel design with native 120Hz refresh rate and 4 HDMI 2.1 ports for pro gaming.",
+                "LG",
+                new BigDecimal("119990"),
+                new BigDecimal("169990"),
+                29,
+                8,
+                4.8,
+                880,
+                120,
+                catAppliances,
+                seller1,
+                true, false, true,
+                "Display: 55-inch 4K Self-Lit OLED evo (3840 x 2160)\nProcessor: α9 AI Processor Gen6 4K\nGaming: 0.1ms response time, NVIDIA G-Sync, AMD FreeSync Premium, 4x HDMI 2.1 (4K@120Hz)\nAudio: 40W 2.2 Channel Dolby Atmos & AI Sound Pro (Virtual 9.1.2 up-mix)\nOS: webOS 23 with ThinQ AI & Magic Remote",
+                List.of(
+                        "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=600&q=80",
+                        "https://images.unsplash.com/photo-1461151304267-38535e780c79?w=600&q=80"
+                )
+        );
+        products.add(p30);
+
         // 5. Initial Seed Order for Buyer with full tracking history
         Order initialOrder = new Order();
         initialOrder.setOrderNumber("OD179124802194821");

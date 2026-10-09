@@ -363,7 +363,7 @@ export function OrderDetailPage({ orderId, onBack, onViewProduct }) {
               <select
                 value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}
-                className="w-full text-xs p-2 border border-gray-300 rounded focus:border-[#2874F0] focus:outline-none"
+                className="w-full text-xs p-2 border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
               >
                 <option value="Found better price elsewhere">Found better price elsewhere</option>
                 <option value="Ordered by mistake">Ordered by mistake</option>

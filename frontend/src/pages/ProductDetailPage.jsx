@@ -269,7 +269,7 @@ export function ProductDetailPage({
   if (loading || !product) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-        <div className="inline-block w-8 h-8 border-4 border-[#2874F0] border-t-transparent rounded-full animate-spin" />
+        <div className="inline-block w-8 h-8 border-4 border-[#0A3B74] border-t-transparent rounded-full animate-spin" />
         <p className="text-xs text-gray-500 mt-3 font-semibold">
           Loading ShopKart product details...
         </p>
@@ -310,7 +310,7 @@ export function ProductDetailPage({
 
       {/* Breadcrumb Navigation */}
       <div className="flex items-center gap-1.5 text-xs text-gray-500">
-        <button onClick={onBack} className="hover:text-[#2874F0] cursor-pointer">
+        <button onClick={onBack} className="hover:text-[#0A3B74] cursor-pointer">
           Home
         </button>
         <ChevronRight className="w-3.5 h-3.5" />
@@ -333,7 +333,7 @@ export function ProductDetailPage({
                       onClick={() => setActiveImage(img)}
                       className={`w-14 h-14 p-1 rounded-xs border transition shrink-0 cursor-pointer ${
                         activeImage === img
-                          ? 'border-[#2874F0] ring-1 ring-[#2874F0]'
+                          ? 'border-[#0A3B74] ring-1 ring-[#0A3B74]'
                           : 'border-gray-200 hover:border-gray-400'
                       }`}
                     >
@@ -413,7 +413,7 @@ export function ProductDetailPage({
                   className={`py-3.5 px-4 rounded-xs font-bold text-xs uppercase flex items-center justify-center gap-2 shadow-sm transition cursor-pointer active:scale-98 ${
                     added
                       ? 'bg-[#388E3C] text-white'
-                      : 'bg-[#FF9F00] hover:bg-[#e68e00] text-white'
+                      : 'bg-[#0A3B74] hover:bg-[#002F6C] text-white'
                   }`}
                 >
                   {added ? (
@@ -458,7 +458,7 @@ export function ProductDetailPage({
                 {product.ratingCount || 120} Ratings & {product.reviewCount || 45} Reviews
               </span>
               <div className="flex items-center gap-1 bg-blue-50 text-[#0A3B74] px-2 py-0.5 rounded-xs text-xs font-bold border border-blue-200">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#2874F0]" />
+                <ShieldCheck className="w-3.5 h-3.5 text-[#0A3B74]" />
                 <span>ShopKart Assured</span>
               </div>
             </div>
@@ -496,7 +496,7 @@ export function ProductDetailPage({
 
               {/* Real-Time Delivery Countdown Timer */}
               <div className="bg-blue-50 border border-blue-200 rounded-xs p-2.5 flex items-center gap-2 text-xs font-semibold text-[#0A3B74]">
-                <Clock className="w-4 h-4 text-[#2874F0] shrink-0" />
+                <Clock className="w-4 h-4 text-[#0A3B74] shrink-0" />
                 <span>
                   Order within{' '}
                   <span className="font-mono font-bold text-red-600">
@@ -512,7 +512,7 @@ export function ProductDetailPage({
               {/* Size Variant */}
               <div>
                 <span className="text-xs font-bold text-gray-700 block mb-1.5 uppercase">
-                  Size / Edition: <span className="text-[#2874F0]">{selectedSize}</span>
+                  Size / Edition: <span className="text-[#0A3B74]">{selectedSize}</span>
                 </span>
                 <div className="flex gap-2">
                   {['Standard', 'Pro Edition', 'Max Edition'].map((sz) => (
@@ -521,7 +521,7 @@ export function ProductDetailPage({
                       onClick={() => setSelectedSize(sz)}
                       className={`text-xs px-3.5 py-1.5 rounded-xs border font-bold transition cursor-pointer ${
                         selectedSize === sz
-                          ? 'border-[#2874F0] bg-blue-50 text-[#2874F0] ring-1 ring-[#2874F0]'
+                          ? 'border-[#0A3B74] bg-blue-50 text-[#0A3B74] ring-1 ring-[#0A3B74]'
                           : 'border-gray-300 text-gray-700 hover:border-gray-400'
                       }`}
                     >
@@ -534,7 +534,7 @@ export function ProductDetailPage({
               {/* Storage Variant */}
               <div>
                 <span className="text-xs font-bold text-gray-700 block mb-1.5 uppercase">
-                  Storage / Capacity: <span className="text-[#2874F0]">{selectedStorage}</span>
+                  Storage / Capacity: <span className="text-[#0A3B74]">{selectedStorage}</span>
                 </span>
                 <div className="flex gap-2">
                   {['128GB', '256GB', '512GB'].map((stg) => (
@@ -543,7 +543,7 @@ export function ProductDetailPage({
                       onClick={() => setSelectedStorage(stg)}
                       className={`text-xs px-3.5 py-1.5 rounded-xs border font-bold transition cursor-pointer ${
                         selectedStorage === stg
-                          ? 'border-[#2874F0] bg-blue-50 text-[#2874F0] ring-1 ring-[#2874F0]'
+                          ? 'border-[#0A3B74] bg-blue-50 text-[#0A3B74] ring-1 ring-[#0A3B74]'
                           : 'border-gray-300 text-gray-700 hover:border-gray-400'
                       }`}
                     >
@@ -556,7 +556,7 @@ export function ProductDetailPage({
               {/* Color Variant */}
               <div>
                 <span className="text-xs font-bold text-gray-700 block mb-1.5 uppercase">
-                  Color: <span className="text-[#2874F0]">{selectedColor}</span>
+                  Color: <span className="text-[#0A3B74]">{selectedColor}</span>
                 </span>
                 <div className="flex gap-2">
                   {[
@@ -569,7 +569,7 @@ export function ProductDetailPage({
                       onClick={() => setSelectedColor(c.name)}
                       className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xs border font-medium transition cursor-pointer ${
                         selectedColor === c.name
-                          ? 'border-[#2874F0] bg-blue-50 text-[#2874F0] ring-1 ring-[#2874F0]'
+                          ? 'border-[#0A3B74] bg-blue-50 text-[#0A3B74] ring-1 ring-[#0A3B74]'
                           : 'border-gray-300 text-gray-700 hover:border-gray-400'
                       }`}
                     >
@@ -609,7 +609,7 @@ export function ProductDetailPage({
             <div className="pt-2 border-t border-gray-100">
               <div className="flex items-center gap-3">
                 <span className="text-xs font-bold text-gray-700 flex items-center gap-1 shrink-0">
-                  <MapPin className="w-3.5 h-3.5 text-[#2874F0]" /> Delivery
+                  <MapPin className="w-3.5 h-3.5 text-[#0A3B74]" /> Delivery
                 </span>
                 <div className="flex items-center gap-2">
                   <input
@@ -618,11 +618,11 @@ export function ProductDetailPage({
                     onChange={(e) => setPincode(e.target.value)}
                     maxLength={6}
                     placeholder="Enter pincode"
-                    className="w-28 text-xs p-1.5 border-b-2 border-[#2874F0] focus:outline-none font-semibold text-gray-800"
+                    className="w-28 text-xs p-1.5 border-b-2 border-[#0A3B74] focus:outline-none font-semibold text-gray-800"
                   />
                   <button
                     onClick={handleCheckPincode}
-                    className="text-xs font-bold text-[#2874F0] hover:underline cursor-pointer"
+                    className="text-xs font-bold text-[#0A3B74] hover:underline cursor-pointer"
                   >
                     Check
                   </button>
@@ -646,7 +646,7 @@ export function ProductDetailPage({
             {/* Frequently Bought Together Bundle Card (Agent 12) */}
             <div className="pt-3 border-t border-gray-100 bg-gray-50/80 p-3.5 rounded-xs border border-gray-200">
               <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <Plus className="w-3.5 h-3.5 text-[#2874F0]" /> Frequently Bought Together
+                <Plus className="w-3.5 h-3.5 text-[#0A3B74]" /> Frequently Bought Together
               </h4>
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
@@ -687,7 +687,7 @@ export function ProductDetailPage({
               <span className="text-gray-600">Want notifications for this item?</span>
               <button
                 onClick={() => setShowAlertModal(true)}
-                className="flex items-center gap-1.5 text-[#2874F0] font-bold hover:underline cursor-pointer"
+                className="flex items-center gap-1.5 text-[#0A3B74] font-bold hover:underline cursor-pointer"
               >
                 <BellRing className="w-3.5 h-3.5" />
                 <span>Notify me on Price Drop</span>
@@ -723,7 +723,7 @@ export function ProductDetailPage({
                 </span>
               </div>
               <div className="flex items-center gap-2 text-right">
-                <RotateCcw className="w-4 h-4 text-[#2874F0]" />
+                <RotateCcw className="w-4 h-4 text-[#0A3B74]" />
                 <span className="font-medium">7 Days Replacement Policy</span>
               </div>
             </div>
@@ -823,7 +823,7 @@ export function ProductDetailPage({
         <div className="flex gap-2">
           <button
             onClick={handleAddToCart}
-            className="bg-[#FF9F00] text-white font-bold text-xs px-4 py-2.5 rounded-xs uppercase shadow-xs"
+            className="bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs px-4 py-2.5 rounded-xs uppercase shadow-xs transition"
           >
             Add to Cart
           </button>
@@ -869,7 +869,7 @@ export function ProductDetailPage({
                   value={reviewTitle}
                   onChange={(e) => setReviewTitle(e.target.value)}
                   placeholder="e.g. Exceptional battery life and build quality"
-                  className="w-full text-xs p-2 border border-gray-300 rounded focus:border-[#2874F0] focus:outline-none"
+                  className="w-full text-xs p-2 border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
                 />
               </div>
 
@@ -881,7 +881,7 @@ export function ProductDetailPage({
                   value={reviewComment}
                   onChange={(e) => setReviewComment(e.target.value)}
                   placeholder="Share your experience regarding performance, packaging, and reliability..."
-                  className="w-full text-xs p-2 border border-gray-300 rounded focus:border-[#2874F0] focus:outline-none"
+                  className="w-full text-xs p-2 border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
                 />
               </div>
 
@@ -901,7 +901,7 @@ export function ProductDetailPage({
                   />
                   <label
                     htmlFor="review-media-input"
-                    className="cursor-pointer text-xs text-[#2874F0] font-bold flex items-center justify-center gap-1.5"
+                    className="cursor-pointer text-xs text-[#0A3B74] font-bold flex items-center justify-center gap-1.5"
                   >
                     <ImageIcon className="w-4 h-4" /> Add Photos or Unboxing Video
                   </label>
@@ -931,7 +931,7 @@ export function ProductDetailPage({
                 <button
                   type="submit"
                   disabled={submittingReview}
-                  className="px-5 py-2 text-xs font-bold bg-[#2874F0] hover:bg-blue-600 text-white rounded-xs shadow-xs cursor-pointer"
+                  className="px-5 py-2 text-xs font-bold bg-[#0A3B74] hover:bg-[#002F6C] text-white rounded-xs shadow-xs cursor-pointer"
                 >
                   {submittingReview ? 'Submitting...' : 'Submit Certified Review'}
                 </button>
@@ -955,7 +955,7 @@ export function ProductDetailPage({
               <X className="w-4 h-4" />
             </button>
             <div className="flex items-center gap-2 mb-2">
-              <BellRing className="w-5 h-5 text-[#2874F0]" />
+              <BellRing className="w-5 h-5 text-[#0A3B74]" />
               <h3 className="font-bold text-sm text-gray-900">
                 {alertMode === 'BACK_IN_STOCK' ? 'Set Back-in-Stock Alert' : 'Set Price Drop Alert'}
               </h3>
@@ -986,7 +986,7 @@ export function ProductDetailPage({
                     value={alertEmail || (user?.email || '')}
                     onChange={(e) => setAlertEmail(e.target.value)}
                     placeholder="name@example.com"
-                    className="w-full text-xs p-2 border border-gray-300 rounded focus:border-[#2874F0] focus:outline-none"
+                    className="w-full text-xs p-2 border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
                   />
                 </div>
                 {alertMode === 'PRICE_DROP' && (
@@ -999,13 +999,13 @@ export function ProductDetailPage({
                       value={alertTargetPrice}
                       onChange={(e) => setAlertTargetPrice(e.target.value)}
                       placeholder={`e.g. ${Math.round(currentPrice * 0.9)}`}
-                      className="w-full text-xs p-2 border border-gray-300 rounded focus:border-[#2874F0] focus:outline-none"
+                      className="w-full text-xs p-2 border border-gray-300 rounded focus:border-[#0A3B74] focus:outline-none"
                     />
                   </div>
                 )}
                 <button
                   onClick={() => setAlertSubscribed(true)}
-                  className="w-full py-2 bg-[#2874F0] text-white font-bold text-xs uppercase rounded-xs hover:bg-blue-600 transition cursor-pointer"
+                  className="w-full py-2 bg-[#0A3B74] text-white font-bold text-xs uppercase rounded-xs hover:bg-[#002F6C] transition cursor-pointer"
                 >
                   {alertMode === 'BACK_IN_STOCK' ? 'Notify Me' : 'Activate Alert'}
                 </button>
@@ -1045,7 +1045,7 @@ export function ProductDetailPage({
                 setAlertMode('BACK_IN_STOCK');
                 setShowAlertModal(true);
               }}
-              className="py-2 px-3 bg-[#2874F0] hover:bg-blue-600 text-white font-bold text-xs uppercase rounded-xs shadow-xs transition flex items-center gap-1 cursor-pointer"
+              className="py-2 px-3 bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs uppercase rounded-xs shadow-xs transition flex items-center gap-1 cursor-pointer"
             >
               <BellRing className="w-3.5 h-3.5" />
               <span>Notify Me</span>
@@ -1054,7 +1054,7 @@ export function ProductDetailPage({
             <>
               <button
                 onClick={handleAddToCart}
-                className="py-2 px-3 bg-[#FF9F00] hover:bg-[#e68e00] text-white font-bold text-xs uppercase rounded-xs shadow-xs transition flex items-center gap-1 cursor-pointer"
+                className="py-2 px-3 bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs uppercase rounded-xs shadow-xs transition flex items-center gap-1 cursor-pointer"
               >
                 <ShoppingCart className="w-3.5 h-3.5" />
                 <span>Add</span>

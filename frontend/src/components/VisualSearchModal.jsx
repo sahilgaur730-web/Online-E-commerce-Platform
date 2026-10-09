@@ -232,7 +232,7 @@ export function VisualSearchModal({ isOpen, onClose, onSelectProduct }) {
                   onChange={handleFileUpload}
                   className="hidden"
                 />
-                <div className="w-14 h-14 rounded-full bg-blue-50 text-[#2874F0] mx-auto flex items-center justify-center mb-3">
+                <div className="w-14 h-14 rounded-full bg-blue-50 text-[#0A3B74] mx-auto flex items-center justify-center mb-3">
                   <Upload className="w-7 h-7" />
                 </div>
                 <h3 className="font-bold text-sm text-gray-900 mb-1">
@@ -254,7 +254,7 @@ export function VisualSearchModal({ isOpen, onClose, onSelectProduct }) {
                     <button
                       key={preset.id}
                       onClick={() => handleSelectPreset(preset)}
-                      className="border border-gray-200 rounded-xs p-2 text-left hover:border-[#2874F0] hover:shadow-sm transition bg-white flex items-center gap-2.5 cursor-pointer group"
+                      className="border border-gray-200 rounded-xs p-2 text-left hover:border-[#0A3B74] hover:shadow-sm transition bg-white flex items-center gap-2.5 cursor-pointer group"
                     >
                       <img
                         src={preset.image}
@@ -262,7 +262,7 @@ export function VisualSearchModal({ isOpen, onClose, onSelectProduct }) {
                         className="w-12 h-12 object-cover rounded bg-gray-100 shrink-0 group-hover:scale-105 transition"
                       />
                       <div className="min-w-0">
-                        <p className="text-xs font-bold text-gray-800 truncate group-hover:text-[#2874F0]">
+                        <p className="text-xs font-bold text-gray-800 truncate group-hover:text-[#0A3B74]">
                           {preset.name}
                         </p>
                         <p className="text-[10px] text-gray-500">{preset.category}</p>
@@ -292,7 +292,7 @@ export function VisualSearchModal({ isOpen, onClose, onSelectProduct }) {
                     </span>
                     <button
                       onClick={handleReset}
-                      className="text-xs text-[#2874F0] hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                      className="text-xs text-[#0A3B74] hover:underline font-bold flex items-center gap-1 cursor-pointer"
                     >
                       <RefreshCw className="w-3.5 h-3.5" /> Change Image
                     </button>
@@ -304,11 +304,11 @@ export function VisualSearchModal({ isOpen, onClose, onSelectProduct }) {
                   {isAnalyzing ? (
                     <div className="mt-3 space-y-2">
                       <div className="flex items-center gap-2 text-xs font-semibold text-[#0A3B74]">
-                        <Scan className="w-4 h-4 animate-spin text-[#2874F0]" />
+                        <Scan className="w-4 h-4 animate-spin text-[#0A3B74]" />
                         <span>{analysisStep}</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                        <div className="bg-[#2874F0] h-full w-2/3 animate-pulse" />
+                        <div className="bg-[#0A3B74] h-full w-2/3 animate-pulse" />
                       </div>
                     </div>
                   ) : (
@@ -329,7 +329,7 @@ export function VisualSearchModal({ isOpen, onClose, onSelectProduct }) {
               {!isAnalyzing && (
                 <div>
                   <h4 className="text-xs font-black uppercase text-gray-700 tracking-wider mb-3 flex items-center gap-1.5">
-                    <Layers className="w-4 h-4 text-[#2874F0]" />
+                    <Layers className="w-4 h-4 text-[#0A3B74]" />
                     <span>Visually Similar Products Ranked by Match Score</span>
                   </h4>
 

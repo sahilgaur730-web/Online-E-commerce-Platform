@@ -14,7 +14,7 @@ export function FlyToCartProjectile({ projectile, onComplete }) {
       }}
       onAnimationEnd={onComplete}
     >
-      <div className="w-14 h-14 rounded-full border-2 border-[#2874F0] bg-white shadow-xl overflow-hidden p-1 flex items-center justify-center">
+      <div className="w-14 h-14 rounded-full border-2 border-[#0A3B74] bg-white shadow-xl overflow-hidden p-1 flex items-center justify-center">
         <img
           src={projectile.imageUrl}
           alt=""
