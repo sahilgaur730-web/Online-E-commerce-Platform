@@ -11,6 +11,8 @@ import com.shopkart.service.AuditService;
 import com.shopkart.service.DashboardService;
 import com.shopkart.service.InventoryService;
 import com.shopkart.service.UserService;
+import com.shopkart.dto.SalesReportDTO;
+import com.shopkart.repository.jdbc.SalesAnalyticsJdbcDao;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,18 +31,27 @@ public class AdminController {
     private final AuditService auditService;
     private final InventoryService inventoryService;
     private final com.shopkart.service.ProductService productService;
+    private final SalesAnalyticsJdbcDao salesAnalyticsJdbcDao;
 
     public AdminController(
             DashboardService dashboardService,
             UserService userService,
             AuditService auditService,
             InventoryService inventoryService,
-            com.shopkart.service.ProductService productService) {
+            com.shopkart.service.ProductService productService,
+            SalesAnalyticsJdbcDao salesAnalyticsJdbcDao) {
         this.dashboardService = dashboardService;
         this.userService = userService;
         this.auditService = auditService;
         this.inventoryService = inventoryService;
         this.productService = productService;
+        this.salesAnalyticsJdbcDao = salesAnalyticsJdbcDao;
+    }
+
+    @GetMapping("/reports/jdbc-sales-summary")
+    public ResponseEntity<ApiResponse<SalesReportDTO>> getJdbcSalesSummary() {
+        SalesReportDTO report = salesAnalyticsJdbcDao.generateSalesReport();
+        return ResponseEntity.ok(ApiResponse.ok("JDBC Sales analytics generated successfully", report));
     }
 
     @GetMapping("/dashboard")

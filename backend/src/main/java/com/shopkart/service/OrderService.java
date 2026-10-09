@@ -29,6 +29,7 @@ public class OrderService {
     private final NotificationService notificationService;
     private final AuditService auditService;
     private final FlashDealService flashDealService;
+    private final AsyncInvoiceGeneratorService asyncInvoiceGeneratorService;
 
     public OrderService(
             OrderRepository orderRepository,
@@ -41,7 +42,8 @@ public class OrderService {
             InventoryService inventoryService,
             NotificationService notificationService,
             AuditService auditService,
-            FlashDealService flashDealService) {
+            FlashDealService flashDealService,
+            AsyncInvoiceGeneratorService asyncInvoiceGeneratorService) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.orderTrackingRepository = orderTrackingRepository;
@@ -53,6 +55,7 @@ public class OrderService {
         this.notificationService = notificationService;
         this.auditService = auditService;
         this.flashDealService = flashDealService;
+        this.asyncInvoiceGeneratorService = asyncInvoiceGeneratorService;
     }
 
     @Transactional
@@ -208,6 +211,11 @@ public class OrderService {
                 "ORDER"
         );
         auditService.log("ORDER_PLACED", buyer.getEmail(), "Placed order " + orderNumber + " total ₹" + finalTotal, "ORDER", savedOrder.getId());
+
+        // Asynchronously generate invoice receipt in background worker thread
+        if (asyncInvoiceGeneratorService != null) {
+            asyncInvoiceGeneratorService.generateOrderInvoiceAsync(savedOrder.getId());
+        }
 
         return toDto(savedOrder);
     }

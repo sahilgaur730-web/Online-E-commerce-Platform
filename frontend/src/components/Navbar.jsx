@@ -36,6 +36,7 @@ export function Navbar({
   const { user, isAuthenticated, isSeller, isAdmin, logout, loginDemo } = useAuth();
   const { cart } = useCart();
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchCategory, setSearchCategory] = useState('all');
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -208,7 +209,11 @@ export function Navbar({
     if (e) e.preventDefault();
     setIsSearchFocused(false);
     if (onSearch) {
-      onSearch(searchTerm);
+      if (searchCategory && searchCategory !== 'all' && !searchTerm.trim()) {
+        onSearch(searchCategory);
+      } else {
+        onSearch(searchTerm);
+      }
     }
     if (currentView !== 'catalog') {
       setCurrentView('catalog');
@@ -252,7 +257,25 @@ export function Navbar({
   };
 
   const renderSearchBar = (isMobile) => (
-    <form onSubmit={handleSearchSubmit} className="relative flex items-center w-full">
+    <form onSubmit={handleSearchSubmit} className="relative flex items-center w-full bg-white rounded-sm shadow-xs border border-gray-200 focus-within:ring-2 focus-within:ring-[#FF7A00] focus-within:border-transparent transition-all">
+      {/* Integrated category selector dropdown to the left */}
+      <div className="relative shrink-0 flex items-center border-r border-gray-200 bg-gray-50 rounded-l-sm">
+        <select
+          value={searchCategory}
+          onChange={(e) => setSearchCategory(e.target.value)}
+          className="appearance-none bg-transparent hover:bg-gray-100 text-gray-700 text-xs font-semibold pl-2.5 pr-6 py-2 sm:py-2.5 rounded-l-sm focus:outline-none cursor-pointer border-none transition-colors"
+          aria-label="Filter by Category"
+        >
+          <option value="all">All</option>
+          <option value="mobiles">Mobiles</option>
+          <option value="electronics">Electronics</option>
+          <option value="fashion">Fashion</option>
+          <option value="home-kitchen">Home</option>
+          <option value="appliances">Appliances</option>
+        </select>
+        <ChevronDown className="w-3 h-3 text-gray-500 absolute right-1.5 pointer-events-none" />
+      </div>
+
       <input
         ref={isMobile ? searchInputRef : undefined}
         type="text"
@@ -260,33 +283,37 @@ export function Navbar({
         onFocus={() => setIsSearchFocused(true)}
         onChange={(e) => setSearchTerm(e.target.value)}
         placeholder="Search for Products, Brands and More..."
-        className="w-full bg-white text-gray-900 placeholder-gray-500 text-xs sm:text-sm px-4 py-2 sm:py-2.5 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#FF7A00] pr-24 shadow-xs transition-all"
+        className="flex-1 min-w-0 bg-transparent text-gray-900 placeholder-gray-500 text-xs sm:text-sm px-3 py-2 sm:py-2.5 focus:outline-none"
       />
-      {searchTerm && (
+
+      {/* Right side controls: Clear, Camera, and Search button with zero vertical jitter */}
+      <div className="flex items-center gap-0.5 sm:gap-1 pr-2 shrink-0">
+        {searchTerm && (
+          <button
+            type="button"
+            onClick={() => setSearchTerm('')}
+            className="text-gray-400 hover:text-gray-700 transition cursor-pointer p-1 flex items-center justify-center"
+            title="Clear search"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
         <button
           type="button"
-          onClick={() => setSearchTerm('')}
-          className="absolute right-[70px] text-gray-400 hover:text-gray-700 transition cursor-pointer p-1"
-          title="Clear search"
+          onClick={onOpenVisualSearch}
+          className="text-gray-400 hover:text-[#FF7A00] transition p-1 cursor-pointer flex items-center justify-center"
+          title="Visual Search / Search by Image"
         >
-          <X className="w-4 h-4" />
+          <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
-      )}
-      <button
-        type="button"
-        onClick={onOpenVisualSearch}
-        className="absolute right-10 text-gray-400 hover:text-[#FF7A00] transition p-1 cursor-pointer"
-        title="Visual Search / Search by Image"
-      >
-        <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
-      </button>
-      <button
-        type="submit"
-        className="absolute right-2.5 text-[#0A3B74] hover:text-[#002F6C] transition p-1 cursor-pointer"
-        title="Search"
-      >
-        <Search className="w-4 h-4 sm:w-5 sm:h-5" />
-      </button>
+        <button
+          type="submit"
+          className="text-[#0A3B74] hover:text-[#002F6C] transition p-1 cursor-pointer flex items-center justify-center"
+          title="Search"
+        >
+          <Search className="w-4 h-4 sm:w-5 sm:h-5" />
+        </button>
+      </div>
     </form>
   );
 
@@ -557,8 +584,34 @@ export function Navbar({
         </div>
       </div>
 
-      {/* Account Links */}
+      {/* Account Links & Mode Controls */}
       <div className="py-1">
+        {isSeller && (
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                setCurrentView('seller');
+                setShowUserMenu(false);
+              }}
+              className="w-full text-left px-4 py-2 text-xs hover:bg-blue-50 flex items-center gap-2.5 text-[#0A3B74] font-bold cursor-pointer"
+            >
+              <Store className="w-4 h-4 text-[#FF7A00]" /> Seller Dashboard
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                handleDemoSwitch('BUYER');
+                setShowUserMenu(false);
+              }}
+              className="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 flex items-center gap-2.5 text-gray-700 cursor-pointer font-medium"
+            >
+              <User className="w-4 h-4 text-[#0A3B74]" /> Switch to Buyer Mode
+            </button>
+          </>
+        )}
+
         <button
           type="button"
           onClick={() => {
@@ -567,7 +620,7 @@ export function Navbar({
           }}
           className="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 flex items-center gap-2.5 text-gray-700 cursor-pointer font-medium"
         >
-          <User className="w-4 h-4 text-[#0A3B74]" /> My Profile
+          <User className="w-4 h-4 text-[#0A3B74]" /> Account Settings
         </button>
 
         <button
@@ -646,7 +699,7 @@ export function Navbar({
             }}
             className="w-full text-left px-4 py-2 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2.5 cursor-pointer font-medium"
           >
-            <LogOut className="w-4 h-4" /> Log Out
+            <LogOut className="w-4 h-4" /> Logout
           </button>
         </div>
       )}
@@ -715,18 +768,8 @@ export function Navbar({
 
           {/* Desktop Action Icons */}
           <div className="flex items-center gap-4 xl:gap-5 shrink-0 text-sm font-medium">
-            {/* Become a Seller Link */}
-            {isSeller || isAdmin ? (
-              <button
-                type="button"
-                onClick={() => setCurrentView('seller')}
-                className="flex items-center gap-1.5 hover:text-amber-300 transition text-xs font-semibold cursor-pointer"
-                title="Seller Portal"
-              >
-                <Store className="w-4 h-4" />
-                <span>Seller Hub</span>
-              </button>
-            ) : (
+            {/* Become a Seller Link (Hidden when authenticated as a Seller) */}
+            {!isSeller && (
               <button
                 type="button"
                 onClick={() => {
@@ -1114,18 +1157,7 @@ export function Navbar({
               </div>
 
               <div className="pt-2 space-y-0.5 pb-2">
-                {isSeller || isAdmin ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      setCurrentView('seller');
-                    }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-md hover:bg-gray-100 transition text-gray-800 cursor-pointer text-left"
-                  >
-                    <Store className="w-4 h-4 text-[#0A3B74]" /> Seller Hub
-                  </button>
-                ) : (
+                {!isSeller ? (
                   <button
                     type="button"
                     onClick={() => {
@@ -1137,6 +1169,29 @@ export function Navbar({
                   >
                     <Store className="w-4 h-4 text-[#0A3B74]" /> Become a Seller
                   </button>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        setCurrentView('seller');
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-md hover:bg-gray-100 transition text-[#0A3B74] cursor-pointer text-left font-bold"
+                    >
+                      <Store className="w-4 h-4 text-[#FF7A00]" /> Seller Dashboard
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        handleDemoSwitch('BUYER');
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-md hover:bg-gray-100 transition text-gray-800 cursor-pointer text-left"
+                    >
+                      <User className="w-4 h-4 text-[#0A3B74]" /> Switch to Buyer Mode
+                    </button>
+                  </>
                 )}
 
                 {isAdmin && (

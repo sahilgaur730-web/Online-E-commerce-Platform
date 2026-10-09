@@ -1,12 +1,12 @@
-package com.shopkart.common;
+package com.shopkart.dto;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Reusable generic API response wrapper supporting custom generic bounds,
- * standard responses, error payload collections, and factory methods.
+ * Reusable generic response wrapper residing in com.shopkart.dto.
+ * Supports custom generic types, success and error factory builders.
  *
  * @param <T> Payload body type
  */

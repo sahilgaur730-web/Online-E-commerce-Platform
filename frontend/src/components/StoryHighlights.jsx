@@ -92,7 +92,7 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
     },
     {
       id: 'streak',
-      title: '+50 Streak Coins',
+      title: 'Streak Coins',
       categorySlug: 'streak',
       icon: Award,
       color: 'from-amber-400 to-yellow-600',
@@ -177,14 +177,20 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 pt-2">
-      <div className="bg-white rounded-md shadow-xs border border-gray-200 lg:p-4 overflow-hidden lg:overflow-visible">
+      <div className="bg-white rounded-md shadow-xs border border-gray-200 overflow-hidden md:overflow-visible">
+        {/* =========================================================================
+            DESKTOP PROMO CARDS (>= 768px)
+            display: flex; justify-content: space-between; align-items: center; width: 100%;
+            Zero layout shift, standardized absolute badge anchors top: -6px; right: -8px.
+            ========================================================================= */}
         <div
           style={{
-            scrollSnapType: 'x mandatory',
-            WebkitOverflowScrolling: 'touch',
-            scrollbarWidth: 'none',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
           }}
-          className="touch-scroll-track flex lg:grid lg:grid-cols-7 items-center overflow-x-auto lg:overflow-visible gap-5 lg:gap-4 px-4 py-3 lg:p-0 snap-x snap-mandatory lg:snap-none w-full"
+          className="hidden md:flex px-4 py-3"
         >
           {stories.map((story) => {
             const Icon = story.icon;
@@ -194,24 +200,65 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
                 key={story.id}
                 type="button"
                 aria-label={story.title}
-                style={{
-                  scrollSnapAlign: 'start',
-                }}
                 onClick={() => handleStoryClick(story)}
-                className="flex flex-col items-center justify-start gap-2 w-[100px] shrink-0 lg:w-full cursor-pointer group focus:outline-none select-none category-item-lift snap-start lg:snap-none"
+                className="flex flex-col items-center justify-center flex-1 cursor-pointer group focus:outline-none select-none category-item-lift py-1"
               >
                 {/* 48x48px Squircle Card Container */}
-                <div className="relative w-12 h-12 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center shrink-0 shadow-xs group-hover:border-[#0A3B74]/30 group-hover:bg-blue-50/50 transition-colors duration-200">
+                <div className="relative w-12 h-12 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center shrink-0 shadow-xs group-hover:border-[#0A3B74]/30 group-hover:bg-blue-50/50 transition-colors duration-200 overflow-visible">
                   <Icon className="w-5 h-5 text-[#0A3B74] group-hover:text-[#FF7A00] transition-colors duration-200" />
 
-                  {/* Absolute Floating Pill Badge */}
+                  {/* Standardized Absolute Floating Pill Badge */}
                   {renderBadge(story.badge)}
                 </div>
 
                 {/* Uniform Baseline Typography */}
                 <span
                   style={{ fontSize: '0.8125rem' }}
-                  className="font-medium text-slate-700 group-hover:text-[#0A3B74] text-center w-full truncate leading-5 h-5 flex items-center justify-center tracking-tight transition-colors duration-150"
+                  className="font-medium text-slate-700 group-hover:text-[#0A3B74] text-center w-full truncate leading-5 h-5 flex items-center justify-center tracking-tight transition-colors duration-150 mt-2"
+                >
+                  {story.title}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* =========================================================================
+            MOBILE HORIZONTAL SWIPE PROMO STRIP (< 768px)
+            overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
+            Consistent 16px item padding to prevent clipping and layout jumps.
+            ========================================================================= */}
+        <div
+          style={{
+            overflowX: 'auto',
+            scrollSnapType: 'x mandatory',
+            scrollbarWidth: 'none',
+            WebkitOverflowScrolling: 'touch',
+            padding: '16px',
+          }}
+          className="md:hidden flex items-center gap-5 touch-scroll-track snap-x snap-mandatory w-full"
+        >
+          {stories.map((story) => {
+            const Icon = story.icon;
+
+            return (
+              <button
+                key={story.id}
+                type="button"
+                aria-label={story.title}
+                style={{ scrollSnapAlign: 'start' }}
+                onClick={() => handleStoryClick(story)}
+                className="flex flex-col items-center justify-start gap-2 shrink-0 cursor-pointer group focus:outline-none select-none snap-start py-1"
+              >
+                {/* 48x48px Squircle Card Container */}
+                <div className="relative w-12 h-12 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center shrink-0 shadow-xs group-hover:border-[#0A3B74]/30 group-hover:bg-blue-50/50 transition-colors duration-200 overflow-visible">
+                  <Icon className="w-5 h-5 text-[#0A3B74] group-hover:text-[#FF7A00] transition-colors duration-200" />
+                  {renderBadge(story.badge)}
+                </div>
+
+                <span
+                  style={{ fontSize: '0.75rem' }}
+                  className="font-medium text-slate-700 text-center truncate max-w-[80px] leading-4"
                 >
                   {story.title}
                 </span>
