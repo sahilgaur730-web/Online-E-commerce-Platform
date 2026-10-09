@@ -122,8 +122,11 @@ public class FlashDealService {
                 req.getStockLimit() > 0 ? req.getStockLimit() : 50
         );
 
-        // Mark product as dealOfTheDay as well
+        // Synchronize product catalog price and deal status
+        product.setPrice(req.getDealPrice());
         product.setDealOfTheDay(true);
+        if (orig != null) product.setOriginalPrice(orig);
+        if (discount > 0) product.setDiscountPercentage(discount);
         productRepository.save(product);
 
         FlashDeal saved = flashDealRepository.save(deal);
@@ -143,7 +146,32 @@ public class FlashDealService {
     public void deleteDeal(Long id) {
         FlashDeal deal = flashDealRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Deal not found with id: " + id));
+        Product product = deal.getProduct();
+        if (product != null) {
+            product.setDealOfTheDay(false);
+            if (deal.getOriginalPrice() != null && deal.getOriginalPrice().compareTo(BigDecimal.ZERO) > 0) {
+                product.setPrice(deal.getOriginalPrice());
+            }
+            productRepository.save(product);
+        }
         flashDealRepository.delete(deal);
+    }
+
+    @Transactional
+    public void recordPurchase(Long productId, int quantity) {
+        if (productId == null || quantity <= 0) return;
+        Instant now = Instant.now();
+        List<FlashDeal> activeDeals = flashDealRepository.findActiveDeals(now);
+        for (FlashDeal deal : activeDeals) {
+            if (deal.getProduct().getId().equals(productId)) {
+                int newSold = deal.getSoldCount() + quantity;
+                deal.setSoldCount(newSold);
+                if (newSold >= deal.getStockLimit()) {
+                    deal.setActive(false);
+                }
+                flashDealRepository.save(deal);
+            }
+        }
     }
 
     private FlashDealDto mapToDto(FlashDeal deal, Instant now) {

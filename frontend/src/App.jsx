@@ -24,7 +24,7 @@ import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { api } from './api/client';
 
 function MainApp() {
-  const { isAuthenticated, loginDemo } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [currentView, setCurrentView] = useState('home');
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [selectedOrderId, setSelectedOrderId] = useState(null);

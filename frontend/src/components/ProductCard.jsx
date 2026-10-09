@@ -47,8 +47,8 @@ export function ProductCard({ product, onSelectProduct, onWishlistToggle, isWish
       </button>
 
       <div>
-        {/* Product Image */}
-        <div className="w-full h-44 overflow-hidden rounded-lg flex items-center justify-center p-2 mb-2.5 bg-slate-50/60 group-hover:bg-blue-50/30 transition-colors duration-300">
+        {/* Product Image: 1:1 aspect ratio with fallback */}
+        <div className="w-full aspect-square max-h-48 overflow-hidden rounded-lg flex items-center justify-center p-2 mb-2.5 bg-slate-50/60 group-hover:bg-blue-50/30 transition-colors duration-300">
           <img
             src={product.primaryImage || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80'}
             alt={product.title}
@@ -56,7 +56,7 @@ export function ProductCard({ product, onSelectProduct, onWishlistToggle, isWish
               e.currentTarget.onerror = null;
               e.currentTarget.src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80';
             }}
-            className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300 ease-out"
+            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 ease-out"
             loading="lazy"
           />
         </div>
@@ -72,21 +72,21 @@ export function ProductCard({ product, onSelectProduct, onWishlistToggle, isWish
         </h3>
 
         {/* Rating and Reviews */}
-        <div className="flex items-center gap-1.5 mt-2">
-          <div className="bg-[#0A3B74] text-white text-[11px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5 shadow-2xs">
+        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+          <div className="bg-[#0A3B74] text-white text-[11px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5 shadow-2xs shrink-0">
             <span>{product.rating ? product.rating.toFixed(1) : '4.2'}</span>
             <Star className="w-2.5 h-2.5 fill-current" />
           </div>
-          <span className="text-[11px] text-slate-500 font-medium">
+          <span className="text-[11px] text-slate-500 font-medium shrink-0">
             ({product.ratingCount || 120})
           </span>
-          <span className="text-[10px] bg-blue-50 text-[#0A3B74] font-bold px-1.5 py-0.5 rounded-full border border-blue-200/60 ml-auto flex items-center gap-0.5">
+          <span className="text-[10px] bg-blue-50 text-[#0A3B74] font-bold px-1.5 py-0.5 rounded-full border border-blue-200/60 ml-auto flex items-center gap-0.5 shrink-0">
             <ShieldCheck className="w-2.5 h-2.5 text-[#0A3B74]" /> Verified
           </span>
         </div>
 
         {/* Pricing */}
-        <div className="flex items-baseline gap-2 mt-2.5">
+        <div className="flex items-baseline gap-1.5 mt-2.5 flex-wrap">
           <span className="text-base font-extrabold text-slate-950">
             ₹{product.price?.toLocaleString('en-IN')}
           </span>
@@ -111,11 +111,14 @@ export function ProductCard({ product, onSelectProduct, onWishlistToggle, isWish
           )}
         </div>
 
-        {/* Low Stock Warning */}
         {/* Low Stock or Expired Warning */}
         {product.expired ? (
           <div className="text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded mt-1.5 inline-block border border-rose-200">
             Deal Expired
+          </div>
+        ) : product.remainingStock !== undefined && product.remainingStock <= 0 ? (
+          <div className="text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded mt-1.5 inline-block border border-rose-200">
+            Sold Out
           </div>
         ) : product.stock > 0 && product.stock <= 5 ? (
           <div className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded mt-1.5 inline-block">
@@ -132,9 +135,9 @@ export function ProductCard({ product, onSelectProduct, onWishlistToggle, isWish
       <div className="mt-3.5 pt-2.5 border-t border-slate-100">
         <button
           onClick={handleAddToCart}
-          disabled={product.stock === 0 || product.expired || loadingAdd}
+          disabled={product.stock === 0 || (product.remainingStock !== undefined && product.remainingStock <= 0) || product.expired || loadingAdd}
           className={`w-full text-xs font-bold py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-98 ${
-            product.stock === 0 || product.expired
+            product.stock === 0 || (product.remainingStock !== undefined && product.remainingStock <= 0) || product.expired
               ? 'bg-slate-200 text-slate-500 cursor-not-allowed shadow-none'
               : added
               ? 'bg-[#388E3C] text-white'
@@ -147,6 +150,8 @@ export function ProductCard({ product, onSelectProduct, onWishlistToggle, isWish
             </>
           ) : product.expired ? (
             'Deal Expired'
+          ) : (product.remainingStock !== undefined && product.remainingStock <= 0) ? (
+            'Sold Out'
           ) : product.stock === 0 ? (
             'Out of Stock'
           ) : (

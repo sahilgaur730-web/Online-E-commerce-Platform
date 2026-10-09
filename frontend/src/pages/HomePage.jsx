@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { HeroCarousel } from '../components/HeroCarousel';
 import { StoryHighlights } from '../components/StoryHighlights';
 import { ProductCard } from '../components/ProductCard';
@@ -95,10 +95,13 @@ export function HomePage({
     loadData();
   }, []);
 
-  const handleDealExpired = () => {
-    setIsDealExpired(true);
+  const handleDealExpired = useCallback(() => {
+    setIsDealExpired((prev) => {
+      if (prev) return prev;
+      return true;
+    });
     setDeals((prev) => prev.map((p) => ({ ...p, expired: true })));
-  };
+  }, []);
 
   return (
     <div className="space-y-4 pb-8">
@@ -139,13 +142,13 @@ export function HomePage({
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3 sm:gap-4 py-6">
+            <div className="grid grid-cols-1 min-[360px]:grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3 sm:gap-4 py-6">
               {[1, 2, 3, 4, 5].map((n) => (
                 <div key={n} className="h-64 bg-gray-100 animate-pulse rounded-xs" />
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 min-[360px]:grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3 sm:gap-4">
               {deals.map((prod) => (
                 <ProductCard
                   key={prod.id}
@@ -199,7 +202,7 @@ export function HomePage({
             </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 min-[360px]:grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3 sm:gap-4">
             {topOffers.map((prod) => (
               <ProductCard
                 key={prod.id}
@@ -231,7 +234,7 @@ export function HomePage({
             </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 min-[360px]:grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3 sm:gap-4">
             {featured.map((prod) => (
               <ProductCard
                 key={prod.id}

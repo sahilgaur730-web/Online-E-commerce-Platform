@@ -33,18 +33,21 @@ public class ProductService {
     private final UserRepository userRepository;
     private final ProductImageRepository productImageRepository;
     private final AuditService auditService;
+    private final com.shopkart.repository.FlashDealRepository flashDealRepository;
 
     public ProductService(
             ProductRepository productRepository,
             CategoryRepository categoryRepository,
             UserRepository userRepository,
             ProductImageRepository productImageRepository,
-            AuditService auditService) {
+            AuditService auditService,
+            com.shopkart.repository.FlashDealRepository flashDealRepository) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
         this.productImageRepository = productImageRepository;
         this.auditService = auditService;
+        this.flashDealRepository = flashDealRepository;
     }
 
     public Page<ProductDto> searchProducts(
@@ -245,6 +248,9 @@ public class ProductService {
         if (!isAdmin && !product.getSeller().getId().equals(sellerId)) {
             throw new BadRequestException("You do not have permission to delete this product");
         }
+
+        // Clean up any associated flash deals to avoid foreign key integrity violations
+        flashDealRepository.deleteByProductId(productId);
 
         auditService.log("PRODUCT_DELETED", product.getSeller().getEmail(), "Deleted product: " + product.getTitle(), "PRODUCT", product.getId());
         productRepository.delete(product);

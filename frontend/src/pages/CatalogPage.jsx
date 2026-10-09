@@ -324,7 +324,7 @@ export function CatalogPage({ initialCategory, initialKeyword, onSelectProduct, 
 
           {/* Product Cards Grid */}
           {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3 sm:gap-4 py-12">
+            <div className="grid grid-cols-1 min-[360px]:grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3 sm:gap-4 py-12">
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <div key={n} className="h-64 bg-gray-100 animate-pulse rounded" />
               ))}
@@ -343,7 +343,7 @@ export function CatalogPage({ initialCategory, initialKeyword, onSelectProduct, 
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3 sm:gap-4 pt-4">
+            <div className="grid grid-cols-1 min-[360px]:grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3 sm:gap-4 pt-4">
               {products.map((prod) => (
                 <ProductCard
                   key={prod.id}

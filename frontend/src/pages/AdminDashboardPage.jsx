@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/client';
+import { useAuth } from '../context/AuthContext';
 import {
   ShieldCheck,
   Users,
@@ -16,12 +17,11 @@ import {
   Search,
   Trash2,
   Plus,
-  Clock,
-  Star,
   Package,
 } from 'lucide-react';
 
 export function AdminDashboardPage({ onViewOrder }) {
+  const { user, isAuthenticated, isAdmin, loginDemo } = useAuth();
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -62,6 +62,10 @@ export function AdminDashboardPage({ onViewOrder }) {
   const [analyticsPeriod, setAnalyticsPeriod] = useState('7D');
 
   const loadAdminData = React.useCallback(async () => {
+    if (!isAuthenticated || !isAdmin) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const [dash, userList, orderList, logs, lowStockItems, dealsList, catalogRes] = await Promise.all([
@@ -85,7 +89,7 @@ export function AdminDashboardPage({ onViewOrder }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated, isAdmin]);
 
   useEffect(() => {
     loadAdminData();
@@ -327,6 +331,45 @@ export function AdminDashboardPage({ onViewOrder }) {
     { title: 'Samsung Galaxy S24 Ultra', units: 215, gmv: '₹2,79,50,000', stock: 24 },
     { title: 'ShopKart Assured Fast Charger 65W', units: 1250, gmv: '₹24,87,500', stock: 160 },
   ];
+
+  if (!isAuthenticated) {
+    return (
+      <div className="max-w-xl mx-auto my-12 p-8 bg-white rounded-xl shadow-md border border-gray-200 text-center">
+        <ShieldCheck className="w-16 h-16 text-[#0A3B74] mx-auto mb-4" />
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Admin Portal Authentication Required</h2>
+        <p className="text-xs text-gray-600 mb-6 leading-relaxed">
+          Access to centralized telemetry, sitewide catalog controls, and deal management requires administrative credentials.
+        </p>
+        <button
+          onClick={() => loginDemo('ADMIN')}
+          className="px-6 py-2.5 bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold rounded-md shadow-xs transition cursor-pointer text-xs uppercase tracking-wide"
+        >
+          Sign in as Demo Admin
+        </button>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="max-w-xl mx-auto my-12 p-8 bg-white rounded-xl shadow-md border border-gray-200 text-center">
+        <AlertTriangle className="w-16 h-16 text-amber-600 mx-auto mb-4" />
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Access Denied: Administrator Privileges Required</h2>
+        <p className="text-xs text-gray-600 mb-2">
+          Your current account (<span className="font-semibold text-gray-800">{user?.email}</span>) is assigned role <span className="font-bold text-[#0A3B74]">{user?.role}</span>.
+        </p>
+        <p className="text-[11px] text-gray-500 mb-6">
+          Only administrators have authority to access the operations hub and execute platform-wide actions.
+        </p>
+        <button
+          onClick={() => loginDemo('ADMIN')}
+          className="px-6 py-2.5 bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold rounded-md shadow-xs transition cursor-pointer text-xs uppercase tracking-wide"
+        >
+          Switch to Admin Account
+        </button>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

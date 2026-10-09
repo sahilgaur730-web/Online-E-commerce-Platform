@@ -28,6 +28,7 @@ public class OrderService {
     private final InventoryService inventoryService;
     private final NotificationService notificationService;
     private final AuditService auditService;
+    private final FlashDealService flashDealService;
 
     public OrderService(
             OrderRepository orderRepository,
@@ -39,7 +40,8 @@ public class OrderService {
             UserRepository userRepository,
             InventoryService inventoryService,
             NotificationService notificationService,
-            AuditService auditService) {
+            AuditService auditService,
+            FlashDealService flashDealService) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.orderTrackingRepository = orderTrackingRepository;
@@ -50,6 +52,7 @@ public class OrderService {
         this.inventoryService = inventoryService;
         this.notificationService = notificationService;
         this.auditService = auditService;
+        this.flashDealService = flashDealService;
     }
 
     @Transactional
@@ -65,9 +68,10 @@ public class OrderService {
         Address address = addressRepository.findByIdAndUserId(req.getAddressId(), userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Shipping address not found"));
 
-        // Deduct inventory atomically with optimistic locking check
+        // Deduct inventory atomically with optimistic locking check and update deal sold counts
         for (CartItem cartItem : cartItems) {
             inventoryService.deductStock(cartItem.getProduct().getId(), cartItem.getQuantity());
+            flashDealService.recordPurchase(cartItem.getProduct().getId(), cartItem.getQuantity());
         }
 
         BigDecimal originalTotal = BigDecimal.ZERO;

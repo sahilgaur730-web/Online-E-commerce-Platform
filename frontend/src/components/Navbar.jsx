@@ -210,7 +210,7 @@ export function Navbar({
             <span className="font-black text-xl tracking-tight text-white flex items-center">
               Shop<span className="text-[#FF7A00]">Kart</span>
             </span>
-            <span className="text-[10px] text-amber-300 font-semibold tracking-wider uppercase mt-0.5">
+            <span className="text-[10px] text-amber-300 font-semibold tracking-wider uppercase mt-0.5 hidden sm:inline">
               Shop Smart • Live Better
             </span>
           </div>
@@ -223,7 +223,7 @@ export function Navbar({
             setCurrentView('home');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold text-xs sm:text-sm transition cursor-pointer shrink-0 border ${
+          className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md font-semibold text-xs sm:text-sm transition cursor-pointer shrink-0 border ${
             currentView === 'home'
               ? 'bg-white/20 text-white border-white/40 shadow-xs'
               : 'hover:bg-white/10 text-blue-100 hover:text-white border-transparent'
@@ -231,7 +231,7 @@ export function Navbar({
           title="Go to Home"
         >
           <Home className="w-4 h-4" />
-          <span className="font-bold">Home</span>
+          <span className="font-bold hidden sm:inline">Home</span>
         </button>
 
         {/* Predictive Auto-Suggest Search Bar */}

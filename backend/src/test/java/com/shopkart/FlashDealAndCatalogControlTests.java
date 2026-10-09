@@ -98,4 +98,69 @@ public class FlashDealAndCatalogControlTests {
         assertTrue(updated.isDealOfTheDay());
         assertFalse(updated.isTopOffer());
     }
+
+    @Test
+    @DisplayName("Flash Deal Stock Deductions: recordPurchase increments soldCount and triggers expiration at limit")
+    @Transactional
+    void testDealPurchaseStockDeduction() {
+        List<Product> products = productRepository.findAll();
+        assertFalse(products.isEmpty());
+        Product p = products.get(0);
+
+        FlashDealCreateRequest req = new FlashDealCreateRequest();
+        req.setProductId(p.getId());
+        req.setDealPrice(BigDecimal.valueOf(1499.00));
+        req.setOriginalPrice(BigDecimal.valueOf(2999.00));
+        req.setDiscountPercentage(50);
+        req.setStockLimit(5);
+        req.setStartTime(Instant.now());
+        req.setEndTime(Instant.now().plus(24, ChronoUnit.HOURS));
+
+        FlashDealDto deal = flashDealService.createDeal(req);
+        assertEquals(0, deal.getSoldCount());
+        assertEquals(5, deal.getRemainingStock());
+        assertFalse(deal.isExpired());
+
+        // Purchase 3 items
+        flashDealService.recordPurchase(p.getId(), 3);
+        List<FlashDealDto> all = flashDealService.getAllDeals();
+        FlashDealDto updatedDeal = all.stream().filter(d -> d.getId().equals(deal.getId())).findFirst().orElseThrow();
+        assertEquals(3, updatedDeal.getSoldCount());
+        assertEquals(2, updatedDeal.getRemainingStock());
+        assertFalse(updatedDeal.isExpired());
+
+        // Purchase remaining 2 items (hits stock limit = 5)
+        flashDealService.recordPurchase(p.getId(), 2);
+        List<FlashDealDto> finalDeals = flashDealService.getAllDeals();
+        FlashDealDto exhausted = finalDeals.stream().filter(d -> d.getId().equals(deal.getId())).findFirst().orElseThrow();
+        assertEquals(5, exhausted.getSoldCount());
+        assertEquals(0, exhausted.getRemainingStock());
+        assertTrue(exhausted.isExpired(), "Deal must expire when soldCount reaches stockLimit");
+    }
+
+    @Test
+    @DisplayName("Relational Integrity: Product deletion cleans up associated flash deals without FK error")
+    @Transactional
+    void testProductDeletionCascadeDeals() {
+        List<Product> products = productRepository.findAll();
+        assertFalse(products.isEmpty());
+        Product p = products.get(0);
+
+        FlashDealCreateRequest req = new FlashDealCreateRequest();
+        req.setProductId(p.getId());
+        req.setDealPrice(BigDecimal.valueOf(999.00));
+        req.setOriginalPrice(BigDecimal.valueOf(1999.00));
+        req.setDiscountPercentage(50);
+        req.setStockLimit(10);
+        req.setStartTime(Instant.now());
+        req.setEndTime(Instant.now().plus(12, ChronoUnit.HOURS));
+
+        FlashDealDto deal = flashDealService.createDeal(req);
+        assertNotNull(deal.getId());
+
+        // Deleting the product must succeed without DataIntegrityViolationException
+        assertDoesNotThrow(() -> {
+            productService.deleteProduct(p.getId(), p.getSeller() != null ? p.getSeller().getId() : 1L, true);
+        });
+    }
 }

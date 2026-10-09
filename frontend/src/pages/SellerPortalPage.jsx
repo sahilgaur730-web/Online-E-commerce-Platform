@@ -16,11 +16,10 @@ import {
   AlertTriangle,
   TrendingUp,
   BarChart2,
-  RefreshCw,
 } from 'lucide-react';
 
 export function SellerPortalPage({ onViewProduct }) {
-  const { user } = useAuth();
+  const { user, isAuthenticated, isSeller, isAdmin, loginDemo } = useAuth();
   const [stats, setStats] = useState(null);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -68,6 +67,10 @@ export function SellerPortalPage({ onViewProduct }) {
   const [dragActive, setDragActive] = useState(false);
 
   const loadSellerData = React.useCallback(async () => {
+    if (!isAuthenticated || (!isSeller && !isAdmin)) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const [statsData, prodsData, ordersData, subOrdersData, catsData] = await Promise.all([
@@ -90,7 +93,7 @@ export function SellerPortalPage({ onViewProduct }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated, isSeller, isAdmin]);
 
   useEffect(() => {
     loadSellerData();
@@ -241,6 +244,45 @@ export function SellerPortalPage({ onViewProduct }) {
       }
     }
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="max-w-xl mx-auto my-12 p-8 bg-white rounded-xl shadow-md border border-slate-200 text-center">
+        <Store className="w-16 h-16 text-[#0A3B74] mx-auto mb-4" />
+        <h2 className="text-xl font-bold text-slate-900 mb-2">Seller Studio Access Required</h2>
+        <p className="text-xs text-slate-600 mb-6 leading-relaxed">
+          Access to merchant inventory dashboards, stock alerts, package dispatch, and sales analytics requires a registered seller account.
+        </p>
+        <button
+          onClick={() => loginDemo('SELLER')}
+          className="px-6 py-2.5 bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold rounded-lg shadow-xs transition cursor-pointer text-xs uppercase tracking-wide"
+        >
+          Sign in as Demo Seller
+        </button>
+      </div>
+    );
+  }
+
+  if (!isSeller && !isAdmin) {
+    return (
+      <div className="max-w-xl mx-auto my-12 p-8 bg-white rounded-xl shadow-md border border-slate-200 text-center">
+        <AlertTriangle className="w-16 h-16 text-amber-600 mx-auto mb-4" />
+        <h2 className="text-xl font-bold text-slate-900 mb-2">Access Restricted: Seller Account Required</h2>
+        <p className="text-xs text-slate-600 mb-2">
+          Your current account (<span className="font-semibold text-slate-800">{user?.email}</span>) is signed in with role <span className="font-bold text-[#0A3B74]">{user?.role}</span>.
+        </p>
+        <p className="text-[11px] text-slate-500 mb-6">
+          To manage product inventory, view sales performance, and handle order fulfillments, please activate a seller account.
+        </p>
+        <button
+          onClick={() => loginDemo('SELLER')}
+          className="px-6 py-2.5 bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold rounded-lg shadow-xs transition cursor-pointer text-xs uppercase tracking-wide"
+        >
+          Switch to Seller Account
+        </button>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
