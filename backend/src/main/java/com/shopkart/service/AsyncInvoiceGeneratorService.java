@@ -38,9 +38,23 @@ public class AsyncInvoiceGeneratorService {
         log.info("[Async Invoice Worker] Thread [{}] starting invoice generation for Order ID: {}", threadName, orderId);
 
         try {
-            Order order = orderRepository.findById(orderId).orElse(null);
+            Order order = null;
+            // Retry up to 5 times (50ms intervals) to handle transaction commit race conditions
+            for (int attempt = 0; attempt < 5; attempt++) {
+                order = orderRepository.findById(orderId).orElse(null);
+                if (order != null) {
+                    break;
+                }
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+
             if (order == null) {
-                log.warn("[Async Invoice Worker] Order {} not found for invoice generation", orderId);
+                log.warn("[Async Invoice Worker] Order {} not found for invoice generation after retries", orderId);
                 return CompletableFuture.completedFuture(null);
             }
 

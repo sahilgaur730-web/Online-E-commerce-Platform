@@ -31,7 +31,7 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
     {
       id: 'mobiles',
       title: 'Mobiles',
-      categorySlug: 'smartphones',
+      categorySlug: 'mobiles',
       icon: Smartphone,
       color: 'from-blue-600 to-cyan-500',
       badge: 'NEW',
@@ -177,7 +177,7 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 pt-2">
-      <div className="bg-white rounded-md shadow-xs border border-gray-200 overflow-hidden md:overflow-visible">
+      <div className="bg-white rounded-md shadow-xs border border-gray-200 overflow-visible">
         {/* =========================================================================
             DESKTOP PROMO CARDS (>= 768px)
             display: flex; justify-content: space-between; align-items: center; width: 100%;

@@ -112,7 +112,15 @@ public class PaginatedResult<T> {
         return page + 1 < totalPages;
     }
 
+    public boolean isHasNext() {
+        return hasNext();
+    }
+
     public boolean hasPrevious() {
         return page > 0;
+    }
+
+    public boolean isHasPrevious() {
+        return hasPrevious();
     }
 }

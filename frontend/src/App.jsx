@@ -81,16 +81,16 @@ function MainApp() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSelectCategory = (slug) => {
-    setSelectedCategory(slug);
-    setSearchKeyword('');
+  const handleSelectCategory = (slug, search = '') => {
+    setSelectedCategory(slug || '');
+    setSearchKeyword(search || '');
     setCurrentView('catalog');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSearch = (query) => {
-    setSearchKeyword(query);
-    setSelectedCategory('');
+  const handleSearch = (query, category = '') => {
+    setSearchKeyword(query || '');
+    setSelectedCategory(category || '');
     setCurrentView('catalog');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };

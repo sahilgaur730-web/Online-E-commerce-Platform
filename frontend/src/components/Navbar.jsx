@@ -75,7 +75,7 @@ export function Navbar({
   ];
 
   const categoryPills = [
-    { label: 'Mobiles', slug: 'smartphones' },
+    { label: 'Mobiles', slug: 'mobiles' },
     { label: 'Laptops', slug: 'electronics' },
     { label: 'Fashion', slug: 'fashion' },
     { label: 'Home', slug: 'home-kitchen' },
@@ -208,12 +208,9 @@ export function Navbar({
   const handleSearchSubmit = (e) => {
     if (e) e.preventDefault();
     setIsSearchFocused(false);
+    const cat = searchCategory && searchCategory !== 'all' ? searchCategory : '';
     if (onSearch) {
-      if (searchCategory && searchCategory !== 'all' && !searchTerm.trim()) {
-        onSearch(searchCategory);
-      } else {
-        onSearch(searchTerm);
-      }
+      onSearch(searchTerm.trim(), cat);
     }
     if (currentView !== 'catalog') {
       setCurrentView('catalog');
@@ -257,13 +254,16 @@ export function Navbar({
   };
 
   const renderSearchBar = (isMobile) => (
-    <form onSubmit={handleSearchSubmit} className="relative flex items-center w-full bg-white rounded-sm shadow-xs border border-gray-200 focus-within:ring-2 focus-within:ring-[#FF7A00] focus-within:border-transparent transition-all">
+    <form
+      onSubmit={handleSearchSubmit}
+      className="relative flex items-center h-10 w-full bg-white rounded-sm shadow-xs border border-gray-200 focus-within:ring-2 focus-within:ring-[#FF7A00] focus-within:border-transparent transition-all box-border"
+    >
       {/* Integrated category selector dropdown to the left */}
-      <div className="relative shrink-0 flex items-center border-r border-gray-200 bg-gray-50 rounded-l-sm">
+      <div className="relative shrink-0 h-full flex items-center border-r border-gray-200 bg-gray-50 rounded-l-sm">
         <select
           value={searchCategory}
           onChange={(e) => setSearchCategory(e.target.value)}
-          className="appearance-none bg-transparent hover:bg-gray-100 text-gray-700 text-xs font-semibold pl-2.5 pr-6 py-2 sm:py-2.5 rounded-l-sm focus:outline-none cursor-pointer border-none transition-colors"
+          className="h-full appearance-none bg-transparent hover:bg-gray-100 text-gray-700 text-xs font-semibold pl-2.5 pr-6 py-0 rounded-l-sm focus:outline-none cursor-pointer border-none transition-colors"
           aria-label="Filter by Category"
         >
           <option value="all">All</option>
@@ -283,16 +283,16 @@ export function Navbar({
         onFocus={() => setIsSearchFocused(true)}
         onChange={(e) => setSearchTerm(e.target.value)}
         placeholder="Search for Products, Brands and More..."
-        className="flex-1 min-w-0 bg-transparent text-gray-900 placeholder-gray-500 text-xs sm:text-sm px-3 py-2 sm:py-2.5 focus:outline-none"
+        className="flex-1 min-w-0 h-full bg-transparent text-gray-900 placeholder-gray-500 text-xs sm:text-sm px-3 py-0 focus:outline-none"
       />
 
       {/* Right side controls: Clear, Camera, and Search button with zero vertical jitter */}
-      <div className="flex items-center gap-0.5 sm:gap-1 pr-2 shrink-0">
+      <div className="flex items-center h-full gap-0.5 sm:gap-1 pr-2 shrink-0">
         {searchTerm && (
           <button
             type="button"
             onClick={() => setSearchTerm('')}
-            className="text-gray-400 hover:text-gray-700 transition cursor-pointer p-1 flex items-center justify-center"
+            className="h-full text-gray-400 hover:text-gray-700 transition cursor-pointer px-1 flex items-center justify-center"
             title="Clear search"
           >
             <X className="w-4 h-4" />
@@ -301,14 +301,14 @@ export function Navbar({
         <button
           type="button"
           onClick={onOpenVisualSearch}
-          className="text-gray-400 hover:text-[#FF7A00] transition p-1 cursor-pointer flex items-center justify-center"
+          className="h-full text-gray-400 hover:text-[#FF7A00] transition px-1 cursor-pointer flex items-center justify-center"
           title="Visual Search / Search by Image"
         >
           <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
         <button
           type="submit"
-          className="text-[#0A3B74] hover:text-[#002F6C] transition p-1 cursor-pointer flex items-center justify-center"
+          className="h-full text-[#0A3B74] hover:text-[#002F6C] transition px-1 cursor-pointer flex items-center justify-center"
           title="Search"
         >
           <Search className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -586,8 +586,19 @@ export function Navbar({
 
       {/* Account Links & Mode Controls */}
       <div className="py-1">
-        {isSeller && (
+        {isSeller ? (
           <>
+            <button
+              type="button"
+              onClick={() => {
+                handleDemoSwitch('BUYER');
+                setShowUserMenu(false);
+              }}
+              className="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 flex items-center gap-2.5 text-gray-700 cursor-pointer font-medium"
+            >
+              <User className="w-4 h-4 text-[#0A3B74]" /> Switch to Buyer Mode
+            </button>
+
             <button
               type="button"
               onClick={() => {
@@ -602,48 +613,61 @@ export function Navbar({
             <button
               type="button"
               onClick={() => {
-                handleDemoSwitch('BUYER');
+                setCurrentView('profile');
                 setShowUserMenu(false);
               }}
               className="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 flex items-center gap-2.5 text-gray-700 cursor-pointer font-medium"
             >
-              <User className="w-4 h-4 text-[#0A3B74]" /> Switch to Buyer Mode
+              <User className="w-4 h-4 text-[#0A3B74]" /> Account Settings
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                logout();
+                setShowUserMenu(false);
+              }}
+              className="w-full text-left px-4 py-2 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2.5 cursor-pointer font-medium"
+            >
+              <LogOut className="w-4 h-4" /> Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                setCurrentView('profile');
+                setShowUserMenu(false);
+              }}
+              className="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 flex items-center gap-2.5 text-gray-700 cursor-pointer font-medium"
+            >
+              <User className="w-4 h-4 text-[#0A3B74]" /> Account Settings
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setCurrentView('orders');
+                setShowUserMenu(false);
+              }}
+              className="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 flex items-center gap-2.5 text-gray-700 cursor-pointer font-medium"
+            >
+              <Package className="w-4 h-4 text-[#0A3B74]" /> Orders
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setCurrentView('wishlist');
+                setShowUserMenu(false);
+              }}
+              className="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 flex items-center gap-2.5 text-gray-700 cursor-pointer font-medium"
+            >
+              <Heart className="w-4 h-4 text-[#0A3B74]" /> Wishlist
             </button>
           </>
         )}
-
-        <button
-          type="button"
-          onClick={() => {
-            setCurrentView('profile');
-            setShowUserMenu(false);
-          }}
-          className="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 flex items-center gap-2.5 text-gray-700 cursor-pointer font-medium"
-        >
-          <User className="w-4 h-4 text-[#0A3B74]" /> Account Settings
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setCurrentView('orders');
-            setShowUserMenu(false);
-          }}
-          className="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 flex items-center gap-2.5 text-gray-700 cursor-pointer font-medium"
-        >
-          <Package className="w-4 h-4 text-[#0A3B74]" /> Orders
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setCurrentView('wishlist');
-            setShowUserMenu(false);
-          }}
-          className="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 flex items-center gap-2.5 text-gray-700 cursor-pointer font-medium"
-        >
-          <Heart className="w-4 h-4 text-[#0A3B74]" /> Wishlist
-        </button>
       </div>
 
       {/* Role Switcher */}
@@ -809,7 +833,7 @@ export function Navbar({
               >
                 <User className="w-4 h-4" />
                 <span className="max-w-[110px] truncate text-xs font-bold">
-                  {isAuthenticated ? user?.name : 'Sign In'}
+                  {isAuthenticated ? (isSeller ? (user?.storeName || user?.name || 'Seller') : (user?.name || 'Sign In')) : 'Sign In'}
                 </span>
                 <ChevronDown className="w-3.5 h-3.5" />
               </button>
@@ -1175,21 +1199,21 @@ export function Navbar({
                       type="button"
                       onClick={() => {
                         setIsMobileMenuOpen(false);
-                        setCurrentView('seller');
-                      }}
-                      className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-md hover:bg-gray-100 transition text-[#0A3B74] cursor-pointer text-left font-bold"
-                    >
-                      <Store className="w-4 h-4 text-[#FF7A00]" /> Seller Dashboard
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsMobileMenuOpen(false);
                         handleDemoSwitch('BUYER');
                       }}
                       className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-md hover:bg-gray-100 transition text-gray-800 cursor-pointer text-left"
                     >
                       <User className="w-4 h-4 text-[#0A3B74]" /> Switch to Buyer Mode
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        setCurrentView('seller');
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-md hover:bg-gray-100 transition text-[#0A3B74] cursor-pointer text-left font-bold"
+                    >
+                      <Store className="w-4 h-4 text-[#FF7A00]" /> Seller Dashboard
                     </button>
                   </>
                 )}

@@ -176,4 +176,60 @@ public class ConcurrencyAndGenericsTests {
         assertFalse(commonError.isSuccess());
         assertEquals(1, commonError.getDetails().size());
     }
+
+    @Test
+    @DisplayName("Verify GenericCache multi-threaded atomic computeIfAbsent with 20 concurrent threads")
+    void testConcurrentGenericCacheComputeIfAbsent() throws InterruptedException {
+        GenericCache<String, String> cache = new GenericCache<>(30_000);
+        java.util.concurrent.atomic.AtomicInteger computeCount = new java.util.concurrent.atomic.AtomicInteger(0);
+
+        int numThreads = 20;
+        java.util.concurrent.CountDownLatch startLatch = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.CountDownLatch doneLatch = new java.util.concurrent.CountDownLatch(numThreads);
+        List<String> results = Collections.synchronizedList(new ArrayList<>());
+
+        for (int i = 0; i < numThreads; i++) {
+            new Thread(() -> {
+                try {
+                    startLatch.await();
+                    String val = cache.computeIfAbsent("sharedKey", key -> {
+                        computeCount.incrementAndGet();
+                        try {
+                            Thread.sleep(20);
+                        } catch (InterruptedException ignored) {}
+                        return "COMPUTED_VALUE";
+                    });
+                    results.add(val);
+                } catch (Exception ignored) {
+                } finally {
+                    doneLatch.countDown();
+                }
+            }).start();
+        }
+
+        startLatch.countDown();
+        assertTrue(doneLatch.await(5, TimeUnit.SECONDS));
+
+        assertEquals(20, results.size());
+        for (String val : results) {
+            assertEquals("COMPUTED_VALUE", val);
+        }
+        assertEquals(1, computeCount.get(), "Mapping function must execute exactly once under concurrent threads");
+    }
+
+    @Test
+    @DisplayName("Verify PaginatedResult JSON serialization contains hasNext and hasPrevious")
+    void testPaginatedResultJsonSerialization() throws Exception {
+        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        List<String> items = Arrays.asList("ItemA", "ItemB", "ItemC", "ItemD");
+        PaginatedResult<String> page = PaginatedResult.of(items, 0, 2);
+
+        String json = mapper.writeValueAsString(page);
+        assertNotNull(json);
+        assertTrue(json.contains("\"hasNext\":true"));
+        assertTrue(json.contains("\"hasPrevious\":false"));
+        assertTrue(json.contains("\"totalPages\":2"));
+        assertTrue(json.contains("\"totalElements\":4"));
+    }
 }
+

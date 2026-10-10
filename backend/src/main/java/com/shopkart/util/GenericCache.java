@@ -53,16 +53,19 @@ public class GenericCache<K, V> {
         Objects.requireNonNull(key, "Key must not be null");
         Objects.requireNonNull(mappingFunction, "Mapping function must not be null");
 
-        Optional<V> existing = get(key);
-        if (existing.isPresent()) {
-            return existing.get();
-        }
-
-        V computed = mappingFunction.apply(key);
-        if (computed != null) {
-            put(key, computed);
-        }
-        return computed;
+        CacheEntry<V> entry = store.compute(key, (k, existingEntry) -> {
+            long now = System.currentTimeMillis();
+            if (existingEntry != null && !existingEntry.isExpired(now)) {
+                return existingEntry;
+            }
+            V computed = mappingFunction.apply(k);
+            if (computed == null) {
+                return null;
+            }
+            long expiresAt = defaultTtlMillis > 0 ? now + defaultTtlMillis : Long.MAX_VALUE;
+            return new CacheEntry<>(computed, expiresAt);
+        });
+        return entry != null ? entry.getValue() : null;
     }
 
     public boolean containsKey(K key) {
@@ -95,7 +98,9 @@ public class GenericCache<K, V> {
     public List<V> filterValues(Predicate<? super V> predicate) {
         Objects.requireNonNull(predicate, "Predicate must not be null");
         cleanUpExpired();
+        long now = System.currentTimeMillis();
         return store.values().stream()
+                .filter(entry -> !entry.isExpired(now))
                 .map(CacheEntry::getValue)
                 .filter(predicate)
                 .collect(Collectors.toList());
@@ -107,7 +112,9 @@ public class GenericCache<K, V> {
     public <R> List<R> mapValues(Function<? super V, ? extends R> mapper) {
         Objects.requireNonNull(mapper, "Mapper must not be null");
         cleanUpExpired();
+        long now = System.currentTimeMillis();
         return store.values().stream()
+                .filter(entry -> !entry.isExpired(now))
                 .map(CacheEntry::getValue)
                 .map(mapper)
                 .collect(Collectors.toList());

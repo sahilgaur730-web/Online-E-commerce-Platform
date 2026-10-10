@@ -48,33 +48,13 @@ public class SalesAnalyticsJdbcDao {
         List<SalesReportDTO.CategorySalesDTO> categorySales = new ArrayList<>();
         List<SalesReportDTO.TopSellingProductDTO> topProducts = new ArrayList<>();
 
-        // Query 1: Overall Order Totals (ignoring CANCELLED orders)
+        // Execute raw JDBC queries within a single connection for high-throughput efficiency
         String summarySql = "SELECT COUNT(o.id) AS total_orders, " +
                 "COALESCE(SUM(o.final_amount), 0) AS total_revenue, " +
                 "COALESCE(AVG(o.final_amount), 0) AS avg_order_val " +
                 "FROM orders o " +
                 "WHERE o.order_status <> ?";
 
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement summaryStmt = connection.prepareStatement(summarySql)) {
-
-            summaryStmt.setString(1, "CANCELLED");
-
-            try (ResultSet rs = summaryStmt.executeQuery()) {
-                if (rs.next()) {
-                    totalOrders = rs.getLong("total_orders");
-                    BigDecimal rev = rs.getBigDecimal("total_revenue");
-                    totalRevenue = (rev != null) ? rev.setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
-                    BigDecimal avg = rs.getBigDecimal("avg_order_val");
-                    avgOrderValue = (avg != null) ? avg.setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
-                }
-            }
-        } catch (SQLException e) {
-            log.error("SQLException while querying overall sales summary via raw JDBC", e);
-            throw new RuntimeException("Database error executing JDBC sales summary: " + e.getMessage(), e);
-        }
-
-        // Query 2: Aggregate Revenue by Category
         String categorySql = "SELECT c.id AS cat_id, c.name AS cat_name, " +
                 "COALESCE(SUM(oi.quantity), 0) AS units_sold, " +
                 "COALESCE(SUM(oi.subtotal), 0) AS total_cat_revenue " +
@@ -86,28 +66,6 @@ public class SalesAnalyticsJdbcDao {
                 "GROUP BY c.id, c.name " +
                 "ORDER BY total_cat_revenue DESC";
 
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement categoryStmt = connection.prepareStatement(categorySql)) {
-
-            categoryStmt.setString(1, "CANCELLED");
-
-            try (ResultSet rs = categoryStmt.executeQuery()) {
-                while (rs.next()) {
-                    Long catId = rs.getLong("cat_id");
-                    String catName = rs.getString("cat_name");
-                    long units = rs.getLong("units_sold");
-                    BigDecimal rev = rs.getBigDecimal("total_cat_revenue");
-                    BigDecimal safeRev = (rev != null) ? rev.setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
-
-                    categorySales.add(new SalesReportDTO.CategorySalesDTO(catId, catName, units, safeRev));
-                }
-            }
-        } catch (SQLException e) {
-            log.error("SQLException while querying category revenue breakdown via raw JDBC", e);
-            throw new RuntimeException("Database error executing JDBC category sales: " + e.getMessage(), e);
-        }
-
-        // Query 3: Top 5 Selling Products
         String topProductsSql = "SELECT oi.product_id, oi.product_name, " +
                 "SUM(oi.quantity) AS total_units, " +
                 "SUM(oi.subtotal) AS total_sales " +
@@ -118,26 +76,56 @@ public class SalesAnalyticsJdbcDao {
                 "ORDER BY total_units DESC, total_sales DESC " +
                 "LIMIT ?";
 
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement topStmt = connection.prepareStatement(topProductsSql)) {
+        try (Connection connection = dataSource.getConnection()) {
+            // Query 1: Overall Order Totals (ignoring CANCELLED orders)
+            try (PreparedStatement summaryStmt = connection.prepareStatement(summarySql)) {
+                summaryStmt.setString(1, "CANCELLED");
+                try (ResultSet rs = summaryStmt.executeQuery()) {
+                    if (rs.next()) {
+                        totalOrders = rs.getLong("total_orders");
+                        BigDecimal rev = rs.getBigDecimal("total_revenue");
+                        totalRevenue = (rev != null) ? rev.setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
+                        BigDecimal avg = rs.getBigDecimal("avg_order_val");
+                        avgOrderValue = (avg != null) ? avg.setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
+                    }
+                }
+            }
 
-            topStmt.setString(1, "CANCELLED");
-            topStmt.setInt(2, 5);
+            // Query 2: Aggregate Revenue by Category
+            try (PreparedStatement categoryStmt = connection.prepareStatement(categorySql)) {
+                categoryStmt.setString(1, "CANCELLED");
+                try (ResultSet rs = categoryStmt.executeQuery()) {
+                    while (rs.next()) {
+                        Long catId = rs.getObject("cat_id") != null ? rs.getLong("cat_id") : null;
+                        String catName = rs.getString("cat_name");
+                        long units = rs.getLong("units_sold");
+                        BigDecimal rev = rs.getBigDecimal("total_cat_revenue");
+                        BigDecimal safeRev = (rev != null) ? rev.setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
 
-            try (ResultSet rs = topStmt.executeQuery()) {
-                while (rs.next()) {
-                    Long prodId = rs.getLong("product_id");
-                    String prodName = rs.getString("product_name");
-                    long units = rs.getLong("total_units");
-                    BigDecimal sales = rs.getBigDecimal("total_sales");
-                    BigDecimal safeSales = (sales != null) ? sales.setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
+                        categorySales.add(new SalesReportDTO.CategorySalesDTO(catId, catName, units, safeRev));
+                    }
+                }
+            }
 
-                    topProducts.add(new SalesReportDTO.TopSellingProductDTO(prodId, prodName, units, safeSales));
+            // Query 3: Top 5 Selling Products
+            try (PreparedStatement topStmt = connection.prepareStatement(topProductsSql)) {
+                topStmt.setString(1, "CANCELLED");
+                topStmt.setInt(2, 5);
+                try (ResultSet rs = topStmt.executeQuery()) {
+                    while (rs.next()) {
+                        Long prodId = rs.getObject("product_id") != null ? rs.getLong("product_id") : null;
+                        String prodName = rs.getString("product_name");
+                        long units = rs.getLong("total_units");
+                        BigDecimal sales = rs.getBigDecimal("total_sales");
+                        BigDecimal safeSales = (sales != null) ? sales.setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
+
+                        topProducts.add(new SalesReportDTO.TopSellingProductDTO(prodId, prodName, units, safeSales));
+                    }
                 }
             }
         } catch (SQLException e) {
-            log.error("SQLException while querying top selling products via raw JDBC", e);
-            throw new RuntimeException("Database error executing JDBC top products: " + e.getMessage(), e);
+            log.error("SQLException while executing raw JDBC sales analytics report", e);
+            throw new RuntimeException("Database error executing JDBC sales summary: " + e.getMessage(), e);
         }
 
         long executionTimeMs = System.currentTimeMillis() - startTime;

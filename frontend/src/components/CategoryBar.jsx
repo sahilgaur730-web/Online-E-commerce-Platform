@@ -115,15 +115,15 @@ export function CategoryBar({ selectedCategory, onSelectCategory }) {
   }, []);
 
   const handleCategoryClick = (cat) => {
-    if (activeMenuId === cat.id) {
-      setActiveMenuId(null);
+    if (cat.hasFlyout) {
+      setActiveMenuId((prev) => (prev === cat.id ? null : cat.id));
     }
     onSelectCategory(cat.slug);
   };
 
   const handleSubcategoryClick = (sub, cat) => {
     setActiveMenuId(null);
-    onSelectCategory(sub.query || cat.slug);
+    onSelectCategory(cat.slug, sub.query || cat.slug);
   };
 
   return (
@@ -154,7 +154,7 @@ export function CategoryBar({ selectedCategory, onSelectCategory }) {
             return (
               <div
                 key={cat.id}
-                className="relative group py-2"
+                className="relative group flex items-center h-10"
                 onMouseEnter={() => {
                   if (cat.hasFlyout) setActiveMenuId(cat.id);
                 }}
@@ -167,7 +167,7 @@ export function CategoryBar({ selectedCategory, onSelectCategory }) {
                   aria-haspopup={cat.hasFlyout ? 'true' : undefined}
                   aria-expanded={cat.hasFlyout ? isFlyoutOpen : undefined}
                   onClick={() => handleCategoryClick(cat)}
-                  className={`inline-flex items-center gap-1.5 py-1 px-1 border-b-2 cursor-pointer select-none transition-all duration-150 font-medium text-xs whitespace-nowrap outline-none ${
+                  className={`inline-flex items-center gap-1.5 h-full px-1 border-b-2 cursor-pointer select-none transition-all duration-150 font-medium text-xs whitespace-nowrap outline-none -mb-px ${
                     isSelected
                       ? 'border-b-2 border-blue-600 text-blue-600 font-bold'
                       : 'border-b-2 border-transparent text-gray-700 hover:text-blue-600 hover:border-gray-300'
