@@ -28,7 +28,7 @@ ShopKart is a modular, production-grade e-commerce application engineered with S
 
 - **Multi-Role Portals:** Discrete, isolated views and workflows for **Buyers**, **Sellers**, and **Admins**.
 - **Real-Time Deals Engine:** Server-synchronized UTC countdown timers for flash sales with automatic deal expiration handling.
-- **Deterministic Order State Machine:** Transactional progression through `ORDERED` ➔ `PACKED` ➔ `SHIPPED` ➔ `OUT_FOR_DELIVERY` ➔ `DELIVERED`.
+- **Deterministic Order State Machine:** Transactional progression through `PLACED` (`ORDERED`) ➔ `CONFIRMED` (`PACKED`) ➔ `SHIPPED` ➔ `OUT_FOR_DELIVERY` ➔ `DELIVERED`.
 - **Concurrency & Stock Protection:** Optimistic locking (`@Version`) prevents race conditions during high-volume checkout.
 - **Engagement & Gamification:** Streak coins, check-in loyalty ledger, and post-order rewards.
 - **Zero CLS Responsive UI:** Fully responsive interface tested across 360px mobile viewports through 4K displays.
@@ -184,6 +184,11 @@ cd backend
 
 # Start the backend application
 ./mvnw spring-boot:run
+
+# In a separate terminal, start the frontend web client
+cd ../frontend
+npm install
+npm run dev
 ```
 The backend API server starts on `http://localhost:8080`, and the frontend web client runs on `http://localhost:5173`.
 
@@ -202,7 +207,7 @@ The backend API server starts on `http://localhost:8080`, and the frontend web c
 ### Seller Endpoints (`ROLE_SELLER`)
 - `GET /api/seller/products` — List seller-owned items
 - `POST /api/seller/products` — Create new product listing
-- `PUT /api/seller/sub-orders/{id}/status` — Update order shipment stage
+- `PUT /api/orders/sub-orders/{subOrderId}/status` — Update seller sub-order shipment stage (`PUT /api/orders/{id}/status` for parent order)
 
 ### Admin Endpoints (`ROLE_ADMIN`)
 - `GET /api/admin/reports/jdbc-sales-summary` — Native JDBC revenue analysis report
