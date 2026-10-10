@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Smartphone,
   Shirt,
@@ -13,6 +13,17 @@ import {
 
 export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
   const [activeStory, setActiveStory] = useState(null);
+
+  useEffect(() => {
+    if (!activeStory) return;
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') {
+        setActiveStory(null);
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [activeStory]);
 
   const stories = [
     {

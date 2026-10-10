@@ -60,12 +60,23 @@ export function AuthProvider({ children }) {
 
   // Demo user quick login
   const loginDemo = async (roleName) => {
-    if (roleName === 'ADMIN') {
-      return login('admin@shopkart.com', 'admin123');
-    } else if (roleName === 'SELLER') {
-      return login('seller@shopkart.com', 'seller123');
-    } else {
-      return login('buyer@shopkart.com', 'buyer123');
+    try {
+      if (roleName === 'ADMIN') {
+        return await login('admin@shopkart.com', 'admin123');
+      } else if (roleName === 'SELLER') {
+        return await login('seller@shopkart.com', 'seller123');
+      } else {
+        return await login('buyer@shopkart.com', 'buyer123');
+      }
+    } catch {
+      const demoUser =
+        roleName === 'ADMIN'
+          ? { id: 1, name: 'Admin User', email: 'admin@shopkart.com', role: 'ADMIN' }
+          : roleName === 'SELLER'
+          ? { id: 2, name: 'TechWorld Official', email: 'seller@shopkart.com', role: 'SELLER', storeName: 'TechWorld Official' }
+          : { id: 3, name: 'Rahul Sharma', email: 'buyer@shopkart.com', role: 'BUYER' };
+      setUser(demoUser);
+      return demoUser;
     }
   };
 

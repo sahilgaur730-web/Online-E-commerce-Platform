@@ -103,20 +103,31 @@ export function CategoryBar({ selectedCategory, onSelectCategory }) {
   const [activeMenuId, setActiveMenuId] = useState(null);
   const containerRef = useRef(null);
 
-  // Close flyout menu on outside click
+  // Close flyout menu on outside click or Escape key
   useEffect(() => {
     function handleClickOutside(event) {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
         setActiveMenuId(null);
       }
     }
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        setActiveMenuId(null);
+      }
+    }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const handleCategoryClick = (cat) => {
     if (cat.hasFlyout) {
       setActiveMenuId((prev) => (prev === cat.id ? null : cat.id));
+    } else {
+      setActiveMenuId(null);
     }
     onSelectCategory(cat.slug, '');
   };
@@ -133,20 +144,14 @@ export function CategoryBar({ selectedCategory, onSelectCategory }) {
       style={{ top: 'var(--navbar-height, 64px)' }}
       className="sticky z-30 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-xs transition-[top] duration-150"
     >
-      <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6">
+      <div className="w-full max-w-[1280px] mx-auto px-3 md:px-3 lg:px-6">
         {/* =========================================================================
-            DESKTOP SECONDARY CATEGORY BAR (>= 768px)
-            Uniform 2rem (32px) gap, centered alignment, active bottom border indicator,
-            and interactive mega-menu flyouts.
+            DESKTOP & TABLET SECONDARY CATEGORY BAR (>= 768px)
+            Responsive spacing on tablet (768px) and uniform gap on desktop (1280px+),
+            active bottom border indicator, and interactive mega-menu flyouts.
             ========================================================================= */}
-        <div
-          style={{
-            gap: '2rem',
-            justifyContent: 'center',
-          }}
-          className="hidden md:flex items-center w-full py-0"
-        >
-          {CATEGORIES.map((cat) => {
+        <div className="hidden md:flex items-center justify-between lg:justify-center md:gap-1.5 lg:gap-6 xl:gap-8 w-full py-0">
+          {CATEGORIES.map((cat, idx) => {
             const Icon = cat.icon;
             const isSelected = selectedCategory === cat.slug;
             const isFlyoutOpen = activeMenuId === cat.id;
@@ -167,14 +172,14 @@ export function CategoryBar({ selectedCategory, onSelectCategory }) {
                   aria-haspopup={cat.hasFlyout ? 'true' : undefined}
                   aria-expanded={cat.hasFlyout ? isFlyoutOpen : undefined}
                   onClick={() => handleCategoryClick(cat)}
-                  className={`inline-flex items-center gap-1.5 h-full px-1 border-b-2 cursor-pointer select-none transition-all duration-150 font-medium text-xs whitespace-nowrap outline-none -mb-px ${
+                  className={`inline-flex items-center gap-1 lg:gap-1.5 h-full px-1 border-b-2 cursor-pointer select-none transition-colors duration-150 font-medium text-[11px] lg:text-xs whitespace-nowrap outline-none -mb-px ${
                     isSelected
                       ? 'border-b-2 border-blue-600 text-blue-600 font-bold'
                       : 'border-b-2 border-transparent text-gray-700 hover:text-blue-600 hover:border-gray-300'
                   }`}
                 >
                   <Icon
-                    className={`w-4 h-4 transition-colors ${
+                    className={`w-3.5 h-3.5 lg:w-4 lg:h-4 shrink-0 transition-colors ${
                       isSelected
                         ? 'text-blue-600'
                         : cat.special
@@ -187,7 +192,7 @@ export function CategoryBar({ selectedCategory, onSelectCategory }) {
                   {/* Subtle chevron indicator for categories with mega-menu */}
                   {cat.hasFlyout && (
                     <ChevronDown
-                      className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                      className={`w-3 h-3 lg:w-3.5 lg:h-3.5 shrink-0 transition-transform duration-200 ${
                         isFlyoutOpen
                           ? 'rotate-180 text-blue-600'
                           : 'text-gray-400 group-hover:text-blue-600'
@@ -200,7 +205,11 @@ export function CategoryBar({ selectedCategory, onSelectCategory }) {
                 {cat.hasFlyout && isFlyoutOpen && (
                   <div
                     role="menu"
-                    className="absolute top-full left-1/2 -translate-x-1/2 mt-0.5 w-60 bg-white rounded-md shadow-2xl border border-gray-200/90 py-2 z-50 animate-in fade-in slide-in-from-top-1 duration-150"
+                    className={`absolute top-full ${
+                      idx === 0
+                        ? 'left-0 lg:left-1/2 lg:-translate-x-1/2'
+                        : 'left-1/2 -translate-x-1/2'
+                    } mt-0.5 w-60 bg-white rounded-md shadow-2xl border border-gray-200/90 py-2 z-50 animate-in fade-in slide-in-from-top-1 duration-150`}
                   >
                     <div className="px-3 py-1 text-[10px] font-black text-gray-400 uppercase tracking-wider border-b border-gray-100 mb-1 flex items-center justify-between">
                       <span>{cat.name}</span>

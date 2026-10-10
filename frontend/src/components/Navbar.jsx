@@ -61,6 +61,7 @@ export function Navbar({
   const searchInputRef = useRef(null);
   const userMenuRef = useRef(null);
   const userMenuButtonRef = useRef(null);
+  const notificationsRef = useRef(null);
 
   // Cart Badge Bounce trigger
   const [badgeBouncing, setBadgeBouncing] = useState(false);
@@ -120,7 +121,7 @@ export function Navbar({
     }
   }, [isAuthenticated, loadNotifications]);
 
-  // Handle outside click for search suggestions
+  // Handle outside click and Escape key for search suggestions, user menu, notifications, and mobile drawer
   useEffect(() => {
     function handleClickOutside(e) {
       const insideDesktop = searchContainerRef.current && searchContainerRef.current.contains(e.target);
@@ -136,9 +137,24 @@ export function Navbar({
       ) {
         setShowUserMenu(false);
       }
+      if (notificationsRef.current && !notificationsRef.current.contains(e.target)) {
+        setShowNotifications(false);
+      }
+    }
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') {
+        setIsSearchFocused(false);
+        setShowUserMenu(false);
+        setShowNotifications(false);
+        setIsMobileMenuOpen(false);
+      }
     }
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   // Synchronize dynamic header height for sticky CategoryBar
@@ -230,8 +246,9 @@ export function Navbar({
   const handleSelectTrending = (query) => {
     setSearchTerm(query);
     setIsSearchFocused(false);
+    const cat = searchCategory && searchCategory !== 'all' ? searchCategory : '';
     if (onSearch) {
-      onSearch(query);
+      onSearch(query, cat);
     }
     if (currentView !== 'catalog') {
       setCurrentView('catalog');
@@ -241,6 +258,11 @@ export function Navbar({
   const handleDemoSwitch = async (role) => {
     await loginDemo(role);
     setShowUserMenu(false);
+    if (role === 'BUYER' && (currentView === 'seller' || currentView === 'admin')) {
+      setCurrentView('home');
+    } else if (role === 'SELLER' && currentView === 'admin') {
+      setCurrentView('home');
+    }
   };
 
   const markAllRead = async () => {
@@ -256,7 +278,7 @@ export function Navbar({
   const renderSearchBar = (isMobile) => (
     <form
       onSubmit={handleSearchSubmit}
-      className="relative flex items-center h-10 w-full bg-white rounded-sm shadow-xs border border-gray-200 focus-within:ring-2 focus-within:ring-[#FF7A00] focus-within:border-transparent transition-all box-border"
+      className="relative flex items-center h-10 w-full bg-white rounded-sm shadow-xs border border-gray-200 focus-within:ring-2 focus-within:ring-[#FF7A00] focus-within:border-transparent transition-shadow box-border"
     >
       {/* Integrated category selector dropdown to the left */}
       <div className="relative shrink-0 h-full flex items-center border-r border-gray-200 bg-gray-50 rounded-l-sm">
@@ -415,10 +437,11 @@ export function Navbar({
   );
 
   const renderNotifications = () => (
-    <div className="relative">
+    <div ref={notificationsRef} className="relative">
       <button
         type="button"
         onClick={() => {
+          setShowUserMenu(false);
           setShowNotifications(!showNotifications);
           if (!showNotifications) loadNotifications();
         }}
@@ -783,10 +806,10 @@ export function Navbar({
             </button>
           </div>
 
-          {/* Expandable Search Bar */}
+          {/* Search Bar (Zero layout shift on focus) */}
           <div
             ref={searchContainerRef}
-            className="flex-1 max-w-md lg:focus-within:max-w-xl xl:focus-within:max-w-2xl transition-all duration-300 ease-in-out relative"
+            className="flex-1 max-w-xl xl:max-w-2xl relative"
           >
             {renderSearchBar(false)}
             {isSearchFocused && renderSearchDropdown()}
@@ -830,7 +853,10 @@ export function Navbar({
               <button
                 ref={userMenuButtonRef}
                 type="button"
-                onClick={() => setShowUserMenu(!showUserMenu)}
+                onClick={() => {
+                  setShowNotifications(false);
+                  setShowUserMenu(!showUserMenu);
+                }}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md hover:bg-white/10 transition text-white font-medium cursor-pointer border border-transparent hover:border-white/20"
               >
                 <User className="w-4 h-4" />
