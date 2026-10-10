@@ -214,6 +214,7 @@ public class OrderService {
 
         // Asynchronously generate invoice receipt in background worker thread
         if (asyncInvoiceGeneratorService != null) {
+            asyncInvoiceGeneratorService.registerOrderSnapshot(savedOrder);
             asyncInvoiceGeneratorService.generateOrderInvoiceAsync(savedOrder.getId());
         }
 

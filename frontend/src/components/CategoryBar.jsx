@@ -18,7 +18,7 @@ const CATEGORIES = [
     icon: Smartphone,
     hasFlyout: true,
     subcategories: [
-      { name: 'All Smartphones', query: 'mobiles' },
+      { name: 'All Smartphones', query: '' },
       { name: 'Flagship 5G Mobiles', query: '5G' },
       { name: 'iPads & Tablets', query: 'iPad' },
       { name: 'Mobile Accessories', query: 'Accessories' },
@@ -32,7 +32,7 @@ const CATEGORIES = [
     icon: Laptop,
     hasFlyout: true,
     subcategories: [
-      { name: 'All Electronics', query: 'electronics' },
+      { name: 'All Electronics', query: '' },
       { name: 'Audio & Headphones', query: 'Headphones' },
       { name: 'Cameras & Photography', query: 'Camera' },
       { name: 'Gaming Accessories', query: 'Gaming' },
@@ -47,7 +47,7 @@ const CATEGORIES = [
     icon: Shirt,
     hasFlyout: true,
     subcategories: [
-      { name: 'All Fashion', query: 'fashion' },
+      { name: 'All Fashion', query: '' },
       { name: "Men's Casual & Formal", query: 'Men' },
       { name: "Women's Western & Ethnic", query: 'Women' },
       { name: 'Footwear & Running Shoes', query: 'Shoes' },
@@ -61,7 +61,7 @@ const CATEGORIES = [
     icon: Home,
     hasFlyout: true,
     subcategories: [
-      { name: 'All Home & Kitchen', query: 'home-kitchen' },
+      { name: 'All Home & Kitchen', query: '' },
       { name: 'Kitchen & Cookware', query: 'Cookware' },
       { name: 'Small Home Appliances', query: 'Kitchen' },
       { name: 'Modern Living Room Decor', query: 'Decor' },
@@ -75,7 +75,7 @@ const CATEGORIES = [
     icon: Tv,
     hasFlyout: true,
     subcategories: [
-      { name: 'All Home Appliances', query: 'appliances' },
+      { name: 'All Home Appliances', query: '' },
       { name: '4K Ultra HD Smart TVs', query: 'TV' },
       { name: 'Air Conditioners', query: 'AC' },
       { name: 'Smart Inverter Refrigerators', query: 'Refrigerator' },
@@ -118,12 +118,12 @@ export function CategoryBar({ selectedCategory, onSelectCategory }) {
     if (cat.hasFlyout) {
       setActiveMenuId((prev) => (prev === cat.id ? null : cat.id));
     }
-    onSelectCategory(cat.slug);
+    onSelectCategory(cat.slug, '');
   };
 
   const handleSubcategoryClick = (sub, cat) => {
     setActiveMenuId(null);
-    onSelectCategory(cat.slug, sub.query || cat.slug);
+    onSelectCategory(cat.slug, sub.query || '');
   };
 
   return (

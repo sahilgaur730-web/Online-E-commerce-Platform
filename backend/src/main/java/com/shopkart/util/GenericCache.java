@@ -33,7 +33,7 @@ public class GenericCache<K, V> {
     public void put(K key, V value, long ttlMillis) {
         Objects.requireNonNull(key, "Key must not be null");
         Objects.requireNonNull(value, "Value must not be null");
-        long expiresAt = ttlMillis > 0 ? System.currentTimeMillis() + ttlMillis : Long.MAX_VALUE;
+        long expiresAt = computeExpiry(System.currentTimeMillis(), ttlMillis);
         store.put(key, new CacheEntry<>(value, expiresAt));
     }
 
@@ -62,10 +62,17 @@ public class GenericCache<K, V> {
             if (computed == null) {
                 return null;
             }
-            long expiresAt = defaultTtlMillis > 0 ? now + defaultTtlMillis : Long.MAX_VALUE;
+            long expiresAt = computeExpiry(now, defaultTtlMillis);
             return new CacheEntry<>(computed, expiresAt);
         });
         return entry != null ? entry.getValue() : null;
+    }
+
+    private static long computeExpiry(long now, long ttlMillis) {
+        if (ttlMillis <= 0 || Long.MAX_VALUE - now <= ttlMillis) {
+            return Long.MAX_VALUE;
+        }
+        return now + ttlMillis;
     }
 
     public boolean containsKey(K key) {

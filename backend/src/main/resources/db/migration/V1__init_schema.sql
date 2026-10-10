@@ -143,10 +143,10 @@ CREATE TABLE IF NOT EXISTS reviews (
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     rating INT NOT NULL,
     title VARCHAR(255),
-    comment VARCHAR(2000),
+    comment VARCHAR(1000) NOT NULL,
     verified_purchase BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT uk_reviews_user_product UNIQUE (product_id, user_id)
+    CONSTRAINT uk_review_product_user UNIQUE (product_id, user_id)
 );
 
 CREATE TABLE IF NOT EXISTS wishlist_items (

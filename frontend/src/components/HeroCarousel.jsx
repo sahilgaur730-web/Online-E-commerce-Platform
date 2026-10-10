@@ -55,22 +55,22 @@ export function HeroCarousel({ onSelectCategory }) {
   return (
     <div className="relative overflow-hidden bg-gray-900 text-white select-none">
       <div className={`w-full bg-gradient-to-r ${slide.bg} transition-colors duration-700`}>
-        <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 py-8 md:py-12 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 min-h-[500px] sm:min-h-[460px] md:min-h-[380px]">
+        <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6 py-6 md:py-10 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8 h-[560px] sm:h-[500px] md:h-[400px]">
           {/* Text Content */}
-          <div className="w-full max-w-xl space-y-3 z-10 min-h-[220px] sm:min-h-[200px] md:min-h-[190px] flex flex-col justify-center">
+          <div className="w-full max-w-xl space-y-2.5 md:space-y-3 z-10 h-[260px] sm:h-[220px] md:h-[260px] flex flex-col justify-center">
             <span className="inline-block bg-[#FF7A00] text-white text-xs font-bold tracking-wider px-3 py-1 rounded-sm uppercase self-start">
               {slide.badge}
             </span>
-            <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white leading-tight">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight">
               {slide.title}
             </h1>
-            <p className={`text-lg md:text-xl font-semibold ${slide.accentColor}`}>
+            <p className={`text-base sm:text-lg md:text-xl font-semibold ${slide.accentColor}`}>
               {slide.subtitle}
             </p>
-            <p className="text-sm text-gray-200">
+            <p className="text-xs sm:text-sm text-gray-200 line-clamp-2">
               {slide.desc}
             </p>
-            <div className="pt-2">
+            <div className="pt-1.5 md:pt-2">
               <button
                 type="button"
                 onClick={() => onSelectCategory(slide.category)}
@@ -83,7 +83,7 @@ export function HeroCarousel({ onSelectCategory }) {
 
           {/* Banner Product Showcase Image */}
           <div className="shrink-0 relative">
-            <div className="w-64 h-52 sm:h-56 md:w-80 md:h-64 rounded-sm overflow-hidden bg-black/20 p-2 shadow-lg">
+            <div className="w-64 h-48 sm:h-52 md:w-80 md:h-64 rounded-sm overflow-hidden bg-black/20 p-2 shadow-lg">
               <img
                 src={slide.image}
                 alt={slide.title}

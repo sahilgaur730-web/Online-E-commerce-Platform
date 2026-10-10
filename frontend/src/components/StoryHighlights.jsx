@@ -185,12 +185,11 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
             ========================================================================= */}
         <div
           style={{
-            display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             width: '100%',
           }}
-          className="hidden md:flex px-4 py-3"
+          className="hidden md:flex items-center justify-between w-full px-4 py-3"
         >
           {stories.map((story) => {
             const Icon = story.icon;
@@ -236,7 +235,7 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
             WebkitOverflowScrolling: 'touch',
             padding: '16px',
           }}
-          className="md:hidden flex items-center gap-5 touch-scroll-track snap-x snap-mandatory w-full"
+          className="md:hidden flex items-center gap-4 touch-scroll-track snap-x snap-mandatory w-full"
         >
           {stories.map((story) => {
             const Icon = story.icon;
@@ -248,7 +247,7 @@ export function StoryHighlights({ onSelectCategory, onOpenStreak }) {
                 aria-label={story.title}
                 style={{ scrollSnapAlign: 'start' }}
                 onClick={() => handleStoryClick(story)}
-                className="flex flex-col items-center justify-start gap-2 shrink-0 cursor-pointer group focus:outline-none select-none snap-start py-1"
+                className="flex flex-col items-center justify-start gap-2 min-w-[72px] shrink-0 cursor-pointer group focus:outline-none select-none snap-start py-1"
               >
                 {/* 48x48px Squircle Card Container */}
                 <div className="relative w-12 h-12 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center shrink-0 shadow-xs group-hover:border-[#0A3B74]/30 group-hover:bg-blue-50/50 transition-colors duration-200 overflow-visible">

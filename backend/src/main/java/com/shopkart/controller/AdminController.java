@@ -48,10 +48,15 @@ public class AdminController {
         this.salesAnalyticsJdbcDao = salesAnalyticsJdbcDao;
     }
 
-    @GetMapping("/reports/jdbc-sales-summary")
     public ResponseEntity<ApiResponse<SalesReportDTO>> getJdbcSalesSummary() {
-        SalesReportDTO report = salesAnalyticsJdbcDao.generateSalesReport();
-        return ResponseEntity.ok(ApiResponse.ok("JDBC Sales analytics generated successfully", report));
+        return getJdbcSalesSummary(5);
+    }
+
+    @GetMapping("/reports/jdbc-sales-summary")
+    public ResponseEntity<ApiResponse<SalesReportDTO>> getJdbcSalesSummary(
+            @RequestParam(required = false, defaultValue = "5") int topLimit) {
+        SalesReportDTO report = salesAnalyticsJdbcDao.generateSalesReport(topLimit);
+        return ResponseEntity.ok(ApiResponse.success(report, "JDBC Sales analytics generated successfully"));
     }
 
     @GetMapping("/dashboard")

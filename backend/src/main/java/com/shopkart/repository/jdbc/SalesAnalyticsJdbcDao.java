@@ -40,7 +40,19 @@ public class SalesAnalyticsJdbcDao {
      * @return SalesReportDTO containing overall sales aggregates, category breakdown, and top selling products.
      */
     public SalesReportDTO generateSalesReport() {
+        return generateSalesReport(5);
+    }
+
+    /**
+     * Executes native SQL queries via raw java.sql.* to construct a comprehensive sales analytics report
+     * with a configurable top-selling product limit.
+     *
+     * @param topLimit Maximum number of top-selling products to return
+     * @return SalesReportDTO containing overall sales aggregates, category breakdown, and top selling products.
+     */
+    public SalesReportDTO generateSalesReport(int topLimit) {
         long startTime = System.currentTimeMillis();
+        int safeLimit = topLimit > 0 ? topLimit : 5;
 
         long totalOrders = 0;
         BigDecimal totalRevenue = BigDecimal.ZERO;
@@ -98,7 +110,7 @@ public class SalesAnalyticsJdbcDao {
                     while (rs.next()) {
                         Long catId = rs.getObject("cat_id") != null ? rs.getLong("cat_id") : null;
                         String catName = rs.getString("cat_name");
-                        long units = rs.getLong("units_sold");
+                        long units = rs.getInt("units_sold");
                         BigDecimal rev = rs.getBigDecimal("total_cat_revenue");
                         BigDecimal safeRev = (rev != null) ? rev.setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
 
@@ -107,10 +119,10 @@ public class SalesAnalyticsJdbcDao {
                 }
             }
 
-            // Query 3: Top 5 Selling Products
+            // Query 3: Top Selling Products
             try (PreparedStatement topStmt = connection.prepareStatement(topProductsSql)) {
                 topStmt.setString(1, "CANCELLED");
-                topStmt.setInt(2, 5);
+                topStmt.setInt(2, safeLimit);
                 try (ResultSet rs = topStmt.executeQuery()) {
                     while (rs.next()) {
                         Long prodId = rs.getObject("product_id") != null ? rs.getLong("product_id") : null;
@@ -140,5 +152,31 @@ public class SalesAnalyticsJdbcDao {
                 generatedAt,
                 executionTimeMs
         );
+    }
+
+    /**
+     * Counts orders matching a given status using raw JDBC PreparedStatement and ResultSet.getInt.
+     *
+     * @param orderStatus Status string (e.g. "PLACED", "CONFIRMED", "CANCELLED")
+     * @return Count of matching orders
+     */
+    public int countOrdersByStatus(String orderStatus) {
+        if (orderStatus == null || orderStatus.isBlank()) {
+            return 0;
+        }
+        String sql = "SELECT COUNT(id) AS order_count FROM orders WHERE order_status = ?";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, orderStatus.trim().toUpperCase());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("order_count");
+                }
+                return 0;
+            }
+        } catch (SQLException e) {
+            log.error("SQLException while counting orders by status via JDBC", e);
+            throw new RuntimeException("Database error counting orders by status: " + e.getMessage(), e);
+        }
     }
 }

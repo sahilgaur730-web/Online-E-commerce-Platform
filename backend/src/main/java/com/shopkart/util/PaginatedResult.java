@@ -36,12 +36,12 @@ public class PaginatedResult<T> {
      * Constructs a PaginatedResult from a full collection using Java Streams.
      */
     public static <E> PaginatedResult<E> of(List<E> allItems, int page, int size) {
-        if (allItems == null || allItems.isEmpty()) {
-            return empty();
-        }
         int safePage = Math.max(0, page);
         int safeSize = Math.max(1, size);
-        int fromIndex = safePage * safeSize;
+        if (allItems == null || allItems.isEmpty()) {
+            return new PaginatedResult<>(Collections.emptyList(), safePage, safeSize, 0);
+        }
+        long fromIndex = (long) safePage * safeSize;
 
         List<E> pageContent = allItems.stream()
                 .skip(fromIndex)
@@ -49,6 +49,16 @@ public class PaginatedResult<T> {
                 .collect(Collectors.toList());
 
         return new PaginatedResult<>(pageContent, safePage, safeSize, allItems.size());
+    }
+
+    /**
+     * Constructs a PaginatedResult from a Spring Data Page.
+     */
+    public static <E> PaginatedResult<E> fromPage(org.springframework.data.domain.Page<E> page) {
+        if (page == null) {
+            return empty();
+        }
+        return new PaginatedResult<>(page.getContent(), page.getNumber(), page.getSize(), page.getTotalElements());
     }
 
     /**

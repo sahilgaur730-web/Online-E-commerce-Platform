@@ -4,13 +4,18 @@ import com.shopkart.dto.ApiResponse;
 import com.shopkart.dto.InvoiceReceiptDTO;
 import com.shopkart.model.*;
 import com.shopkart.repository.*;
+import com.shopkart.security.JwtUtils;
+import com.shopkart.security.UserPrincipal;
 import com.shopkart.service.AsyncInvoiceGeneratorService;
 import com.shopkart.util.GenericCache;
 import com.shopkart.util.PaginatedResult;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -18,9 +23,19 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 public class ConcurrencyAndGenericsTests {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private JwtUtils jwtUtils;
 
     @Autowired
     private AsyncInvoiceGeneratorService asyncInvoiceGeneratorService;
@@ -37,8 +52,12 @@ public class ConcurrencyAndGenericsTests {
     @Autowired
     private OrderItemRepository orderItemRepository;
 
+    @Autowired
+    @org.springframework.beans.factory.annotation.Qualifier("shopkartTaskExecutor")
+    private org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor shopkartTaskExecutor;
+
     @Test
-    @DisplayName("Verify @Async CompletableFuture invoice generation runs in dedicated ShopKart-Async- thread")
+    @DisplayName("Verify @Async CompletableFuture invoice generation runs in dedicated ShopKart-Async- thread and exposes GET /api/orders/{id}/invoice")
     void testAsyncInvoiceWorkerExecution() throws Exception {
         User buyer = userRepository.findByEmail("buyer@shopkart.com").orElse(null);
         assertNotNull(buyer);
@@ -69,6 +88,61 @@ public class ConcurrencyAndGenericsTests {
         // Verify it executed on the configured ThreadPoolTaskExecutor thread prefix
         assertTrue(receipt.getGeneratedByThread().startsWith("ShopKart-Async-"),
                 "Expected worker thread name prefix ShopKart-Async-, but got: " + receipt.getGeneratedByThread());
+
+        // Verify cached invoice is present in GenericCache
+        assertTrue(asyncInvoiceGeneratorService.getCachedInvoice(savedOrder.getId()).isPresent());
+
+        // Verify GET /api/orders/{id}/invoice endpoint returns wrapped ApiResponse<InvoiceReceiptDTO>
+        String buyerToken = jwtUtils.generateToken(UserPrincipal.create(buyer));
+        mockMvc.perform(get("/api/orders/" + savedOrder.getId() + "/invoice")
+                        .header("Authorization", "Bearer " + buyerToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.orderId").value(savedOrder.getId()))
+                .andExpect(jsonPath("$.data.status").value("GENERATED"));
+
+        // Verify BOLA protection: a different buyer cannot access this order's invoice
+        User otherBuyer = new User("Other Buyer", "otherbuyer" + System.currentTimeMillis() + "@shopkart.com", "pass123", Role.BUYER, "9988776655");
+        User savedOtherBuyer = userRepository.save(otherBuyer);
+        String otherBuyerToken = jwtUtils.generateToken(UserPrincipal.create(savedOtherBuyer));
+        mockMvc.perform(get("/api/orders/" + savedOrder.getId() + "/invoice")
+                        .header("Authorization", "Bearer " + otherBuyerToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+        // Non-existent & null order ID boundary tests
+        CompletableFuture<InvoiceReceiptDTO> missingFuture =
+                asyncInvoiceGeneratorService.generateOrderInvoiceAsync(999_999_999L);
+        assertNull(missingFuture.get(5, TimeUnit.SECONDS));
+        assertNull(asyncInvoiceGeneratorService.generateOrderInvoiceAsync(null).get(5, TimeUnit.SECONDS));
+    }
+
+    @Test
+    @DisplayName("Verify ThreadPoolTaskExecutor parameters (core=4, max=8, queue=50) and CallerRunsPolicy saturation backpressure")
+    void testThreadPoolExecutorConfigAndBackpressureSaturation() throws Exception {
+        assertNotNull(shopkartTaskExecutor);
+        assertEquals(4, shopkartTaskExecutor.getCorePoolSize());
+        assertEquals(8, shopkartTaskExecutor.getMaxPoolSize());
+        assertEquals(50, shopkartTaskExecutor.getQueueCapacity());
+        assertEquals("ShopKart-Async-", shopkartTaskExecutor.getThreadNamePrefix());
+
+        // Submit 65 concurrent tasks (> maxPoolSize 8 + queueCapacity 50 = 58) to verify CallerRunsPolicy backpressure
+        int totalTasks = 65;
+        java.util.concurrent.atomic.AtomicInteger completedTasks = new java.util.concurrent.atomic.AtomicInteger(0);
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        for (int i = 0; i < totalTasks; i++) {
+            futures.add(CompletableFuture.runAsync(() -> {
+                try {
+                    Thread.sleep(5);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                completedTasks.incrementAndGet();
+            }, shopkartTaskExecutor));
+        }
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get(10, TimeUnit.SECONDS);
+        assertEquals(totalTasks, completedTasks.get(), "All 65 burst tasks must complete under CallerRunsPolicy without rejection");
     }
 
     @Test
@@ -98,6 +172,10 @@ public class ConcurrencyAndGenericsTests {
         Integer computed = cache.computeIfAbsent("item4", key -> key.length() * 10);
         assertEquals(50, computed);
         assertTrue(cache.containsKey("item4"));
+
+        // Long.MAX_VALUE TTL overflow boundary check
+        cache.put("eternal", 777, Long.MAX_VALUE);
+        assertEquals(Optional.of(777), cache.get("eternal"), "Long.MAX_VALUE TTL must not overflow into negative expiry");
 
         // TTL expiration test
         GenericCache<String, String> expiringCache = new GenericCache<>(60); // 60ms TTL
@@ -142,10 +220,23 @@ public class ConcurrencyAndGenericsTests {
         PaginatedResult<String> sortedDesc = page1.sorted(Comparator.reverseOrder());
         assertEquals(Arrays.asList("Cherry", "Banana", "Apple"), sortedDesc.getContent());
 
-        // Empty boundary
+        // Empty boundary & PaginatedResult.of with empty list preserves page/size
         PaginatedResult<String> empty = PaginatedResult.empty();
         assertEquals(0, empty.getContent().size());
         assertEquals(0, empty.getTotalElements());
+        PaginatedResult<String> emptyCustom = PaginatedResult.of(Collections.emptyList(), 2, 5);
+        assertEquals(2, emptyCustom.getPage());
+        assertEquals(5, emptyCustom.getSize());
+        assertEquals(0, emptyCustom.getTotalElements());
+
+        // Spring Data Page conversion
+        org.springframework.data.domain.Page<String> springPage =
+                new org.springframework.data.domain.PageImpl<>(Arrays.asList("X", "Y"), org.springframework.data.domain.PageRequest.of(0, 2), 4);
+        PaginatedResult<String> fromSpring = PaginatedResult.fromPage(springPage);
+        assertEquals(2, fromSpring.getContent().size());
+        assertEquals(4, fromSpring.getTotalElements());
+        assertTrue(fromSpring.hasNext());
+        assertEquals(0, PaginatedResult.fromPage(null).getTotalElements());
     }
 
     @Test
@@ -156,6 +247,10 @@ public class ConcurrencyAndGenericsTests {
         assertTrue(successRes.isSuccess());
         assertEquals("Operation Successful", successRes.getMessage());
         assertEquals("CustomData", successRes.getData());
+
+        ApiResponse<String> singleArgSuccess = ApiResponse.success("OnlyData");
+        assertTrue(singleArgSuccess.isSuccess());
+        assertEquals("OnlyData", singleArgSuccess.getData());
 
         List<String> errors = Arrays.asList("Name must not be empty", "Email is invalid");
         ApiResponse<Void> errorRes = ApiResponse.error("Validation Failed", errors);
@@ -170,6 +265,7 @@ public class ConcurrencyAndGenericsTests {
                 com.shopkart.common.ApiResponse.success(42, "Computed Answer");
         assertTrue(commonSuccess.isSuccess());
         assertEquals(Integer.valueOf(42), commonSuccess.getData());
+        assertEquals(Integer.valueOf(99), com.shopkart.common.ApiResponse.success(99).getData());
 
         com.shopkart.common.ApiResponse<Object> commonError =
                 com.shopkart.common.ApiResponse.error("Err", Collections.singletonList("Detail 1"));

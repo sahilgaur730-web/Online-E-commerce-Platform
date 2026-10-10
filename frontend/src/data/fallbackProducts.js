@@ -929,14 +929,21 @@ export function filterFallbackProducts({
       (p) =>
         p.title.toLowerCase().includes(q) ||
         p.description.toLowerCase().includes(q) ||
-        p.brand.toLowerCase().includes(q)
+        p.brand.toLowerCase().includes(q) ||
+        (p.categoryName && p.categoryName.toLowerCase().includes(q)) ||
+        (p.categorySlug && p.categorySlug.toLowerCase().includes(q)) ||
+        (p.specifications && p.specifications.toLowerCase().includes(q))
     );
   }
 
   if (categoryId) {
     list = list.filter((p) => p.categoryId === Number(categoryId));
   } else if (categorySlug) {
-    list = list.filter((p) => p.categorySlug === categorySlug);
+    if (categorySlug === 'top-offers') {
+      list = list.filter((p) => p.topOffer);
+    } else {
+      list = list.filter((p) => p.categorySlug === categorySlug);
+    }
   }
 
   if (brand) {

@@ -2,11 +2,13 @@ package com.shopkart.controller;
 
 import com.shopkart.common.ApiResponse;
 import com.shopkart.dto.CreateOrderRequest;
+import com.shopkart.dto.InvoiceReceiptDTO;
 import com.shopkart.dto.OrderDto;
 import com.shopkart.dto.SubOrderDto;
 import com.shopkart.dto.UpdateOrderStatusRequest;
 import com.shopkart.model.Role;
 import com.shopkart.security.UserPrincipal;
+import com.shopkart.service.AsyncInvoiceGeneratorService;
 import com.shopkart.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -24,9 +26,11 @@ import java.util.Map;
 public class OrderController {
 
     private final OrderService orderService;
+    private final AsyncInvoiceGeneratorService asyncInvoiceGeneratorService;
 
-    public OrderController(OrderService orderService) {
+    public OrderController(OrderService orderService, AsyncInvoiceGeneratorService asyncInvoiceGeneratorService) {
         this.orderService = orderService;
+        this.asyncInvoiceGeneratorService = asyncInvoiceGeneratorService;
     }
 
     @PostMapping
@@ -48,6 +52,17 @@ public class OrderController {
             @AuthenticationPrincipal UserPrincipal principal) {
         boolean hasPrivileges = principal.getRole() == Role.ADMIN || principal.getRole() == Role.SELLER;
         return ResponseEntity.ok(ApiResponse.ok(orderService.getOrderById(id, principal.getId(), hasPrivileges)));
+    }
+
+    @GetMapping("/{id}/invoice")
+    public ResponseEntity<ApiResponse<InvoiceReceiptDTO>> getOrderInvoice(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        boolean hasPrivileges = principal.getRole() == Role.ADMIN || principal.getRole() == Role.SELLER;
+        OrderDto order = orderService.getOrderById(id, principal.getId(), hasPrivileges);
+        InvoiceReceiptDTO invoice = asyncInvoiceGeneratorService.getCachedInvoice(order.getId())
+                .orElseGet(() -> asyncInvoiceGeneratorService.generateOrderInvoiceAsync(order.getId()).join());
+        return ResponseEntity.ok(ApiResponse.success(invoice, "Order invoice retrieved successfully"));
     }
 
     @PostMapping("/{id}/cancel")

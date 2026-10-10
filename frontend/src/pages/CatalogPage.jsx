@@ -58,8 +58,12 @@ export function CatalogPage({ initialCategory, initialKeyword, onSelectProduct, 
       });
 
       if (res && res.content && res.content.length > 0) {
-        setProducts(res.content);
-        setTotalCount(res.totalElements);
+        const items =
+          selectedCategory === 'top-offers'
+            ? res.content.filter((p) => p.topOffer || (p.discountPercentage && p.discountPercentage >= 10))
+            : res.content;
+        setProducts(items);
+        setTotalCount(selectedCategory === 'top-offers' ? items.length : res.totalElements);
       } else {
         // Fallback filter
         const fallbackRes = filterFallbackProducts({
