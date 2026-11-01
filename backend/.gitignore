@@ -1,20 +1,29 @@
 HELP.md
 target/
+out/
+build/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### STS ###
+# Environment files
+.env
+.env.*
+*.env
+.env.local
+!.env.example
+
+### STS / Eclipse ###
 .apt_generated
 .classpath
 .factorypath
 .project
-.settings
+.settings/
 .springBeans
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -25,9 +34,35 @@ target/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
 ### VS Code ###
 .vscode/
+
+### Binary distributions & compiled artifacts ###
+*.class
+*.jar
+*.war
+*.zip
+*.tar.gz
+*.tar
+*.gz
+*.7z
+*.rar
+*.exe
+*.dll
+*.so
+*.dylib
+
+### Logs, databases and runtime data ###
+*.log
+*.sqlite
+*.db
+uploads/
+
+### OS metadata & crash logs ###
+.DS_Store
+Thumbs.db
+hs_err_pid*
+replay_pid*

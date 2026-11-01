@@ -40,13 +40,13 @@ public class PaymentService {
     private final NotificationService notificationService;
     private final AuditService auditService;
 
-    @Value("${razorpay.key.id:rzp_test_shopkartSandbox101}")
+    @Value("${payment.sandbox-key:${razorpay.key.id:}}")
     private String razorpayKeyId;
 
-    @Value("${razorpay.key.secret:secret_shopkartSandboxKey2026}")
+    @Value("${razorpay.key.secret:}")
     private String razorpayKeySecret;
 
-    @Value("${razorpay.webhook.secret:whsec_shopkartSandboxSecret}")
+    @Value("${razorpay.webhook.secret:}")
     private String razorpayWebhookSecret;
 
     public PaymentService(

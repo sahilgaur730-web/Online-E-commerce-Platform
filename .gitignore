@@ -6,10 +6,19 @@ dist-ssr/
 
 # Java / Backend
 target/
+out/
+build/
 *.class
 *.jar
 *.war
 .mvn/wrapper/maven-wrapper.jar
+
+# Environment files
+.env
+.env.*
+*.env
+.env.local
+!.env.example
 
 # Logs and databases
 *.log
@@ -22,6 +31,8 @@ uploads/
 Thumbs.db
 .idea/
 *.iml
+*.ipr
+*.iws
 .vscode/
 *.suo
 *.ntvs*
@@ -29,5 +40,34 @@ Thumbs.db
 *.sln
 *.sw?
 
+# Eclipse / STS
+.project
+.classpath
+.settings/
+.factorypath
+.apt_generated
+.springBeans
+.sts4-cache
+
+# Binary distributions & compiled archives
+*.zip
+*.tar.gz
+*.tar
+*.gz
+*.7z
+*.rar
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Crash logs
+hs_err_pid*
+replay_pid*
+
 # Temporary tools
 .tools/
+
+# AI Agent working directories
+.agents/
+

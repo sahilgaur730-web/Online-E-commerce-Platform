@@ -1,0 +1,77 @@
+# ==============================================================================
+# ShopKart Test Profile Configuration
+# Target: backend/src/test/resources/application-test.yml
+# Activated when spring.profiles.active=test or via @ActiveProfiles("test")
+# Provides safe dummy credentials and isolates test execution in-memory.
+# Zero external environment variables required.
+# ==============================================================================
+
+spring:
+  application:
+    name: shopkart-backend-test
+  datasource:
+    url: jdbc:h2:mem:shopkarttestdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+      pool-name: ShopKartTestHikariPool
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+  h2:
+    console:
+      enabled: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+  cache:
+    type: simple
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+server:
+  port: 8080
+
+# File Upload Directory for Test Isolation
+upload:
+  dir: target/test-uploads
+
+# Safe Dummy Storage Configuration
+storage:
+  cloudinary:
+    cloud-name: test-cloudinary
+    api-key: test-api-key
+    api-secret: test-api-secret
+  s3:
+    bucket: test-bucket
+    region: ap-south-1
+    access-key: test-access-key
+    secret-key: test-secret-key
+
+# Security & JWT: 64-character hex key (512-bit) satisfying HMAC-SHA256/384/512
+jwt:
+  secret: 9a3f2c4e6b8a1d0f5e7c2b4a6d8f0e1c3b5a7d9e1f3a5c7b9d1e3f5a7b9c1d3e
+  expirationMs: 86400000
+
+# Payment Gateway Sandbox: Safe dummy sandbox test keys
+payment:
+  sandbox-key: rzp_test_shopkartTestKey123
+
+razorpay:
+  key:
+    id: rzp_test_shopkartTestKey123
+    secret: test_secret_shopkartSandbox2026
+  webhook:
+    secret: whsec_test_secret123
