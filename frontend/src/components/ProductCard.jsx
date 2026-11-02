@@ -31,7 +31,7 @@ export function ProductCard({ product, onSelectProduct, onWishlistToggle, isWish
   return (
     <div
       onClick={() => onSelectProduct(product.id)}
-      className="bg-white rounded-xl p-3.5 border border-slate-200/80 hover:border-[#0A3B74]/80 hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between group relative overflow-hidden tap-highlight-none hover:-translate-y-0.5"
+      className="bg-white rounded-xl p-3.5 border border-slate-200/80 hover:border-sk-navy/80 hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between group relative overflow-hidden tap-highlight-none hover:-translate-y-0.5"
     >
       {/* Wishlist Heart Button */}
       <button
@@ -67,21 +67,21 @@ export function ProductCard({ product, onSelectProduct, onWishlistToggle, isWish
         </span>
 
         {/* Product Title */}
-        <h3 className="text-sm font-semibold text-slate-900 group-hover:text-[#0A3B74] line-clamp-2 leading-snug mt-0.5 transition-colors">
+        <h3 className="text-sm font-semibold text-slate-900 group-hover:text-sk-navy line-clamp-2 leading-snug mt-0.5 transition-colors">
           {product.title}
         </h3>
 
         {/* Rating and Reviews */}
         <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-          <div className="bg-[#0A3B74] text-white text-[11px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5 shadow-2xs shrink-0">
+          <div className="bg-sk-navy text-white text-[11px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5 shadow-2xs shrink-0">
             <span>{product.rating ? product.rating.toFixed(1) : '4.2'}</span>
             <Star className="w-2.5 h-2.5 fill-current" />
           </div>
           <span className="text-[11px] text-slate-500 font-medium shrink-0">
             ({product.ratingCount || 120})
           </span>
-          <span className="text-[10px] bg-blue-50 text-[#0A3B74] font-bold px-1.5 py-0.5 rounded-full border border-blue-200/60 ml-auto flex items-center gap-0.5 shrink-0">
-            <ShieldCheck className="w-2.5 h-2.5 text-[#0A3B74]" /> Verified
+          <span className="text-[10px] bg-blue-50 text-sk-navy font-bold px-1.5 py-0.5 rounded-full border border-blue-200/60 ml-auto flex items-center gap-0.5 shrink-0">
+            <ShieldCheck className="w-2.5 h-2.5 text-sk-navy" /> Verified
           </span>
         </div>
 
@@ -95,7 +95,7 @@ export function ProductCard({ product, onSelectProduct, onWishlistToggle, isWish
               <span className="text-xs text-slate-400 line-through">
                 ₹{product.originalPrice?.toLocaleString('en-IN')}
               </span>
-              <span className="text-xs font-bold text-[#FF7A00]">
+              <span className="text-xs font-bold text-sk-orange">
                 {product.discountPercentage}% off
               </span>
             </>
@@ -105,7 +105,7 @@ export function ProductCard({ product, onSelectProduct, onWishlistToggle, isWish
         {/* Free Delivery note */}
         <div className="text-[11px] text-slate-500 mt-1 font-medium">
           {product.price >= 500 ? (
-            <span className="text-[#388E3C] font-semibold">Free delivery</span>
+            <span className="text-sk-green font-semibold">Free delivery</span>
           ) : (
             <span>Delivery: ₹40</span>
           )}
@@ -140,8 +140,8 @@ export function ProductCard({ product, onSelectProduct, onWishlistToggle, isWish
             product.stock === 0 || (product.remainingStock !== undefined && product.remainingStock <= 0) || product.expired
               ? 'bg-slate-200 text-slate-500 cursor-not-allowed shadow-none'
               : added
-              ? 'bg-[#388E3C] text-white'
-              : 'bg-[#FF7A00] hover:bg-[#E66A00] text-white'
+              ? 'bg-sk-green text-white'
+              : 'bg-sk-orange hover:bg-sk-orange-hover text-white'
           }`}
         >
           {added ? (

@@ -278,7 +278,7 @@ export function Navbar({
   const renderSearchBar = (isMobile) => (
     <form
       onSubmit={handleSearchSubmit}
-      className="relative flex items-center h-10 w-full bg-white rounded-sm shadow-xs border border-gray-200 focus-within:ring-2 focus-within:ring-[#FF7A00] focus-within:border-transparent transition-shadow box-border"
+      className="relative flex items-center h-10 w-full bg-white rounded-sm shadow-xs border border-gray-200 focus-within:ring-2 focus-within:ring-sk-orange focus-within:border-transparent transition-shadow box-border"
     >
       {/* Integrated category selector dropdown to the left */}
       <div className="relative shrink-0 h-full flex items-center border-r border-gray-200 bg-gray-50 rounded-l-sm">
@@ -324,14 +324,14 @@ export function Navbar({
         <button
           type="button"
           onClick={onOpenVisualSearch}
-          className="h-full text-gray-400 hover:text-[#FF7A00] transition px-1 cursor-pointer flex items-center justify-center"
+          className="h-full text-gray-400 hover:text-sk-orange transition px-1 cursor-pointer flex items-center justify-center"
           title="Visual Search / Search by Image"
         >
           <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
         <button
           type="submit"
-          className="h-full text-[#0A3B74] hover:text-[#002F6C] transition px-1 cursor-pointer flex items-center justify-center"
+          className="h-full text-sk-navy hover:text-sk-navy-dark transition px-1 cursor-pointer flex items-center justify-center"
           title="Search"
         >
           <Search className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -356,7 +356,7 @@ export function Navbar({
               setSearchCategory(c.slug);
               if (onSearch) onSearch('', c.slug);
             }}
-            className="text-[11px] font-semibold bg-white border border-gray-200 hover:border-[#0A3B74] hover:text-[#0A3B74] px-2.5 py-0.5 rounded-full transition cursor-pointer"
+            className="text-[11px] font-semibold bg-white border border-gray-200 hover:border-sk-navy hover:text-sk-navy px-2.5 py-0.5 rounded-full transition cursor-pointer"
           >
             {c.label}
           </button>
@@ -367,7 +367,7 @@ export function Navbar({
       {!searchTerm.trim() && (
         <div className="p-3">
           <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500 uppercase mb-2">
-            <TrendingUp className="w-3.5 h-3.5 text-[#FF7A00]" />
+            <TrendingUp className="w-3.5 h-3.5 text-sk-orange" />
             <span>Trending Searches</span>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -376,7 +376,7 @@ export function Navbar({
                 key={t}
                 type="button"
                 onClick={() => handleSelectTrending(t)}
-                className="text-xs bg-blue-50 text-[#0A3B74] font-medium px-3 py-1 rounded-full hover:bg-blue-100 transition cursor-pointer"
+                className="text-xs bg-blue-50 text-sk-navy font-medium px-3 py-1 rounded-full hover:bg-blue-100 transition cursor-pointer"
               >
                 {t}
               </button>
@@ -423,7 +423,7 @@ export function Navbar({
                     ₹{p.price?.toLocaleString('en-IN')}
                   </span>
                   {p.discountPercentage > 0 && (
-                    <span className="block text-[10px] font-bold text-[#388E3C]">
+                    <span className="block text-[10px] font-bold text-sk-green">
                       {p.discountPercentage}% off
                     </span>
                   )}
@@ -450,7 +450,7 @@ export function Navbar({
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-[#FF7A00] text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 bg-sk-orange text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
             {unreadCount}
           </span>
         )}
@@ -464,7 +464,7 @@ export function Navbar({
               <button
                 type="button"
                 onClick={markAllRead}
-                className="text-xs text-[#0A3B74] hover:underline font-semibold cursor-pointer"
+                className="text-xs text-sk-navy hover:underline font-semibold cursor-pointer"
               >
                 Mark all as read
               </button>
@@ -503,7 +503,7 @@ export function Navbar({
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Signed in as</p>
           <p className="font-bold text-sm truncate text-gray-900">{user?.name || user?.email}</p>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#0A3B74] text-white">
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sk-navy text-white">
               {user?.role}
             </span>
             <span className="text-[11px] text-gray-500 truncate">{user?.email}</span>
@@ -519,7 +519,7 @@ export function Navbar({
               setShowUserMenu(false);
               openAuthModal('login');
             }}
-            className="w-full bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs py-2 px-3 rounded-md transition shadow-xs cursor-pointer text-center"
+            className="w-full bg-sk-navy hover:bg-sk-navy-dark text-white font-bold text-xs py-2 px-3 rounded-md transition shadow-xs cursor-pointer text-center"
           >
             Login / Sign Up
           </button>
@@ -546,7 +546,7 @@ export function Navbar({
                 C
               </div>
               <div>
-                <span className="text-xs font-bold text-gray-900 group-hover:text-[#0A3B74]">
+                <span className="text-xs font-bold text-gray-900 group-hover:text-sk-navy">
                   SuperCoins Wallet
                 </span>
                 <span className="block text-[10px] text-gray-500">View coin balance & ledger</span>
@@ -567,17 +567,17 @@ export function Navbar({
             className="w-full flex items-center justify-between p-2 rounded-md hover:bg-orange-50 transition cursor-pointer text-left group"
           >
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-[#FF7A00] text-white flex items-center justify-center shadow-xs">
+              <div className="w-6 h-6 rounded-full bg-sk-orange text-white flex items-center justify-center shadow-xs">
                 <Flame className="w-3.5 h-3.5 fill-current" />
               </div>
               <div>
-                <span className="text-xs font-bold text-gray-900 group-hover:text-[#FF7A00]">
+                <span className="text-xs font-bold text-gray-900 group-hover:text-sk-orange">
                   Daily Streak Check-in
                 </span>
                 <span className="block text-[10px] text-gray-500">7-day continuous bonus</span>
               </div>
             </div>
-            <span className="bg-[#FF7A00] text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-xs">
+            <span className="bg-sk-orange text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-xs">
               +50 Coins
             </span>
           </button>
@@ -592,11 +592,11 @@ export function Navbar({
             className="w-full flex items-center justify-between p-2 rounded-md hover:bg-blue-50 transition cursor-pointer text-left group"
           >
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-[#0A3B74] text-white flex items-center justify-center shadow-xs">
+              <div className="w-6 h-6 rounded-full bg-sk-navy text-white flex items-center justify-center shadow-xs">
                 <Share2 className="w-3.5 h-3.5" />
               </div>
               <div>
-                <span className="text-xs font-bold text-gray-900 group-hover:text-[#0A3B74]">
+                <span className="text-xs font-bold text-gray-900 group-hover:text-sk-navy">
                   Invite & Earn
                 </span>
                 <span className="block text-[10px] text-gray-500">Refer friends & get ₹100</span>
@@ -621,7 +621,7 @@ export function Navbar({
               }}
               className="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 flex items-center gap-2.5 text-gray-700 cursor-pointer font-medium"
             >
-              <User className="w-4 h-4 text-[#0A3B74]" /> Switch to Buyer Mode
+              <User className="w-4 h-4 text-sk-navy" /> Switch to Buyer Mode
             </button>
 
             <button
@@ -630,9 +630,9 @@ export function Navbar({
                 setCurrentView('seller');
                 setShowUserMenu(false);
               }}
-              className="w-full text-left px-4 py-2 text-xs hover:bg-blue-50 flex items-center gap-2.5 text-[#0A3B74] font-bold cursor-pointer"
+              className="w-full text-left px-4 py-2 text-xs hover:bg-blue-50 flex items-center gap-2.5 text-sk-navy font-bold cursor-pointer"
             >
-              <Store className="w-4 h-4 text-[#FF7A00]" /> Seller Dashboard
+              <Store className="w-4 h-4 text-sk-orange" /> Seller Dashboard
             </button>
 
             <button
@@ -643,7 +643,7 @@ export function Navbar({
               }}
               className="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 flex items-center gap-2.5 text-gray-700 cursor-pointer font-medium"
             >
-              <User className="w-4 h-4 text-[#0A3B74]" /> Account Settings
+              <User className="w-4 h-4 text-sk-navy" /> Account Settings
             </button>
 
             <button
@@ -667,7 +667,7 @@ export function Navbar({
               }}
               className="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 flex items-center gap-2.5 text-gray-700 cursor-pointer font-medium"
             >
-              <User className="w-4 h-4 text-[#0A3B74]" /> Account Settings
+              <User className="w-4 h-4 text-sk-navy" /> Account Settings
             </button>
 
             <button
@@ -678,7 +678,7 @@ export function Navbar({
               }}
               className="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 flex items-center gap-2.5 text-gray-700 cursor-pointer font-medium"
             >
-              <Package className="w-4 h-4 text-[#0A3B74]" /> Orders
+              <Package className="w-4 h-4 text-sk-navy" /> Orders
             </button>
 
             <button
@@ -689,7 +689,7 @@ export function Navbar({
               }}
               className="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 flex items-center gap-2.5 text-gray-700 cursor-pointer font-medium"
             >
-              <Heart className="w-4 h-4 text-[#0A3B74]" /> Wishlist
+              <Heart className="w-4 h-4 text-sk-navy" /> Wishlist
             </button>
           </>
         )}
@@ -706,7 +706,7 @@ export function Navbar({
             onClick={() => handleDemoSwitch('BUYER')}
             className={`flex-1 text-[10px] py-1 rounded font-semibold transition ${
               user?.role === 'BUYER'
-                ? 'bg-[#0A3B74] text-white shadow-xs'
+                ? 'bg-sk-navy text-white shadow-xs'
                 : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-100'
             }`}
           >
@@ -717,7 +717,7 @@ export function Navbar({
             onClick={() => handleDemoSwitch('SELLER')}
             className={`flex-1 text-[10px] py-1 rounded font-semibold transition ${
               user?.role === 'SELLER'
-                ? 'bg-[#0A3B74] text-white shadow-xs'
+                ? 'bg-sk-navy text-white shadow-xs'
                 : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-100'
             }`}
           >
@@ -728,7 +728,7 @@ export function Navbar({
             onClick={() => handleDemoSwitch('ADMIN')}
             className={`flex-1 text-[10px] py-1 rounded font-semibold transition ${
               user?.role === 'ADMIN'
-                ? 'bg-[#0A3B74] text-white shadow-xs'
+                ? 'bg-sk-navy text-white shadow-xs'
                 : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-100'
             }`}
           >
@@ -756,7 +756,7 @@ export function Navbar({
   );
 
   return (
-    <header ref={headerRef} className="bg-gradient-to-r from-[#0A3B74] to-[#002F6C] text-white sticky top-0 z-40 shadow-md border-b border-blue-900/40 w-full">
+    <header ref={headerRef} className="bg-gradient-to-r from-sk-navy to-sk-navy-dark text-white sticky top-0 z-40 shadow-md border-b border-blue-900/40 w-full">
       <div className="w-full max-w-[1280px] mx-auto px-3 md:px-6">
         {/* =========================================================================
             DESKTOP HEADER ARCHITECTURE (>= 1024px)
@@ -779,7 +779,7 @@ export function Navbar({
               />
               <div className="flex flex-col justify-center leading-none">
                 <span className="font-black text-2xl tracking-tight text-white flex items-center whitespace-nowrap">
-                  Shop<span className="text-[#FF7A00]">Kart</span>
+                  Shop<span className="text-sk-orange">Kart</span>
                 </span>
                 <span className="text-[10px] text-amber-300 font-semibold tracking-wider uppercase mt-1 whitespace-nowrap">
                   Shop Smart • Live Better
@@ -838,7 +838,7 @@ export function Navbar({
               <button
                 type="button"
                 onClick={() => setCurrentView('admin')}
-                className="flex items-center gap-1.5 bg-[#FF7A00] text-white font-bold px-2.5 py-1 rounded-sm hover:bg-[#E66A00] transition text-xs cursor-pointer shadow-xs"
+                className="flex items-center gap-1.5 bg-sk-orange text-white font-bold px-2.5 py-1 rounded-sm hover:bg-sk-orange-hover transition text-xs cursor-pointer shadow-xs"
               >
                 <ShieldCheck className="w-4 h-4" />
                 <span>Admin</span>
@@ -880,7 +880,7 @@ export function Navbar({
                 <ShoppingCart className="w-5 h-5" />
                 {cart.totalItems > 0 && (
                   <span
-                    className={`absolute -top-2 -right-2 bg-[#FF7A00] text-white text-[10px] font-extrabold rounded-full w-4 h-4 flex items-center justify-center shadow-xs ${
+                    className={`absolute -top-2 -right-2 bg-sk-orange text-white text-[10px] font-extrabold rounded-full w-4 h-4 flex items-center justify-center shadow-xs ${
                       badgeBouncing ? 'animate-cart-bounce' : ''
                     }`}
                   >
@@ -925,7 +925,7 @@ export function Navbar({
                 className="w-8 h-8 object-contain rounded-md bg-white p-0.5 shadow-xs shrink-0"
               />
               <span className="font-black text-xl tracking-tight text-white whitespace-nowrap">
-                Shop<span className="text-[#FF7A00]">Kart</span>
+                Shop<span className="text-sk-orange">Kart</span>
               </span>
             </div>
 
@@ -959,7 +959,7 @@ export function Navbar({
                 <ShoppingCart className="w-5 h-5" />
                 {cart.totalItems > 0 && (
                   <span
-                    className={`absolute -top-1 -right-1 bg-[#FF7A00] text-white text-[10px] font-extrabold rounded-full w-4 h-4 flex items-center justify-center shadow-xs ${
+                    className={`absolute -top-1 -right-1 bg-sk-orange text-white text-[10px] font-extrabold rounded-full w-4 h-4 flex items-center justify-center shadow-xs ${
                       badgeBouncing ? 'animate-cart-bounce' : ''
                     }`}
                   >
@@ -996,7 +996,7 @@ export function Navbar({
           {/* Side Drawer Content Panel */}
           <div className="fixed inset-y-0 left-0 w-[300px] max-w-[85vw] bg-white text-gray-800 shadow-2xl flex flex-col z-50 animate-in slide-in-from-left duration-300 overflow-y-auto">
             {/* Drawer Header */}
-            <div className="bg-gradient-to-r from-[#0A3B74] to-[#002F6C] text-white p-4 flex items-center justify-between">
+            <div className="bg-gradient-to-r from-sk-navy to-sk-navy-dark text-white p-4 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <img
                   src="/logo.png"
@@ -1004,7 +1004,7 @@ export function Navbar({
                   className="w-8 h-8 object-contain rounded bg-white p-0.5"
                 />
                 <span className="font-black text-lg tracking-tight">
-                  Shop<span className="text-[#FF7A00]">Kart</span>
+                  Shop<span className="text-sk-orange">Kart</span>
                 </span>
               </div>
               <button
@@ -1022,13 +1022,13 @@ export function Navbar({
               {isAuthenticated ? (
                 <div>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[#0A3B74] text-white font-black flex items-center justify-center text-sm shadow-xs">
+                    <div className="w-10 h-10 rounded-full bg-sk-navy text-white font-black flex items-center justify-center text-sm shadow-xs">
                       {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
                     </div>
                     <div className="min-w-0">
                       <p className="font-bold text-sm text-gray-900 truncate">{user?.name}</p>
                       <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-                      <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#0A3B74] text-white">
+                      <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-sk-navy text-white">
                         {user?.role}
                       </span>
                     </div>
@@ -1044,7 +1044,7 @@ export function Navbar({
                       setIsMobileMenuOpen(false);
                       openAuthModal('login');
                     }}
-                    className="w-full bg-[#0A3B74] text-white font-bold text-xs py-2 rounded-md hover:bg-[#002F6C] transition shadow-xs cursor-pointer"
+                    className="w-full bg-sk-navy text-white font-bold text-xs py-2 rounded-md hover:bg-sk-navy-dark transition shadow-xs cursor-pointer"
                   >
                     Login / Sign Up
                   </button>
@@ -1091,7 +1091,7 @@ export function Navbar({
                 className="w-full flex items-center justify-between p-2.5 rounded-lg bg-white border border-orange-200/80 hover:border-orange-400 transition cursor-pointer shadow-xs text-left"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-full bg-[#FF7A00] text-white flex items-center justify-center shadow-xs">
+                  <div className="w-7 h-7 rounded-full bg-sk-orange text-white flex items-center justify-center shadow-xs">
                     <Flame className="w-4 h-4 fill-current" />
                   </div>
                   <div>
@@ -1099,7 +1099,7 @@ export function Navbar({
                     <span className="text-[10px] text-gray-500">Claim continuous check-in bonus</span>
                   </div>
                 </div>
-                <span className="bg-[#FF7A00] text-white font-black text-[10px] px-2 py-0.5 rounded-full shadow-xs">
+                <span className="bg-sk-orange text-white font-black text-[10px] px-2 py-0.5 rounded-full shadow-xs">
                   +50
                 </span>
               </button>
@@ -1114,7 +1114,7 @@ export function Navbar({
                 className="w-full flex items-center justify-between p-2.5 rounded-lg bg-white border border-blue-200/80 hover:border-blue-400 transition cursor-pointer shadow-xs text-left"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-full bg-[#0A3B74] text-white flex items-center justify-center shadow-xs">
+                  <div className="w-7 h-7 rounded-full bg-sk-navy text-white flex items-center justify-center shadow-xs">
                     <Share2 className="w-4 h-4" />
                   </div>
                   <div>
@@ -1139,7 +1139,7 @@ export function Navbar({
                   }}
                   className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-md hover:bg-gray-100 transition text-gray-800 cursor-pointer text-left"
                 >
-                  <Home className="w-4 h-4 text-[#0A3B74]" /> Home
+                  <Home className="w-4 h-4 text-sk-navy" /> Home
                 </button>
 
                 <button
@@ -1150,7 +1150,7 @@ export function Navbar({
                   }}
                   className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-md hover:bg-gray-100 transition text-gray-800 cursor-pointer text-left"
                 >
-                  <Search className="w-4 h-4 text-[#0A3B74]" /> All Products
+                  <Search className="w-4 h-4 text-sk-navy" /> All Products
                 </button>
 
                 <button
@@ -1161,7 +1161,7 @@ export function Navbar({
                   }}
                   className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-md hover:bg-gray-100 transition text-gray-800 cursor-pointer text-left"
                 >
-                  <Camera className="w-4 h-4 text-[#FF7A00]" /> Visual Search / Search by Image
+                  <Camera className="w-4 h-4 text-sk-orange" /> Visual Search / Search by Image
                 </button>
 
                 <button
@@ -1172,7 +1172,7 @@ export function Navbar({
                   }}
                   className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-md hover:bg-gray-100 transition text-gray-800 cursor-pointer text-left"
                 >
-                  <Package className="w-4 h-4 text-[#0A3B74]" /> My Orders
+                  <Package className="w-4 h-4 text-sk-navy" /> My Orders
                 </button>
 
                 <button
@@ -1183,7 +1183,7 @@ export function Navbar({
                   }}
                   className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-md hover:bg-gray-100 transition text-gray-800 cursor-pointer text-left"
                 >
-                  <Heart className="w-4 h-4 text-[#0A3B74]" /> Wishlist
+                  <Heart className="w-4 h-4 text-sk-navy" /> Wishlist
                 </button>
 
                 {isAuthenticated && (
@@ -1197,10 +1197,10 @@ export function Navbar({
                     className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-md hover:bg-gray-100 transition text-gray-800 cursor-pointer text-left"
                   >
                     <div className="flex items-center gap-3">
-                      <Bell className="w-4 h-4 text-[#0A3B74]" /> Notifications
+                      <Bell className="w-4 h-4 text-sk-navy" /> Notifications
                     </div>
                     {unreadCount > 0 && (
-                      <span className="bg-[#FF7A00] text-white text-[10px] font-bold rounded-full px-1.5 py-0.5">
+                      <span className="bg-sk-orange text-white text-[10px] font-bold rounded-full px-1.5 py-0.5">
                         {unreadCount} new
                       </span>
                     )}
@@ -1219,7 +1219,7 @@ export function Navbar({
                       }}
                       className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-md hover:bg-gray-100 transition text-gray-800 cursor-pointer text-left"
                     >
-                      <User className="w-4 h-4 text-[#0A3B74]" /> Account Settings
+                      <User className="w-4 h-4 text-sk-navy" /> Account Settings
                     </button>
                     <button
                       type="button"
@@ -1230,7 +1230,7 @@ export function Navbar({
                       }}
                       className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-md hover:bg-gray-100 transition text-gray-800 cursor-pointer text-left"
                     >
-                      <Store className="w-4 h-4 text-[#0A3B74]" /> Become a Seller
+                      <Store className="w-4 h-4 text-sk-navy" /> Become a Seller
                     </button>
                   </>
                 ) : (
@@ -1243,7 +1243,7 @@ export function Navbar({
                       }}
                       className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-md hover:bg-gray-100 transition text-gray-800 cursor-pointer text-left"
                     >
-                      <User className="w-4 h-4 text-[#0A3B74]" /> Switch to Buyer Mode
+                      <User className="w-4 h-4 text-sk-navy" /> Switch to Buyer Mode
                     </button>
                     <button
                       type="button"
@@ -1251,9 +1251,9 @@ export function Navbar({
                         setIsMobileMenuOpen(false);
                         setCurrentView('seller');
                       }}
-                      className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-md hover:bg-gray-100 transition text-[#0A3B74] cursor-pointer text-left font-bold"
+                      className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-md hover:bg-gray-100 transition text-sk-navy cursor-pointer text-left font-bold"
                     >
-                      <Store className="w-4 h-4 text-[#FF7A00]" /> Seller Dashboard
+                      <Store className="w-4 h-4 text-sk-orange" /> Seller Dashboard
                     </button>
                     <button
                       type="button"
@@ -1263,7 +1263,7 @@ export function Navbar({
                       }}
                       className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-md hover:bg-gray-100 transition text-gray-800 cursor-pointer text-left"
                     >
-                      <User className="w-4 h-4 text-[#0A3B74]" /> Account Settings
+                      <User className="w-4 h-4 text-sk-navy" /> Account Settings
                     </button>
                   </>
                 )}
@@ -1277,7 +1277,7 @@ export function Navbar({
                     }}
                     className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-md hover:bg-gray-100 transition text-gray-800 cursor-pointer text-left"
                   >
-                    <ShieldCheck className="w-4 h-4 text-[#FF7A00]" /> Admin Dashboard
+                    <ShieldCheck className="w-4 h-4 text-sk-orange" /> Admin Dashboard
                   </button>
                 )}
               </div>
@@ -1296,7 +1296,7 @@ export function Navbar({
                     }}
                     className={`flex-1 text-[10px] py-1.5 rounded font-semibold transition ${
                       user?.role === 'BUYER'
-                        ? 'bg-[#0A3B74] text-white shadow-xs'
+                        ? 'bg-sk-navy text-white shadow-xs'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
@@ -1310,7 +1310,7 @@ export function Navbar({
                     }}
                     className={`flex-1 text-[10px] py-1.5 rounded font-semibold transition ${
                       user?.role === 'SELLER'
-                        ? 'bg-[#0A3B74] text-white shadow-xs'
+                        ? 'bg-sk-navy text-white shadow-xs'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
@@ -1324,7 +1324,7 @@ export function Navbar({
                     }}
                     className={`flex-1 text-[10px] py-1.5 rounded font-semibold transition ${
                       user?.role === 'ADMIN'
-                        ? 'bg-[#0A3B74] text-white shadow-xs'
+                        ? 'bg-sk-navy text-white shadow-xs'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
@@ -1357,7 +1357,7 @@ export function Navbar({
       {showNotifications && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs lg:hidden">
           <div className="w-full max-w-sm bg-white text-gray-800 rounded-lg shadow-2xl border border-gray-100 overflow-hidden">
-            <div className="px-4 py-3 bg-[#0A3B74] text-white flex items-center justify-between">
+            <div className="px-4 py-3 bg-sk-navy text-white flex items-center justify-between">
               <span className="font-bold text-xs uppercase tracking-wider">Notifications ({unreadCount})</span>
               <div className="flex items-center gap-3">
                 {unreadCount > 0 && (

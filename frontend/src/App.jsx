@@ -177,6 +177,7 @@ function MainApp() {
               setCurrentView('order_detail');
             }}
             onViewOrders={() => setCurrentView('orders')}
+            onBackToCart={() => setCurrentView('cart')}
           />
         )}
 

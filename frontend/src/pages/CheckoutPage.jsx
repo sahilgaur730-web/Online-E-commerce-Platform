@@ -16,10 +16,13 @@ import {
   Award,
   RefreshCw,
   X,
+  AlertCircle,
+  Lock,
+  ArrowLeft,
 } from 'lucide-react';
 import { ScratchCard } from '../components/ScratchCard';
 
-export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
+export function CheckoutPage({ onOrderPlaced, onViewOrders, onBackToCart }) {
   const { cart, clearCart } = useCart();
   const { isAuthenticated } = useAuth();
 
@@ -28,6 +31,10 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
+
+  // Address Form Validation & Input Feedback States
+  const [addressErrors, setAddressErrors] = useState({});
+  const [addressTouched, setAddressTouched] = useState({});
 
   // New Address Form State
   const [newAddress, setNewAddress] = useState({
@@ -78,6 +85,11 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmedOrder, setConfirmedOrder] = useState(null);
 
+  // Dedicated Payment Failure View State (Requirement R3)
+  const [paymentFailure, setPaymentFailure] = useState(null);
+  const [addressActionError, setAddressActionError] = useState('');
+  const [addressFormError, setAddressFormError] = useState('');
+
   useEffect(() => {
     const handleStorage = () => {
       const coins = parseInt(localStorage.getItem('shopkart_supercoins') || '120', 10);
@@ -117,15 +129,98 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
     setCaptchaError('');
   };
 
+  // Indian Mobile & PIN code regex validations
+  const validateAddressField = (field, value) => {
+    let error = '';
+    const trimmed = (value || '').trim();
+    if (field === 'fullName') {
+      if (!trimmed) {
+        error = 'Full Name is required';
+      } else if (!/^[A-Za-z\s.]{3,50}$/.test(trimmed)) {
+        error = 'Enter a valid name (at least 3 alphabetic characters)';
+      }
+    } else if (field === 'phone') {
+      if (!trimmed) {
+        error = '10-digit mobile number is required';
+      } else if (!/^[6-9]\d{9}$/.test(trimmed)) {
+        error = 'Enter a valid 10-digit Indian mobile number (e.g. 9876543210)';
+      }
+    } else if (field === 'pincode') {
+      if (!trimmed) {
+        error = 'PIN code is required';
+      } else if (!/^\d{6}$/.test(trimmed)) {
+        error = 'Enter a valid 6-digit Indian PIN code (e.g. 560103)';
+      }
+    } else if (field === 'city') {
+      if (!trimmed) {
+        error = 'City is required';
+      } else if (trimmed.length < 2) {
+        error = 'Enter a valid city name';
+      }
+    } else if (field === 'state') {
+      if (!trimmed) {
+        error = 'State is required';
+      } else if (trimmed.length < 2) {
+        error = 'Enter a valid state name';
+      }
+    } else if (field === 'streetAddress') {
+      if (!trimmed) {
+        error = 'Street address is required';
+      } else if (trimmed.length < 5) {
+        error = 'Street address must be at least 5 characters';
+      }
+    }
+    return error;
+  };
+
+  const handleAddressChange = (field, value) => {
+    setNewAddress((prev) => ({ ...prev, [field]: value }));
+    if (addressTouched[field]) {
+      const err = validateAddressField(field, value);
+      setAddressErrors((prev) => ({ ...prev, [field]: err }));
+    }
+  };
+
+  const handleAddressBlur = (field) => {
+    setAddressTouched((prev) => ({ ...prev, [field]: true }));
+    const err = validateAddressField(field, newAddress[field]);
+    setAddressErrors((prev) => ({ ...prev, [field]: err }));
+  };
+
   const handleAddNewAddress = async (e) => {
     e.preventDefault();
+    const fields = ['fullName', 'phone', 'pincode', 'city', 'state', 'streetAddress'];
+    const errors = {};
+    const touched = {};
+    let hasError = false;
+
+    fields.forEach((f) => {
+      touched[f] = true;
+      const err = validateAddressField(f, newAddress[f]);
+      if (err) {
+        errors[f] = err;
+        hasError = true;
+      }
+    });
+
+    setAddressTouched(touched);
+    setAddressErrors(errors);
+
+    if (hasError) {
+      return;
+    }
+
     try {
+      setAddressFormError('');
       const saved = await api.addAddress(newAddress);
       setAddresses([saved, ...addresses]);
       setSelectedAddressId(saved.id);
       setShowNewAddressForm(false);
+      setAddressErrors({});
+      setAddressTouched({});
+      setAddressActionError('');
     } catch (err) {
-      alert(err.message || 'Failed to add address');
+      setAddressFormError(err.message || 'Failed to add address. Please try again.');
     }
   };
 
@@ -138,16 +233,19 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
 
   const handleProceedToPayment = () => {
     if (!selectedAddressId) {
-      alert('Please select or add a delivery address to proceed.');
+      setAddressActionError('Please select or add a delivery address to proceed.');
       return;
     }
+    setAddressActionError('');
     setActiveStep(2);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const executeOrderPlacement = async () => {
+    if (isSubmitting) return;
     try {
       setIsSubmitting(true);
+      setPaymentFailure(null);
       // Place order via backend
       const order = await api.createOrder(selectedAddressId, paymentMethod);
 
@@ -194,10 +292,46 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
       setActiveStep(3);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
-      alert(err.message || 'Failed to place order');
+      console.error('Payment verification failed:', err);
+      const failRef = 'TXN_ERR_' + Math.floor(100000 + Math.random() * 900000);
+      const failureReason = err.message || 'Payment processing was declined by the gateway. Please verify your payment credentials or select an alternative payment method.';
+      setPaymentFailure({
+        title: 'Payment Unsuccessful',
+        reason: failureReason,
+        message: failureReason,
+        referenceId: failRef,
+        amount: totalPayableAmount,
+        paymentMethod,
+        timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      });
     } finally {
       setIsSubmitting(false);
       setShowOtpModal(false);
+    }
+  };
+
+  const handleRetryPayment = async () => {
+    if (isSubmitting) return;
+    setPaymentFailure(null);
+    if (paymentMethod === 'CARD') {
+      setShowOtpModal(true);
+      return;
+    }
+    await executeOrderPlacement();
+  };
+
+  const handleChangePaymentMethod = () => {
+    setPaymentFailure(null);
+    setActiveStep(2);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBackToCartAction = () => {
+    setPaymentFailure(null);
+    if (onBackToCart) {
+      onBackToCart();
+    } else {
+      window.location.hash = '#/cart';
     }
   };
 
@@ -224,6 +358,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
   };
 
   const handlePlaceOrder = async () => {
+    if (isSubmitting) return;
     if (paymentMethod === 'COD') {
       if (enteredCaptcha.trim() !== captchaCode) {
         setCaptchaError('Incorrect captcha code. Please re-enter.');
@@ -256,7 +391,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         {/* Order Success Banner */}
         <div className="bg-white rounded-xs shadow-md border border-gray-200 p-8 text-center space-y-4">
-          <div className="w-16 h-16 bg-green-100 text-[#388E3C] rounded-full flex items-center justify-center mx-auto">
+          <div className="w-16 h-16 bg-green-100 text-sk-green rounded-full flex items-center justify-center mx-auto">
             <CheckCircle className="w-10 h-10" />
           </div>
           <h2 className="text-2xl font-black text-gray-900 tracking-tight">
@@ -294,7 +429,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
             </div>
             <div className="flex justify-between border-t border-gray-200 pt-2">
               <span className="text-gray-500">Estimated Delivery:</span>
-              <span className="font-bold text-[#388E3C]">Tomorrow by 9:00 PM</span>
+              <span className="font-bold text-sk-green">Tomorrow by 9:00 PM</span>
             </div>
           </div>
 
@@ -312,7 +447,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
           <div className="flex justify-center gap-4 pt-4">
             <button
               onClick={() => onOrderPlaced && onOrderPlaced(orderData.id || 1)}
-              className="bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs uppercase px-6 py-2.5 rounded-xs shadow-xs transition cursor-pointer"
+              className="bg-sk-navy hover:bg-sk-navy-dark text-white font-bold text-xs uppercase px-6 py-2.5 rounded-xs shadow-xs transition cursor-pointer"
             >
               Track Order Live
             </button>
@@ -340,7 +475,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
           </p>
           <button
             onClick={onViewOrders}
-            className="bg-[#0A3B74] text-white font-bold text-xs px-6 py-2.5 rounded-xs cursor-pointer uppercase"
+            className="bg-sk-navy text-white font-bold text-xs px-6 py-2.5 rounded-xs cursor-pointer uppercase"
           >
             View My Orders
           </button>
@@ -359,12 +494,12 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
           <div
             onClick={() => setActiveStep(1)}
             className={`flex items-center gap-2 cursor-pointer ${
-              activeStep >= 1 ? 'text-[#0A3B74]' : 'text-gray-400'
+              activeStep >= 1 ? 'text-sk-navy' : 'text-gray-400'
             }`}
           >
             <span
               className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white ${
-                activeStep > 1 ? 'bg-[#388E3C]' : 'bg-[#0A3B74]'
+                activeStep > 1 ? 'bg-sk-green' : 'bg-sk-navy'
               }`}
             >
               {activeStep > 1 ? <Check className="w-3.5 h-3.5" /> : '1'}
@@ -374,7 +509,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
 
           <div className="h-0.5 flex-1 mx-4 bg-gray-200">
             <div
-              className={`h-full bg-[#0A3B74] transition-all duration-300 ${
+              className={`h-full bg-sk-navy transition-all duration-300 ${
                 activeStep >= 2 ? 'w-full' : 'w-0'
               }`}
             />
@@ -382,12 +517,12 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
 
           <div
             className={`flex items-center gap-2 ${
-              activeStep >= 2 ? 'text-[#0A3B74]' : 'text-gray-400'
+              activeStep >= 2 ? 'text-sk-navy' : 'text-gray-400'
             }`}
           >
             <span
               className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white ${
-                activeStep === 2 ? 'bg-[#0A3B74]' : activeStep > 2 ? 'bg-[#388E3C]' : 'bg-gray-300'
+                activeStep === 2 ? 'bg-sk-navy' : activeStep > 2 ? 'bg-sk-green' : 'bg-gray-300'
               }`}
             >
               2
@@ -397,7 +532,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
 
           <div className="h-0.5 flex-1 mx-4 bg-gray-200">
             <div
-              className={`h-full bg-[#0A3B74] transition-all duration-300 ${
+              className={`h-full bg-sk-navy transition-all duration-300 ${
                 activeStep === 3 ? 'w-full' : 'w-0'
               }`}
             />
@@ -405,12 +540,12 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
 
           <div
             className={`flex items-center gap-2 ${
-              activeStep === 3 ? 'text-[#388E3C]' : 'text-gray-400'
+              activeStep === 3 ? 'text-sk-green' : 'text-gray-400'
             }`}
           >
             <span
               className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white ${
-                activeStep === 3 ? 'bg-[#388E3C]' : 'bg-gray-300'
+                activeStep === 3 ? 'bg-sk-green' : 'bg-gray-300'
               }`}
             >
               3
@@ -426,9 +561,9 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
           {/* STEP 1: DELIVERY ADDRESS */}
           {activeStep === 1 && (
             <div className="bg-white rounded-xs shadow-xs border border-gray-200 overflow-hidden">
-              <div className="p-4 bg-[#0A3B74] text-white flex items-center justify-between">
+              <div className="p-4 bg-sk-navy text-white flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-full bg-white text-[#0A3B74] text-xs font-bold flex items-center justify-center">
+                  <span className="w-6 h-6 rounded-full bg-white text-sk-navy text-xs font-bold flex items-center justify-center">
                     1
                   </span>
                   <span className="font-bold text-sm uppercase">SELECT DELIVERY ADDRESS</span>
@@ -439,7 +574,10 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                 {addresses.map((addr) => (
                   <div
                     key={addr.id}
-                    onClick={() => setSelectedAddressId(addr.id)}
+                    onClick={() => {
+                      setSelectedAddressId(addr.id);
+                      setAddressActionError('');
+                    }}
                     className={`p-3.5 flex items-start gap-3 cursor-pointer rounded-xs transition ${
                       selectedAddressId === addr.id ? 'bg-blue-50/70 border border-blue-200' : 'hover:bg-gray-50'
                     }`}
@@ -448,8 +586,11 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                       type="radio"
                       name="address"
                       checked={selectedAddressId === addr.id}
-                      onChange={() => setSelectedAddressId(addr.id)}
-                      className="mt-1 text-[#0A3B74]"
+                      onChange={() => {
+                        setSelectedAddressId(addr.id);
+                        setAddressActionError('');
+                      }}
+                      className="mt-1 text-sk-navy"
                     />
                     <div className="flex-1 text-xs">
                       <div className="flex items-center gap-2">
@@ -471,78 +612,240 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                 {!showNewAddressForm ? (
                   <button
                     onClick={() => setShowNewAddressForm(true)}
-                    className="w-full text-left py-3.5 px-2 text-xs font-bold text-[#0A3B74] hover:text-[#002F6C] flex items-center gap-2 cursor-pointer"
+                    className="w-full text-left py-3.5 px-2 text-xs font-bold text-sk-navy hover:text-sk-navy-dark flex items-center gap-2 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" /> Add a new delivery address
                   </button>
                 ) : (
-                  <form onSubmit={handleAddNewAddress} className="p-4 bg-gray-50 space-y-3">
-                    <h4 className="text-xs font-bold text-gray-800 uppercase">New Address</h4>
-                    <div className="grid grid-cols-2 gap-3 text-xs">
-                      <input
-                        type="text"
-                        required
-                        placeholder="Full Name"
-                        value={newAddress.fullName}
-                        onChange={(e) => setNewAddress({ ...newAddress, fullName: e.target.value })}
-                        className="p-2 border border-gray-300 rounded bg-white"
-                      />
-                      <input
-                        type="text"
-                        required
-                        placeholder="10-digit Phone Number"
-                        value={newAddress.phone}
-                        onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
-                        className="p-2 border border-gray-300 rounded bg-white"
-                      />
+                  <form onSubmit={handleAddNewAddress} className="p-4 bg-gray-50 border border-gray-200 rounded-sm space-y-3.5">
+                    <div className="flex items-center justify-between pb-2 border-b border-gray-200">
+                      <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wide">
+                        Add New Delivery Address
+                      </h4>
+                      <span className="text-[10px] text-gray-500 font-medium">All fields required</span>
                     </div>
-                    <div className="grid grid-cols-3 gap-3 text-xs">
-                      <input
-                        type="text"
-                        required
-                        placeholder="Pincode"
-                        value={newAddress.pincode}
-                        onChange={(e) => setNewAddress({ ...newAddress, pincode: e.target.value })}
-                        className="p-2 border border-gray-300 rounded bg-white"
-                      />
-                      <input
-                        type="text"
-                        required
-                        placeholder="City"
-                        value={newAddress.city}
-                        onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                        className="p-2 border border-gray-300 rounded bg-white"
-                      />
-                      <input
-                        type="text"
-                        required
-                        placeholder="State"
-                        value={newAddress.state}
-                        onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
-                        className="p-2 border border-gray-300 rounded bg-white"
-                      />
+
+                    {addressFormError && (
+                      <div className="p-2.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xs flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        <span>{addressFormError}</span>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      {/* Full Name */}
+                      <div>
+                        <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                          Full Name *
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            placeholder="e.g. Rahul Sharma"
+                            value={newAddress.fullName}
+                            onChange={(e) => handleAddressChange('fullName', e.target.value)}
+                            onBlur={() => handleAddressBlur('fullName')}
+                            className={`w-full p-2.5 border rounded-xs text-xs transition pr-8 ${
+                              addressTouched.fullName && addressErrors.fullName
+                                ? 'border-rose-500 bg-rose-50/20 text-rose-900 focus:outline-none focus:ring-1 focus:ring-rose-500'
+                                : addressTouched.fullName && !addressErrors.fullName && newAddress.fullName
+                                ? 'border-sk-green bg-green-50/20 text-gray-900 focus:outline-none focus:ring-1 focus:ring-sk-green'
+                                : 'border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-sk-navy'
+                            }`}
+                          />
+                          {addressTouched.fullName && !addressErrors.fullName && newAddress.fullName && (
+                            <Check className="w-4 h-4 text-sk-green absolute right-2.5 top-1/2 -translate-y-1/2" />
+                          )}
+                        </div>
+                        {addressTouched.fullName && addressErrors.fullName && (
+                          <p className="text-[10px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3 shrink-0" />
+                            <span>{addressErrors.fullName}</span>
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Phone Number */}
+                      <div>
+                        <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                          10-digit Mobile Number *
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            maxLength={10}
+                            placeholder="e.g. 9876543210"
+                            value={newAddress.phone}
+                            onChange={(e) => handleAddressChange('phone', e.target.value.replace(/\D/g, ''))}
+                            onBlur={() => handleAddressBlur('phone')}
+                            className={`w-full p-2.5 border rounded-xs text-xs transition pr-8 font-mono ${
+                              addressTouched.phone && addressErrors.phone
+                                ? 'border-rose-500 bg-rose-50/20 text-rose-900 focus:outline-none focus:ring-1 focus:ring-rose-500'
+                                : addressTouched.phone && !addressErrors.phone && newAddress.phone
+                                ? 'border-sk-green bg-green-50/20 text-gray-900 focus:outline-none focus:ring-1 focus:ring-sk-green'
+                                : 'border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-sk-navy'
+                            }`}
+                          />
+                          {addressTouched.phone && !addressErrors.phone && newAddress.phone && (
+                            <Check className="w-4 h-4 text-sk-green absolute right-2.5 top-1/2 -translate-y-1/2" />
+                          )}
+                        </div>
+                        {addressTouched.phone && addressErrors.phone && (
+                          <p className="text-[10px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3 shrink-0" />
+                            <span>{addressErrors.phone}</span>
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <textarea
-                      required
-                      placeholder="Street Address / House No. / Flat"
-                      value={newAddress.streetAddress}
-                      onChange={(e) =>
-                        setNewAddress({ ...newAddress, streetAddress: e.target.value })
-                      }
-                      rows={2}
-                      className="w-full text-xs p-2 border border-gray-300 rounded bg-white"
-                    />
-                    <div className="flex gap-2">
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                      {/* Pincode */}
+                      <div>
+                        <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                          6-digit PIN Code *
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            maxLength={6}
+                            placeholder="e.g. 560103"
+                            value={newAddress.pincode}
+                            onChange={(e) => handleAddressChange('pincode', e.target.value.replace(/\D/g, ''))}
+                            onBlur={() => handleAddressBlur('pincode')}
+                            className={`w-full p-2.5 border rounded-xs text-xs transition pr-8 font-mono ${
+                              addressTouched.pincode && addressErrors.pincode
+                                ? 'border-rose-500 bg-rose-50/20 text-rose-900 focus:outline-none focus:ring-1 focus:ring-rose-500'
+                                : addressTouched.pincode && !addressErrors.pincode && newAddress.pincode
+                                ? 'border-sk-green bg-green-50/20 text-gray-900 focus:outline-none focus:ring-1 focus:ring-sk-green'
+                                : 'border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-sk-navy'
+                            }`}
+                          />
+                          {addressTouched.pincode && !addressErrors.pincode && newAddress.pincode && (
+                            <Check className="w-4 h-4 text-sk-green absolute right-2.5 top-1/2 -translate-y-1/2" />
+                          )}
+                        </div>
+                        {addressTouched.pincode && addressErrors.pincode && (
+                          <p className="text-[10px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3 shrink-0" />
+                            <span>{addressErrors.pincode}</span>
+                          </p>
+                        )}
+                      </div>
+
+                      {/* City */}
+                      <div>
+                        <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                          City *
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            placeholder="e.g. Bengaluru"
+                            value={newAddress.city}
+                            onChange={(e) => handleAddressChange('city', e.target.value)}
+                            onBlur={() => handleAddressBlur('city')}
+                            className={`w-full p-2.5 border rounded-xs text-xs transition pr-8 ${
+                              addressTouched.city && addressErrors.city
+                                ? 'border-rose-500 bg-rose-50/20 text-rose-900 focus:outline-none focus:ring-1 focus:ring-rose-500'
+                                : addressTouched.city && !addressErrors.city && newAddress.city
+                                ? 'border-sk-green bg-green-50/20 text-gray-900 focus:outline-none focus:ring-1 focus:ring-sk-green'
+                                : 'border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-sk-navy'
+                            }`}
+                          />
+                          {addressTouched.city && !addressErrors.city && newAddress.city && (
+                            <Check className="w-4 h-4 text-sk-green absolute right-2.5 top-1/2 -translate-y-1/2" />
+                          )}
+                        </div>
+                        {addressTouched.city && addressErrors.city && (
+                          <p className="text-[10px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3 shrink-0" />
+                            <span>{addressErrors.city}</span>
+                          </p>
+                        )}
+                      </div>
+
+                      {/* State */}
+                      <div>
+                        <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                          State *
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            placeholder="e.g. Karnataka"
+                            value={newAddress.state}
+                            onChange={(e) => handleAddressChange('state', e.target.value)}
+                            onBlur={() => handleAddressBlur('state')}
+                            className={`w-full p-2.5 border rounded-xs text-xs transition pr-8 ${
+                              addressTouched.state && addressErrors.state
+                                ? 'border-rose-500 bg-rose-50/20 text-rose-900 focus:outline-none focus:ring-1 focus:ring-rose-500'
+                                : addressTouched.state && !addressErrors.state && newAddress.state
+                                ? 'border-sk-green bg-green-50/20 text-gray-900 focus:outline-none focus:ring-1 focus:ring-sk-green'
+                                : 'border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-sk-navy'
+                            }`}
+                          />
+                          {addressTouched.state && !addressErrors.state && newAddress.state && (
+                            <Check className="w-4 h-4 text-sk-green absolute right-2.5 top-1/2 -translate-y-1/2" />
+                          )}
+                        </div>
+                        {addressTouched.state && addressErrors.state && (
+                          <p className="text-[10px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3 shrink-0" />
+                            <span>{addressErrors.state}</span>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Street Address */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                        Street Address / House No. / Flat *
+                      </label>
+                      <div className="relative">
+                        <textarea
+                          placeholder="Flat/House No., Building Name, Street/Sector"
+                          value={newAddress.streetAddress}
+                          onChange={(e) => handleAddressChange('streetAddress', e.target.value)}
+                          onBlur={() => handleAddressBlur('streetAddress')}
+                          rows={2}
+                          className={`w-full p-2.5 border rounded-xs text-xs transition pr-8 ${
+                            addressTouched.streetAddress && addressErrors.streetAddress
+                              ? 'border-rose-500 bg-rose-50/20 text-rose-900 focus:outline-none focus:ring-1 focus:ring-rose-500'
+                              : addressTouched.streetAddress && !addressErrors.streetAddress && newAddress.streetAddress
+                              ? 'border-sk-green bg-green-50/20 text-gray-900 focus:outline-none focus:ring-1 focus:ring-sk-green'
+                              : 'border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-sk-navy'
+                          }`}
+                        />
+                        {addressTouched.streetAddress && !addressErrors.streetAddress && newAddress.streetAddress && (
+                          <Check className="w-4 h-4 text-sk-green absolute right-2.5 top-3" />
+                        )}
+                      </div>
+                      {addressTouched.streetAddress && addressErrors.streetAddress && (
+                        <p className="text-[10px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3 shrink-0" />
+                          <span>{addressErrors.streetAddress}</span>
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2 pt-2">
                       <button
                         type="submit"
-                        className="bg-[#0A3B74] hover:bg-[#002F6C] text-white font-bold text-xs px-4 py-2 rounded-xs"
+                        className="bg-sk-navy hover:bg-sk-navy-dark text-white font-bold text-xs px-5 py-2.5 rounded-xs transition shadow-xs cursor-pointer"
                       >
                         Save & Deliver Here
                       </button>
                       <button
                         type="button"
-                        onClick={() => setShowNewAddressForm(false)}
-                        className="text-xs font-bold text-gray-600 px-3 py-2"
+                        onClick={() => {
+                          setShowNewAddressForm(false);
+                          setAddressErrors({});
+                          setAddressTouched({});
+                          setAddressFormError('');
+                        }}
+                        className="text-xs font-bold text-gray-600 hover:text-gray-900 px-3 py-2 cursor-pointer"
                       >
                         Cancel
                       </button>
@@ -551,10 +854,16 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                 )}
 
                 {/* Continue CTA */}
-                <div className="pt-4 flex justify-end">
+                <div className="pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  {addressActionError ? (
+                    <div className="text-xs text-rose-600 font-semibold flex items-center gap-1.5">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>{addressActionError}</span>
+                    </div>
+                  ) : <div />}
                   <button
                     onClick={handleProceedToPayment}
-                    className="bg-[#FF7A00] hover:bg-[#E66A00] text-white font-bold text-xs uppercase px-8 py-3 rounded-xs shadow-md transition cursor-pointer flex items-center gap-2"
+                    className="bg-sk-orange hover:bg-sk-orange-hover text-white font-bold text-xs uppercase px-8 py-3 rounded-xs shadow-md transition cursor-pointer flex items-center justify-center gap-2"
                   >
                     <span>Proceed to Payment</span>
                     <ArrowRight className="w-4 h-4" />
@@ -567,9 +876,9 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
           {/* STEP 2: PAYMENT METHOD */}
           {activeStep === 2 && (
             <div className="bg-white rounded-xs shadow-xs border border-gray-200 overflow-hidden">
-              <div className="p-4 bg-[#0A3B74] text-white flex items-center justify-between">
+              <div className="p-4 bg-sk-navy text-white flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-full bg-white text-[#0A3B74] text-xs font-bold flex items-center justify-center">
+                  <span className="w-6 h-6 rounded-full bg-white text-sk-navy text-xs font-bold flex items-center justify-center">
                     2
                   </span>
                   <span className="font-bold text-sm uppercase">PAYMENT OPTIONS</span>
@@ -581,7 +890,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                 </div>
                 <button
                   onClick={() => setActiveStep(1)}
-                  className="bg-white text-[#0A3B74] font-bold text-xs px-3 py-1 rounded-xs cursor-pointer"
+                  className="bg-white text-sk-navy font-bold text-xs px-3 py-1 rounded-xs cursor-pointer"
                 >
                   Change Address
                 </button>
@@ -606,7 +915,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                       type="checkbox"
                       checked={useSuperCoins}
                       onChange={(e) => setUseSuperCoins(e.target.checked)}
-                      className="w-4 h-4 text-[#FF7A00] rounded"
+                      className="w-4 h-4 text-sk-orange accent-sk-orange rounded"
                     />
                     <span className="text-xs font-bold text-amber-800">
                       Redeem {Math.min(superCoinsBalance, 100)} Coins (-₹{Math.min(superCoinsBalance, 100)})
@@ -629,7 +938,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                         onClick={() => setPaymentMethod(gw.id)}
                         className={`p-3 rounded-xs border text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition cursor-pointer ${
                           paymentMethod === gw.id
-                            ? 'border-[#0A3B74] bg-blue-50 text-[#0A3B74] ring-1 ring-[#0A3B74]'
+                            ? 'border-sk-navy bg-blue-50 text-sk-navy ring-1 ring-sk-navy'
                             : 'border-gray-200 text-gray-700 hover:border-gray-300'
                         }`}
                       >
@@ -669,13 +978,13 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                           />
                           <button
                             onClick={() => setUpiVerified(true)}
-                            className="bg-[#0A3B74] hover:bg-[#002F6C] text-white text-xs font-bold px-4 py-2 rounded-xs"
+                            className="bg-sk-navy hover:bg-sk-navy-dark text-white text-xs font-bold px-4 py-2 rounded-xs cursor-pointer transition"
                           >
                             Verify
                           </button>
                         </div>
                         {upiVerified && (
-                          <p className="text-xs font-bold text-[#388E3C] flex items-center gap-1">
+                          <p className="text-xs font-bold text-sk-green flex items-center gap-1">
                             <Check className="w-4 h-4" /> Verified: Rahul Sharma (Axis Bank)
                           </p>
                         )}
@@ -685,10 +994,10 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                             <button
                               key={app}
                               onClick={() => setSelectedUpiApp(app)}
-                              className={`text-[11px] font-bold px-3 py-1.5 rounded-full border ${
+                              className={`text-[11px] font-bold px-3 py-1.5 rounded-full border transition cursor-pointer ${
                                 selectedUpiApp === app
-                                  ? 'bg-[#0A3B74] text-white border-[#0A3B74]'
-                                  : 'bg-white text-gray-700 border-gray-300'
+                                  ? 'bg-sk-navy text-white border-sk-navy'
+                                  : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
                               }`}
                             >
                               {app}
@@ -704,7 +1013,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                 {paymentMethod === 'CARD' && (
                   <div className="p-4 bg-gray-50 border border-gray-200 rounded-xs space-y-4">
                     {/* Realistic ATM Card Mock */}
-                    <div className="max-w-xs mx-auto bg-gradient-to-tr from-[#0A3B74] to-[#002F6C] text-white p-4 rounded-xl shadow-lg space-y-4 select-none">
+                    <div className="max-w-xs mx-auto bg-gradient-to-tr from-sk-navy to-sk-navy-dark text-white p-4 rounded-xl shadow-lg space-y-4 select-none">
                       <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-wider">
                         <span>ShopKart Platinum</span>
                         <span>VISA</span>
@@ -782,10 +1091,10 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                           <button
                             key={b}
                             onClick={() => setSelectedBank(b)}
-                            className={`p-3 rounded border text-left font-bold transition ${
+                            className={`p-3 rounded border text-left font-bold transition cursor-pointer ${
                               selectedBank === b
-                                ? 'border-[#0A3B74] bg-blue-50 text-[#0A3B74]'
-                                : 'bg-white border-gray-200 text-gray-800'
+                                ? 'border-sk-navy bg-blue-50 text-sk-navy'
+                                : 'bg-white border-gray-200 text-gray-800 hover:border-gray-300'
                             }`}
                           >
                             {b}
@@ -833,7 +1142,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                   <button
                     onClick={handlePlaceOrder}
                     disabled={isSubmitting}
-                    className="w-full sm:w-auto bg-[#FF7A00] hover:bg-[#E66A00] text-white font-bold text-xs uppercase px-10 py-3.5 rounded-xs shadow-md transition cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto bg-sk-orange hover:bg-sk-orange-hover text-white font-bold text-xs uppercase px-10 py-3.5 rounded-xs shadow-md transition cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
                       'Processing Order...'
@@ -863,14 +1172,14 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
             </div>
 
             {cart.discountTotal > 0 && (
-              <div className="flex justify-between text-[#388E3C] font-semibold">
+              <div className="flex justify-between text-sk-green font-semibold">
                 <span>Discount on MRP:</span>
                 <span>- ₹{cart.discountTotal.toLocaleString('en-IN')}</span>
               </div>
             )}
 
             {useSuperCoins && (
-              <div className="flex justify-between text-[#388E3C] font-semibold">
+              <div className="flex justify-between text-sk-green font-semibold">
                 <span>SuperCoins Redemption:</span>
                 <span>- ₹{coinsDeduction}</span>
               </div>
@@ -878,7 +1187,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
 
             <div className="flex justify-between text-gray-700">
               <span>Delivery Charges:</span>
-              <span className="text-[#388E3C] font-semibold">
+              <span className="text-sk-green font-semibold">
                 {cart.deliveryFee === 0 ? 'FREE' : `₹${cart.deliveryFee}`}
               </span>
             </div>
@@ -902,7 +1211,7 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
 
           <div className="text-[11px] text-gray-500 space-y-1 pt-2 border-t border-gray-100">
             <div className="flex items-center gap-1.5 text-gray-600">
-              <ShieldCheck className="w-4 h-4 text-[#0A3B74]" />
+              <ShieldCheck className="w-4 h-4 text-sk-navy" />
               <span>Safe and Secure Payments. 100% Authentic Products.</span>
             </div>
           </div>
@@ -914,8 +1223,8 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="bg-white rounded-xs shadow-2xl max-w-sm w-full p-5 space-y-4">
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-black text-sm text-[#0A3B74]">Bank OTP Verification</span>
-              <button onClick={() => setShowOtpModal(false)} className="text-gray-400">
+              <span className="font-black text-sm text-sk-navy">Bank OTP Verification</span>
+              <button onClick={() => setShowOtpModal(false)} className="text-gray-400 hover:text-gray-600 cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -929,16 +1238,137 @@ export function CheckoutPage({ onOrderPlaced, onViewOrders }) {
                 value={otpValue}
                 onChange={(e) => setOtpValue(e.target.value)}
                 maxLength={4}
-                className="w-full text-center font-mono font-black text-lg p-2 border border-gray-300 rounded tracking-widest"
+                className="w-full text-center font-mono font-black text-lg p-2 border border-gray-300 rounded tracking-widest focus:outline-none focus:ring-1 focus:ring-sk-navy"
               />
             </div>
             <button
               onClick={executeOrderPlacement}
               disabled={isSubmitting}
-              className="w-full py-2.5 bg-[#388E3C] hover:bg-green-700 text-white font-bold text-xs uppercase rounded-xs transition"
+              className="w-full py-2.5 bg-sk-green hover:bg-emerald-700 text-white font-bold text-xs uppercase rounded-xs transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Verifying...' : 'Verify OTP & Authorize Payment'}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* SECURE PAYMENT PROCESSING OVERLAY */}
+      {isSubmitting && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 cursor-wait select-none"
+        >
+          <div className="bg-white rounded-lg shadow-2xl max-w-sm w-full p-6 text-center space-y-4">
+            <div className="relative mx-auto w-16 h-16 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full border-4 border-sk-navy/20 border-t-sk-navy animate-spin" />
+              <Lock className="w-6 h-6 text-sk-navy absolute inset-0 m-auto" />
+            </div>
+
+            <div>
+              <h3 className="text-base font-bold text-gray-900">
+                Processing Secure Payment
+              </h3>
+              <p className="text-xs text-gray-500 mt-1">
+                Please do not refresh or close this window while your transaction is being processed.
+              </p>
+            </div>
+
+            <div className="bg-gray-50 border border-gray-200 rounded p-3 text-xs flex items-center justify-between">
+              <span className="text-gray-600 font-medium">Amount Payable:</span>
+              <span className="font-extrabold text-sk-navy text-sm">
+                ₹{totalPayableAmount.toLocaleString('en-IN')}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-center gap-1.5 text-[11px] font-semibold text-sk-green">
+              <ShieldCheck className="w-4 h-4 shrink-0" />
+              <span>256-Bit Encrypted Payment Processing • PCI-DSS Compliant</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DEDICATED PAYMENT FAILURE VIEW / MODAL */}
+      {paymentFailure && (
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="payment-failure-title"
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4"
+        >
+          <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 space-y-5">
+            {/* Header with Error Icon */}
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
+                <AlertCircle className="w-7 h-7 text-rose-600" />
+              </div>
+              <div>
+                <h3 id="payment-failure-title" className="text-lg font-bold text-gray-900">
+                  Payment Unsuccessful
+                </h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  We could not complete your transaction at this moment.
+                </p>
+              </div>
+            </div>
+
+            {/* Error Reason Notice */}
+            <div className="bg-rose-50 border border-rose-200 rounded-xs p-3 text-xs text-rose-800">
+              <p className="font-semibold mb-1">Reason for Failure:</p>
+              <p className="text-rose-700">{paymentFailure.reason || paymentFailure.message}</p>
+            </div>
+
+            {/* Transaction Metadata & Preserved Summary */}
+            <div className="bg-gray-50 border border-gray-200 rounded-xs p-3.5 space-y-2 text-xs">
+              <div className="flex justify-between items-center text-gray-600">
+                <span>Transaction Ref ID:</span>
+                <span className="font-mono font-bold text-gray-800 select-all">{paymentFailure.referenceId}</span>
+              </div>
+              <div className="flex justify-between items-center text-gray-600">
+                <span>Payment Mode:</span>
+                <span className="font-semibold text-gray-800">{paymentFailure.paymentMethod}</span>
+              </div>
+              <div className="flex justify-between items-center text-gray-600">
+                <span>Attempted Amount:</span>
+                <span className="font-bold text-gray-900">₹{paymentFailure.amount?.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="pt-2 border-t border-gray-200 text-[11px] text-gray-600 flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-sk-green shrink-0" />
+                <span>Your cart items and saved delivery address have been preserved. No money was deducted.</span>
+              </div>
+            </div>
+
+            {/* Action Buttons: Retry Payment, Change Payment Method, Back to Cart */}
+            <div className="space-y-2 pt-1">
+              <button
+                type="button"
+                onClick={handleRetryPayment}
+                disabled={isSubmitting}
+                className={`w-full py-2.5 bg-sk-orange hover:bg-sk-orange-hover text-white text-xs font-bold uppercase rounded-xs transition shadow-xs flex items-center justify-center gap-2 ${
+                  isSubmitting ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+                }`}
+              >
+                <RefreshCw className={`w-4 h-4 ${isSubmitting ? 'animate-spin' : ''}`} />
+                <span>{isSubmitting ? 'Retrying...' : 'Retry Payment'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleChangePaymentMethod}
+                className="w-full py-2.5 bg-sk-navy hover:bg-sk-navy-dark text-white text-xs font-bold uppercase rounded-xs transition shadow-xs cursor-pointer flex items-center justify-center gap-2"
+              >
+                <CreditCard className="w-4 h-4" />
+                <span>Change Payment Method</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleBackToCartAction}
+                className="w-full py-2 bg-transparent hover:bg-gray-100 text-gray-700 text-xs font-bold rounded-xs transition cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back to Cart</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
