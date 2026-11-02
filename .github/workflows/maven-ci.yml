@@ -1,0 +1,47 @@
+name: Java CI with Maven
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    name: build-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17 Temurin
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Grant execute permission for Maven Wrapper
+        run: |
+          chmod +x ./mvnw
+          if [ -f "./backend/mvnw" ]; then chmod +x ./backend/mvnw; fi
+
+      - name: Build and run test suite
+        run: ./mvnw -B clean test --file backend/pom.xml
+        env:
+          JWT_SECRET: "c2hvcGthcnQtY2ktYnVpbGQtdGVzdC1qd3Qtc2VjcmV0LWtleS0yNTZiaXRzLWtleSE="
+          PAYMENT_SANDBOX_KEY: "rzp_test_ci_dummy_key"
+          PAYMENT_SANDBOX_SECRET: "ci_dummy_secret"
+          PAYMENT_WEBHOOK_SECRET: "ci_dummy_webhook_secret"
+          DB_URL: "jdbc:h2:mem:citestdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL"
+          DB_USERNAME: "sa"
+          DB_PASSWORD: ""
+          SPRING_PROFILES_ACTIVE: "test"

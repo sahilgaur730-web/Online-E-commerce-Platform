@@ -11,6 +11,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
+/**
+ * REST controller handling media file uploads for product images and store branding.
+ * <p>
+ * Accessible to authenticated sellers and administrators. Uploads files to configured local storage
+ * or cloud object stores (Cloudinary / S3), returning public asset URLs.
+ * </p>
+ */
 @RestController
 @RequestMapping("/api/seller")
 public class SellerUploadController {
@@ -21,6 +28,13 @@ public class SellerUploadController {
         this.fileUploadService = fileUploadService;
     }
 
+    /**
+     * Uploads a multipart product image file and returns the stored file metadata and public URL.
+     *
+     * @param principal authenticated user principal
+     * @param file uploaded {@link MultipartFile}
+     * @return response entity containing map with "url", "fileName", and "size" attributes
+     */
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Map<String, Object>>> uploadImage(
             @AuthenticationPrincipal UserPrincipal principal,
