@@ -4,10 +4,22 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 
+/**
+ * Normalized JPA entity representing a platform user (Buyer, Seller, or Administrator).
+ * <p>
+ * Manages authentication credentials, BCrypt password hash, user contact information,
+ * active account status, store metadata for sellers, and role assignments.
+ * </p>
+ */
 @Entity
-@Table(name = "users")
+@Table(name = "users", indexes = {
+    @Index(name = "idx_users_email", columnList = "email"),
+    @Index(name = "idx_users_role", columnList = "role")
+})
 public class User {
 
     @Id
@@ -15,11 +27,13 @@ public class User {
     private Long id;
 
     @NotBlank
+    @Size(max = 255)
     @Column(nullable = false)
     private String name;
 
     @NotBlank
     @Email
+    @Size(max = 255)
     @Column(nullable = false, unique = true)
     private String email;
 
@@ -28,8 +42,10 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Size(max = 20)
     private String phone;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role = Role.BUYER;
@@ -37,7 +53,10 @@ public class User {
     @Column(nullable = false)
     private boolean active = true;
 
+    @Size(max = 255)
     private String storeName; // For sellers
+
+    @Size(max = 1000)
     private String storeDescription;
 
     private LocalDateTime createdAt = LocalDateTime.now();

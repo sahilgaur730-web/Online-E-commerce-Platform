@@ -15,6 +15,10 @@ public class PaymentVerificationRequest {
 
     private boolean success = true;
 
+    private String idempotencyKey;
+
+    private String paymentMethod;
+
     public PaymentVerificationRequest() {
     }
 
@@ -22,6 +26,13 @@ public class PaymentVerificationRequest {
         this.orderId = orderId;
         this.transactionId = transactionId;
         this.success = success;
+    }
+
+    public PaymentVerificationRequest(Long orderId, String transactionId, boolean success, String idempotencyKey) {
+        this.orderId = orderId;
+        this.transactionId = transactionId;
+        this.success = success;
+        this.idempotencyKey = idempotencyKey;
     }
 
     public Long getOrderId() {
@@ -54,5 +65,21 @@ public class PaymentVerificationRequest {
 
     public void setSuccess(boolean success) {
         this.success = success;
+    }
+
+    public String getIdempotencyKey() {
+        return idempotencyKey;
+    }
+
+    public void setIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 }

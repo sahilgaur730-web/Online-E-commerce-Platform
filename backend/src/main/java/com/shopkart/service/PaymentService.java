@@ -22,13 +22,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.Mac;
+import com.shopkart.entity.PaymentTransaction;
+import com.shopkart.repository.PaymentTransactionRepository;
 import javax.crypto.spec.SecretKeySpec;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Core payment processing service managing payment intents, transaction verification,
+ * HMAC-SHA256 signature audits, and asynchronous webhook handling.
+ * <p>
+ * Integrates with Razorpay payment gateway sandbox while providing robust fallback mocking.
+ * Enforces idempotency tracking preventing duplicate charges, records immutable
+ * {@link PaymentTransaction} audit records, and transitions orders to PAID and CONFIRMED.
+ * </p>
+ */
 @Service
 public class PaymentService {
 
@@ -39,14 +51,16 @@ public class PaymentService {
     private final SubOrderRepository subOrderRepository;
     private final NotificationService notificationService;
     private final AuditService auditService;
+    private final PaymentTransactionRepository paymentTransactionRepository;
+    private final IdempotencyService idempotencyService;
 
-    @Value("${payment.sandbox-key:${razorpay.key.id:}}")
+    @Value("${razorpay.key.id:${payment.sandbox-key:}}")
     private String razorpayKeyId;
 
-    @Value("${razorpay.key.secret:}")
+    @Value("${razorpay.key.secret:${payment.sandbox-secret:}}")
     private String razorpayKeySecret;
 
-    @Value("${razorpay.webhook.secret:}")
+    @Value("${razorpay.webhook.secret:${payment.webhook-secret:}}")
     private String razorpayWebhookSecret;
 
     public PaymentService(
@@ -54,14 +68,26 @@ public class PaymentService {
             OrderTrackingRepository orderTrackingRepository,
             SubOrderRepository subOrderRepository,
             NotificationService notificationService,
-            AuditService auditService) {
+            AuditService auditService,
+            PaymentTransactionRepository paymentTransactionRepository,
+            IdempotencyService idempotencyService) {
         this.orderRepository = orderRepository;
         this.orderTrackingRepository = orderTrackingRepository;
         this.subOrderRepository = subOrderRepository;
         this.notificationService = notificationService;
         this.auditService = auditService;
+        this.paymentTransactionRepository = paymentTransactionRepository;
+        this.idempotencyService = idempotencyService;
     }
 
+    /**
+     * Creates a payment intent and gateway order ID for an order awaiting payment.
+     * Prevents paying for cancelled, already paid, or refunded orders.
+     *
+     * @param userId buyer user ID
+     * @param req payment intent request with target order ID
+     * @return {@link PaymentResponse} with transaction and gateway identifiers
+     */
     public PaymentResponse createPaymentIntent(Long userId, PaymentIntentRequest req) {
         Order order = orderRepository.findById(req.getOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
@@ -121,8 +147,29 @@ public class PaymentService {
         );
     }
 
+    /**
+     * Verifies payment completion for an order with idempotency protection and database recording.
+     * <p>
+     * On success, transitions order payment status to {@code PAID}, order status to {@code CONFIRMED},
+     * synchronizes vendor sub-orders, creates a persistent {@link PaymentTransaction} record,
+     * and caches the idempotency response. On failure, records a FAILED transaction without cancelling order.
+     * </p>
+     *
+     * @param userId buyer user ID
+     * @param req verification payload containing order ID, transaction ID, signature, and success flag
+     * @return {@link PaymentResponse} with updated status
+     */
     @Transactional
     public PaymentResponse verifyPayment(Long userId, PaymentVerificationRequest req) {
+        // Idempotency check: return cached payment response if previously processed
+        if (req.getIdempotencyKey() != null && !req.getIdempotencyKey().isBlank()) {
+            Optional<PaymentResponse> existing = idempotencyService.getExistingPayment(req.getIdempotencyKey());
+            if (existing.isPresent()) {
+                log.info("Idempotent payment match found for key [{}], returning cached response", req.getIdempotencyKey());
+                return existing.get();
+            }
+        }
+
         Order order = orderRepository.findById(req.getOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
@@ -145,7 +192,7 @@ public class PaymentService {
         // Validate signature if provided
         if (req.getSignature() != null && !req.getSignature().isBlank()) {
             boolean validSignature = verifyRazorpaySignature(req.getOrderId().toString(), req.getTransactionId(), req.getSignature());
-            if (!validSignature && !req.isSuccess()) {
+            if (!validSignature) {
                 throw new BadRequestException("Invalid payment signature verification");
             }
         }
@@ -154,10 +201,33 @@ public class PaymentService {
             order.setPaymentStatus(PaymentStatus.FAILED);
             order.setUpdatedAt(LocalDateTime.now());
             orderRepository.save(order);
+
+            PaymentTransaction pt = new PaymentTransaction(
+                    order.getId(),
+                    req.getIdempotencyKey(),
+                    req.getPaymentMethod() != null ? req.getPaymentMethod() : order.getPaymentMethod(),
+                    order.getFinalAmount(),
+                    "INR",
+                    req.getTransactionId(),
+                    req.getTransactionId(),
+                    req.getSignature(),
+                    PaymentStatus.FAILED
+            );
+            pt.setFailureReason("Payment verification marked as failed");
+            paymentTransactionRepository.save(pt);
+
             auditService.log("PAYMENT_FAILED", order.getBuyer().getEmail(),
                     "Payment failed for order " + order.getOrderNumber() + ", Txn: " + req.getTransactionId(),
                     "ORDER", order.getId());
-            return new PaymentResponse(req.getTransactionId(), order.getId(), order.getOrderNumber(), order.getFinalAmount(), PaymentStatus.FAILED, null, razorpayKeyId, null);
+
+            PaymentResponse response = new PaymentResponse(
+                    req.getTransactionId(), order.getId(), order.getOrderNumber(),
+                    order.getFinalAmount(), PaymentStatus.FAILED, null, razorpayKeyId, null);
+
+            if (req.getIdempotencyKey() != null && !req.getIdempotencyKey().isBlank()) {
+                idempotencyService.recordPayment(req.getIdempotencyKey(), response);
+            }
+            return response;
         }
 
         order.setPaymentStatus(PaymentStatus.PAID);
@@ -189,6 +259,20 @@ public class PaymentService {
         order.setUpdatedAt(LocalDateTime.now());
         Order saved = orderRepository.save(order);
 
+        // Record normalized PaymentTransaction
+        PaymentTransaction pt = new PaymentTransaction(
+                saved.getId(),
+                req.getIdempotencyKey(),
+                req.getPaymentMethod() != null ? req.getPaymentMethod() : saved.getPaymentMethod(),
+                saved.getFinalAmount(),
+                "INR",
+                req.getTransactionId(),
+                req.getTransactionId(),
+                req.getSignature(),
+                PaymentStatus.PAID
+        );
+        paymentTransactionRepository.save(pt);
+
         notificationService.notifyUser(
                 order.getBuyer(),
                 "Payment Confirmed",
@@ -199,11 +283,28 @@ public class PaymentService {
                 "Payment successful for order " + order.getOrderNumber() + ", Txn: " + req.getTransactionId(),
                 "ORDER", saved.getId());
 
-        return new PaymentResponse(req.getTransactionId(), saved.getId(), saved.getOrderNumber(), saved.getFinalAmount(), PaymentStatus.PAID, null, razorpayKeyId, null);
+        PaymentResponse response = new PaymentResponse(
+                req.getTransactionId(), saved.getId(), saved.getOrderNumber(),
+                saved.getFinalAmount(), PaymentStatus.PAID, null, razorpayKeyId, null);
+
+        if (req.getIdempotencyKey() != null && !req.getIdempotencyKey().isBlank()) {
+            idempotencyService.recordPayment(req.getIdempotencyKey(), response);
+        }
+        return response;
     }
 
+    /**
+     * Cryptographically verifies the Razorpay payment callback signature using HMAC-SHA256.
+     *
+     * @param orderId payment gateway order ID
+     * @param paymentId payment transaction identifier
+     * @param signature hex-encoded HMAC-SHA256 signature from gateway callback
+     * @return true if calculated signature matches the provided signature
+     */
     public boolean verifyRazorpaySignature(String orderId, String paymentId, String signature) {
-        if (signature == null || signature.isBlank() || razorpayKeySecret == null) {
+        if (orderId == null || orderId.isBlank() || paymentId == null || paymentId.isBlank()
+                || signature == null || signature.isBlank()
+                || razorpayKeySecret == null || razorpayKeySecret.isBlank()) {
             return false;
         }
         try {
@@ -215,8 +316,17 @@ public class PaymentService {
         }
     }
 
+    /**
+     * Verifies the authenticity of an incoming Razorpay webhook payload using HMAC-SHA256.
+     *
+     * @param payload raw string payload received in webhook HTTP request body
+     * @param signature value of the {@code X-Razorpay-Signature} HTTP header
+     * @return true if calculated signature matches header value
+     */
     public boolean verifyWebhookSignature(String payload, String signature) {
-        if (signature == null || signature.isBlank() || razorpayWebhookSecret == null) {
+        if (payload == null || payload.isBlank()
+                || signature == null || signature.isBlank()
+                || razorpayWebhookSecret == null || razorpayWebhookSecret.isBlank()) {
             return false;
         }
         try {
@@ -241,6 +351,14 @@ public class PaymentService {
         return hex.toString();
     }
 
+    /**
+     * Processes verified webhook event notifications from the payment gateway.
+     * Parses payment capture events, marks orders and sub-orders as PAID and CONFIRMED.
+     *
+     * @param payload raw JSON webhook payload
+     * @param signature webhook HMAC signature
+     * @return true if processed or safely handled
+     */
     @Transactional
     public boolean processWebhook(String payload, String signature) {
         if (!verifyWebhookSignature(payload, signature)) {

@@ -2,22 +2,43 @@ package com.shopkart.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Normalized JPA entity representing a customer purchase order.
+ * <p>
+ * Tracks order items, multi-vendor sub-orders, payment transaction metadata,
+ * shipping address snapshots, delivery tracking, and finite state machine status
+ * (PLACED, CONFIRMED, SHIPPED, OUT_FOR_DELIVERY, DELIVERED, CANCELLED).
+ * </p>
+ */
 @Entity
-@Table(name = "orders")
+@Table(name = "orders", indexes = {
+    @Index(name = "idx_orders_buyer", columnList = "buyer_id"),
+    @Index(name = "idx_orders_order_number", columnList = "order_number"),
+    @Index(name = "idx_orders_status", columnList = "order_status"),
+    @Index(name = "idx_orders_payment_status", columnList = "payment_status"),
+    @Index(name = "idx_orders_created_at", columnList = "created_at")
+})
 public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @NotBlank
+    @Size(max = 255)
+    @Column(name = "order_number", nullable = false, unique = true)
     private String orderNumber;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "buyer_id", nullable = false)
     @JsonIgnoreProperties({"password", "createdAt"})
@@ -26,33 +47,46 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<OrderItem> items = new ArrayList<>();
 
-    @Column(nullable = false, precision = 12, scale = 2)
+    @NotNull
+    @DecimalMin("0.0")
+    @Column(name = "total_amount", nullable = false, precision = 12, scale = 2)
     private BigDecimal totalAmount;
 
-    @Column(precision = 12, scale = 2)
+    @DecimalMin("0.0")
+    @Column(name = "discount_amount", precision = 12, scale = 2)
     private BigDecimal discountAmount = BigDecimal.ZERO;
 
-    @Column(precision = 12, scale = 2)
+    @DecimalMin("0.0")
+    @Column(name = "delivery_fee", precision = 12, scale = 2)
     private BigDecimal deliveryFee = BigDecimal.ZERO;
 
-    @Column(nullable = false, precision = 12, scale = 2)
+    @NotNull
+    @DecimalMin("0.0")
+    @Column(name = "final_amount", nullable = false, precision = 12, scale = 2)
     private BigDecimal finalAmount;
 
+    @Column(name = "payment_method")
     private String paymentMethod; // UPI, CARD, NET_BANKING, COD
 
+    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "payment_status", nullable = false)
     private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 
+    @Column(name = "payment_transaction_id")
     private String paymentTransactionId;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "order_status", nullable = false)
     private OrderStatus orderStatus = OrderStatus.PLACED;
 
-    @Column(length = 2000)
+    @Size(max = 2000)
+    @Column(name = "shipping_address_snapshot", length = 2000)
     private String shippingAddressSnapshot; // Serialized address snapshot
 
+    @Size(max = 255)
+    @Column(name = "tracking_number")
     private String trackingNumber;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
@@ -62,9 +96,14 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<SubOrder> subOrders = new ArrayList<>();
 
+    @Size(max = 500)
+    @Column(name = "cancellation_reason", length = 500)
     private String cancellationReason;
 
+    @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     public Order() {

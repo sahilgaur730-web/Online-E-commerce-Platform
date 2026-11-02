@@ -8,6 +8,10 @@ spring:
     name: shopkart-backend
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
+  datasource:
+    url: ${DB_URL:${SPRING_DATASOURCE_URL:jdbc:h2:mem:shopkartdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL}}
+    username: ${DB_USERNAME:${SPRING_DATASOURCE_USERNAME:sa}}
+    password: ${DB_PASSWORD:${SPRING_DATASOURCE_PASSWORD:}}
   data:
     web:
       pageable:
@@ -18,7 +22,7 @@ spring:
       max-request-size: 10MB
 
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${PORT:${SERVER_PORT:8080}}
 
 # File Upload & Local/Cloud Object Storage Configuration
 upload:
@@ -42,11 +46,13 @@ jwt:
 
 # Payment Gateway Configuration (Bound to environment variables without hardcoded keys)
 payment:
-  sandbox-key: ${PAYMENT_SANDBOX_KEY:}
+  sandbox-key: ${PAYMENT_SANDBOX_KEY:${RAZORPAY_KEY_ID:}}
+  sandbox-secret: ${PAYMENT_SANDBOX_SECRET:${RAZORPAY_KEY_SECRET:}}
+  webhook-secret: ${PAYMENT_WEBHOOK_SECRET:${RAZORPAY_WEBHOOK_SECRET:}}
 
 razorpay:
   key:
     id: ${PAYMENT_SANDBOX_KEY:${RAZORPAY_KEY_ID:}}
     secret: ${PAYMENT_SANDBOX_SECRET:${RAZORPAY_KEY_SECRET:}}
   webhook:
-    secret: ${RAZORPAY_WEBHOOK_SECRET:}
+    secret: ${PAYMENT_WEBHOOK_SECRET:${RAZORPAY_WEBHOOK_SECRET:}}

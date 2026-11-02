@@ -19,6 +19,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Business service managing user shopping carts, stock validation, and checkout price calculations.
+ * <p>
+ * Computes original item totals, promotional discount deductions, dynamic delivery fees
+ * (free over ₹500 threshold), and validates quantities against current warehouse stock.
+ * </p>
+ */
 @Service
 public class CartService {
 
@@ -32,6 +39,13 @@ public class CartService {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Calculates the complete shopping cart summary for a user, aggregating item line prices,
+     * total discounts, delivery charges, and final payable amount.
+     *
+     * @param userId buyer user primary key ID
+     * @return comprehensive {@link CartSummaryDto}
+     */
     public CartSummaryDto getCartSummary(Long userId) {
         List<CartItem> items = cartItemRepository.findByUserIdOrderByCreatedAtDesc(userId);
         CartSummaryDto summary = new CartSummaryDto();
@@ -93,6 +107,14 @@ public class CartService {
         return summary;
     }
 
+    /**
+     * Adds a product to the user's cart or increments existing quantity with stock validation.
+     *
+     * @param userId buyer user ID
+     * @param req add to cart request payload
+     * @return refreshed {@link CartSummaryDto}
+     * @throws BadRequestException if product is out of stock or requested quantity exceeds available stock
+     */
     @Transactional
     public CartSummaryDto addToCart(Long userId, AddToCartRequest req) {
         Product product = productRepository.findById(req.getProductId())
@@ -127,6 +149,14 @@ public class CartService {
         return getCartSummary(userId);
     }
 
+    /**
+     * Updates item quantity in the cart; deletes the item if new quantity is 0 or less.
+     *
+     * @param userId buyer user ID
+     * @param cartItemId cart item primary key ID
+     * @param quantity new quantity
+     * @return refreshed {@link CartSummaryDto}
+     */
     @Transactional
     public CartSummaryDto updateQuantity(Long userId, Long cartItemId, int quantity) {
         CartItem item = cartItemRepository.findById(cartItemId)
@@ -150,6 +180,13 @@ public class CartService {
         return getCartSummary(userId);
     }
 
+    /**
+     * Removes an item from the user's cart with ownership check.
+     *
+     * @param userId buyer user ID
+     * @param cartItemId cart item primary key ID
+     * @return refreshed {@link CartSummaryDto}
+     */
     @Transactional
     public CartSummaryDto removeFromCart(Long userId, Long cartItemId) {
         CartItem item = cartItemRepository.findById(cartItemId)
@@ -163,6 +200,11 @@ public class CartService {
         return getCartSummary(userId);
     }
 
+    /**
+     * Clears all items from the user's shopping cart.
+     *
+     * @param userId buyer user ID
+     */
     @Transactional
     public void clearCart(Long userId) {
         cartItemRepository.deleteByUserId(userId);

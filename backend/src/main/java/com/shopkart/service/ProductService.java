@@ -25,6 +25,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Business service managing the product catalog, multi-criteria search queries,
+ * curation flags, seller product listings, and image galleries.
+ */
 @Service
 public class ProductService {
 

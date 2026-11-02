@@ -18,6 +18,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Business service handling user authentication, BCrypt credential validation,
+ * JWT token issuance, and account registration guards.
+ */
 @Service
 public class AuthService {
 

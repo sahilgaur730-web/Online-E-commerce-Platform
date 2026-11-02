@@ -6,13 +6,28 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Normalized JPA entity representing a catalog product item.
+ * <p>
+ * Contains product pricing, seller assignment, category reference, images, and curation flags.
+ * Includes optimistic locking via {@link Version @Version} to prevent lost updates during
+ * concurrent checkout and inventory deductions.
+ * </p>
+ */
 @Entity
-@Table(name = "products")
+@Table(name = "products", indexes = {
+    @Index(name = "idx_products_category", columnList = "category_id"),
+    @Index(name = "idx_products_seller", columnList = "seller_id"),
+    @Index(name = "idx_products_brand", columnList = "brand"),
+    @Index(name = "idx_products_featured", columnList = "featured"),
+    @Index(name = "idx_products_price", columnList = "price")
+})
 public class Product {
 
     @Id
@@ -20,13 +35,16 @@ public class Product {
     private Long id;
 
     @NotBlank
+    @Size(max = 255)
     @Column(nullable = false)
     private String title;
 
+    @Size(max = 5000)
     @Column(length = 5000)
     private String description;
 
     @NotBlank
+    @Size(max = 255)
     @Column(nullable = false)
     private String brand;
 
@@ -50,10 +68,12 @@ public class Product {
     private int ratingCount = 120;
     private int reviewCount = 45;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "seller_id", nullable = false)
     @JsonIgnoreProperties({"password", "createdAt"})
@@ -62,6 +82,7 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<ProductImage> images = new ArrayList<>();
 
+    @Size(max = 5000)
     @Column(length = 5000)
     private String specifications; // JSON string or bullet points
 

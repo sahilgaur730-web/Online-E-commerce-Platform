@@ -2,16 +2,33 @@ package com.shopkart.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
+/**
+ * Normalized JPA entity representing an individual product line item within an order and sub-order.
+ * <p>
+ * Maintains frozen snapshots of product title, image URL, purchase price, quantity,
+ * and calculated subtotal to preserve historical accuracy against future catalog edits.
+ * </p>
+ */
 @Entity
-@Table(name = "order_items")
+@Table(name = "order_items", indexes = {
+    @Index(name = "idx_order_items_order", columnList = "order_id"),
+    @Index(name = "idx_order_items_sub_order", columnList = "sub_order_id"),
+    @Index(name = "idx_order_items_product", columnList = "product_id")
+})
 public class OrderItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     @JsonIgnore
@@ -26,18 +43,27 @@ public class OrderItem {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @Column(nullable = false)
+    @NotBlank
+    @Size(max = 255)
+    @Column(name = "product_name", nullable = false)
     private String productName;
 
+    @Size(max = 1000)
+    @Column(name = "product_image_url", length = 1000)
     private String productImageUrl;
 
-    @Column(nullable = false, precision = 12, scale = 2)
+    @NotNull
+    @DecimalMin("0.0")
+    @Column(name = "price", nullable = false, precision = 12, scale = 2)
     private BigDecimal price;
 
-    @Column(nullable = false)
+    @Min(1)
+    @Column(name = "quantity", nullable = false)
     private int quantity;
 
-    @Column(nullable = false, precision = 12, scale = 2)
+    @NotNull
+    @DecimalMin("0.0")
+    @Column(name = "subtotal", nullable = false, precision = 12, scale = 2)
     private BigDecimal subtotal;
 
     public OrderItem() {

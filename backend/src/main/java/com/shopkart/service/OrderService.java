@@ -5,6 +5,7 @@ import com.shopkart.common.ResourceNotFoundException;
 import com.shopkart.dto.*;
 import com.shopkart.model.*;
 import com.shopkart.repository.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,15 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Core business service managing order lifecycles, checkout workflows, inventory deduction,
+ * multi-seller sub-order splitting, and status state machine transitions.
+ * <p>
+ * Ensures transactional boundaries ({@code @Transactional(rollbackFor = Exception.class)})
+ * across cart validation, inventory deduction, sub-order partitioning, and milestone logging.
+ * Supports idempotency protection to prevent duplicate orders and double stock deduction.
+ * </p>
+ */
 @Service
 public class OrderService {
 
@@ -30,6 +40,8 @@ public class OrderService {
     private final AuditService auditService;
     private final FlashDealService flashDealService;
     private final AsyncInvoiceGeneratorService asyncInvoiceGeneratorService;
+    private final IdempotencyService idempotencyService;
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(OrderService.class);
 
     public OrderService(
             OrderRepository orderRepository,
@@ -44,6 +56,26 @@ public class OrderService {
             AuditService auditService,
             FlashDealService flashDealService,
             AsyncInvoiceGeneratorService asyncInvoiceGeneratorService) {
+        this(orderRepository, orderItemRepository, orderTrackingRepository, subOrderRepository,
+             cartItemRepository, addressRepository, userRepository, inventoryService,
+             notificationService, auditService, flashDealService, asyncInvoiceGeneratorService, null);
+    }
+
+    @Autowired
+    public OrderService(
+            OrderRepository orderRepository,
+            OrderItemRepository orderItemRepository,
+            OrderTrackingRepository orderTrackingRepository,
+            SubOrderRepository subOrderRepository,
+            CartItemRepository cartItemRepository,
+            AddressRepository addressRepository,
+            UserRepository userRepository,
+            InventoryService inventoryService,
+            NotificationService notificationService,
+            AuditService auditService,
+            FlashDealService flashDealService,
+            AsyncInvoiceGeneratorService asyncInvoiceGeneratorService,
+            IdempotencyService idempotencyService) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.orderTrackingRepository = orderTrackingRepository;
@@ -56,27 +88,100 @@ public class OrderService {
         this.auditService = auditService;
         this.flashDealService = flashDealService;
         this.asyncInvoiceGeneratorService = asyncInvoiceGeneratorService;
+        this.idempotencyService = idempotencyService;
     }
 
-    @Transactional
+    /**
+     * Executes the checkout conversion workflow converting active cart items into a confirmed order.
+     * <p>
+     * Enforces transactional integrity: rolls back all operations if inventory deduction fails.
+     * Checks idempotency key to prevent duplicate order generation.
+     * Splits products across vendors into discrete {@link SubOrder} packages.
+     * </p>
+     *
+     * @param userId buyer user ID
+     * @param req order creation request containing shipping address ID and payment method
+     * @return generated or cached {@link OrderDto}
+     */
+    @Transactional(rollbackFor = Exception.class)
     public OrderDto createOrder(Long userId, CreateOrderRequest req) {
+        // Idempotency check: return cached order if duplicate request detected
+        if (req.getIdempotencyKey() != null && !req.getIdempotencyKey().isBlank() && idempotencyService != null) {
+            Optional<OrderDto> existing = idempotencyService.getExistingOrder(userId, req.getIdempotencyKey());
+            if (existing.isPresent()) {
+                log.info("Idempotent order match found for key [{}] user [{}], returning cached order [{}]",
+                        req.getIdempotencyKey(), userId, existing.get().getOrderNumber());
+                return existing.get();
+            }
+        }
+
         User buyer = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
+        List<CartItem> cartItems = validateAndFetchCart(userId);
+        Address address = validateAndFetchAddress(req.getAddressId(), userId);
+
+        deductInventoryForCart(cartItems);
+
+        OrderPricing pricing = calculateOrderPricing(cartItems);
+        Order savedOrder = buildAndSaveOrder(buyer, address, req, pricing);
+        List<OrderItem> orderItems = persistOrderItems(savedOrder, cartItems);
+        List<SubOrder> subOrders = splitAndPersistVendorSubOrders(savedOrder, orderItems, buyer);
+
+        recordOrderPlacementMilestones(savedOrder, buyer, subOrders);
+
+        // Clear user cart upon successful order generation
+        cartItemRepository.deleteByUserId(userId);
+
+        // Asynchronously generate invoice receipt in background worker thread
+        if (asyncInvoiceGeneratorService != null) {
+            asyncInvoiceGeneratorService.registerOrderSnapshot(savedOrder);
+            asyncInvoiceGeneratorService.generateOrderInvoiceAsync(savedOrder.getId());
+        }
+
+        OrderDto orderDto = toDto(savedOrder);
+        if (req.getIdempotencyKey() != null && !req.getIdempotencyKey().isBlank() && idempotencyService != null) {
+            idempotencyService.recordOrder(userId, req.getIdempotencyKey(), orderDto);
+        }
+
+        return orderDto;
+    }
+
+    private List<CartItem> validateAndFetchCart(Long userId) {
         List<CartItem> cartItems = cartItemRepository.findByUserIdOrderByCreatedAtDesc(userId);
         if (cartItems.isEmpty()) {
             throw new BadRequestException("Your cart is empty. Add products before placing an order.");
         }
+        return cartItems;
+    }
 
-        Address address = addressRepository.findByIdAndUserId(req.getAddressId(), userId)
+    private Address validateAndFetchAddress(Long addressId, Long userId) {
+        return addressRepository.findByIdAndUserId(addressId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Shipping address not found"));
+    }
 
-        // Deduct inventory atomically with optimistic locking check and update deal sold counts
+    private void deductInventoryForCart(List<CartItem> cartItems) {
         for (CartItem cartItem : cartItems) {
             inventoryService.deductStock(cartItem.getProduct().getId(), cartItem.getQuantity());
             flashDealService.recordPurchase(cartItem.getProduct().getId(), cartItem.getQuantity());
         }
+    }
 
+    private static class OrderPricing {
+        final BigDecimal originalTotal;
+        final BigDecimal discountTotal;
+        final BigDecimal deliveryFee;
+        final BigDecimal finalTotal;
+
+        OrderPricing(BigDecimal originalTotal, BigDecimal discountTotal, BigDecimal deliveryFee, BigDecimal finalTotal) {
+            this.originalTotal = originalTotal;
+            this.discountTotal = discountTotal;
+            this.deliveryFee = deliveryFee;
+            this.finalTotal = finalTotal;
+        }
+    }
+
+    private OrderPricing calculateOrderPricing(List<CartItem> cartItems) {
         BigDecimal originalTotal = BigDecimal.ZERO;
         BigDecimal finalSubtotal = BigDecimal.ZERO;
 
@@ -88,7 +193,9 @@ public class OrderService {
         }
 
         BigDecimal discountTotal = originalTotal.subtract(finalSubtotal);
-        if (discountTotal.compareTo(BigDecimal.ZERO) < 0) discountTotal = BigDecimal.ZERO;
+        if (discountTotal.compareTo(BigDecimal.ZERO) < 0) {
+            discountTotal = BigDecimal.ZERO;
+        }
 
         BigDecimal deliveryFee = BigDecimal.ZERO;
         if (finalSubtotal.compareTo(BigDecimal.valueOf(500)) < 0) {
@@ -96,17 +203,20 @@ public class OrderService {
         }
 
         BigDecimal finalTotal = finalSubtotal.add(deliveryFee);
+        return new OrderPricing(originalTotal, discountTotal, deliveryFee, finalTotal);
+    }
 
+    private Order buildAndSaveOrder(User buyer, Address address, CreateOrderRequest req, OrderPricing pricing) {
         String orderNumber = "OD" + System.currentTimeMillis() + (int)(Math.random() * 900 + 100);
         String trackingNumber = "SK" + (100000000L + (long)(Math.random() * 900000000L));
 
         Order order = new Order();
         order.setOrderNumber(orderNumber);
         order.setBuyer(buyer);
-        order.setTotalAmount(originalTotal);
-        order.setDiscountAmount(discountTotal);
-        order.setDeliveryFee(deliveryFee);
-        order.setFinalAmount(finalTotal);
+        order.setTotalAmount(pricing.originalTotal);
+        order.setDiscountAmount(pricing.discountTotal);
+        order.setDeliveryFee(pricing.deliveryFee);
+        order.setFinalAmount(pricing.finalTotal);
         order.setPaymentMethod(req.getPaymentMethod().toUpperCase());
         order.setPaymentStatus(PaymentStatus.PENDING);
         order.setOrderStatus(OrderStatus.PLACED);
@@ -122,8 +232,10 @@ public class OrderService {
                 address.getAddressType());
         order.setShippingAddressSnapshot(addressSnapshot);
 
-        Order savedOrder = orderRepository.save(order);
+        return orderRepository.save(order);
+    }
 
+    private List<OrderItem> persistOrderItems(Order savedOrder, List<CartItem> cartItems) {
         List<OrderItem> orderItems = new ArrayList<>();
         for (CartItem cartItem : cartItems) {
             Product p = cartItem.getProduct();
@@ -145,8 +257,10 @@ public class OrderService {
         }
         orderItemRepository.saveAll(orderItems);
         savedOrder.setItems(orderItems);
+        return orderItems;
+    }
 
-        // Multi-Seller Sub-Orders / Package Splitting
+    private List<SubOrder> splitAndPersistVendorSubOrders(Order savedOrder, List<OrderItem> orderItems, User buyer) {
         Map<Long, List<OrderItem>> itemsBySellerId = new LinkedHashMap<>();
         for (OrderItem item : orderItems) {
             Long sellerId = (item.getProduct() != null && item.getProduct().getSeller() != null)
@@ -175,7 +289,7 @@ public class OrderService {
                     .map(OrderItem::getSubtotal)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            String subOrderNum = orderNumber + "-PKG" + pkgIndex;
+            String subOrderNum = savedOrder.getOrderNumber() + "-PKG" + pkgIndex;
             String pkgTrackingNum = "PKG" + (10000000L + (long)(Math.random() * 90000000L));
 
             SubOrder subOrder = new SubOrder(savedOrder, seller, subOrderNum, sSubtotal, pkgTrackingNum);
@@ -190,43 +304,49 @@ public class OrderService {
             pkgIndex++;
         }
         savedOrder.setSubOrders(subOrders);
+        return subOrders;
+    }
 
-        // Tracking event: Placed
+    private void recordOrderPlacementMilestones(Order savedOrder, User buyer, List<SubOrder> subOrders) {
         OrderTracking tracking = new OrderTracking(
                 savedOrder,
                 OrderStatus.PLACED,
                 "Order Placed",
-                "Your order " + orderNumber + " with " + subOrders.size() + " package(s) has been successfully placed on ShopKart."
+                "Your order " + savedOrder.getOrderNumber() + " with " + subOrders.size() + " package(s) has been successfully placed on ShopKart."
         );
         orderTrackingRepository.save(tracking);
 
-        // Clear cart
-        cartItemRepository.deleteByUserId(userId);
-
-        // Notifications & Audit
         notificationService.notifyUser(
                 buyer,
                 "Order Placed Successfully",
-                "Your order " + orderNumber + " for ₹" + finalTotal + " has been placed.",
+                "Your order " + savedOrder.getOrderNumber() + " for ₹" + savedOrder.getFinalAmount() + " has been placed.",
                 "ORDER"
         );
-        auditService.log("ORDER_PLACED", buyer.getEmail(), "Placed order " + orderNumber + " total ₹" + finalTotal, "ORDER", savedOrder.getId());
-
-        // Asynchronously generate invoice receipt in background worker thread
-        if (asyncInvoiceGeneratorService != null) {
-            asyncInvoiceGeneratorService.registerOrderSnapshot(savedOrder);
-            asyncInvoiceGeneratorService.generateOrderInvoiceAsync(savedOrder.getId());
-        }
-
-        return toDto(savedOrder);
+        auditService.log("ORDER_PLACED", buyer.getEmail(),
+                "Placed order " + savedOrder.getOrderNumber() + " total ₹" + savedOrder.getFinalAmount(),
+                "ORDER", savedOrder.getId());
     }
 
+    /**
+     * Retrieves all orders placed by the specified user.
+     *
+     * @param userId buyer user primary key ID
+     * @return list of {@link OrderDto}
+     */
     public List<OrderDto> getOrdersByUser(Long userId) {
         return orderRepository.findByBuyerIdOrderByCreatedAtDesc(userId).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves an order by ID with ownership verification.
+     *
+     * @param orderId order primary key ID
+     * @param userId requesting user ID
+     * @param hasPrivileges true if requester has ADMIN or SELLER role
+     * @return {@link OrderDto}
+     */
     public OrderDto getOrderById(Long orderId, Long userId, boolean hasPrivileges) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId));
@@ -238,18 +358,38 @@ public class OrderService {
         return toDto(order);
     }
 
+    /**
+     * Retrieves all orders containing products owned by the specified seller.
+     *
+     * @param sellerId seller user ID
+     * @return distinct list of {@link OrderDto}
+     */
     public List<OrderDto> getOrdersBySeller(Long sellerId) {
         return orderRepository.findOrdersBySellerId(sellerId).stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves vendor sub-orders assigned to the specified seller.
+     *
+     * @param sellerId seller user ID
+     * @return list of {@link SubOrderDto}
+     */
     public List<SubOrderDto> getSubOrdersBySeller(Long sellerId) {
         return subOrderRepository.findBySellerIdOrderByCreatedAtDesc(sellerId).stream()
                 .map(this::toSubOrderDto)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves sub-orders for a specific master order with authorization check.
+     *
+     * @param orderId master order ID
+     * @param userId requesting user ID
+     * @param hasPrivileges true if admin or seller
+     * @return list of {@link SubOrderDto}
+     */
     public List<SubOrderDto> getSubOrdersByOrderId(Long orderId, Long userId, boolean hasPrivileges) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId));
@@ -263,10 +403,27 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves all platform orders with pagination.
+     *
+     * @param pageable pagination parameters
+     * @return paged {@link OrderDto}
+     */
     public Page<OrderDto> getAllOrders(Pageable pageable) {
         return orderRepository.findAllByOrderByCreatedAtDesc(pageable).map(this::toDto);
     }
 
+    /**
+     * Updates overall order status according to strict finite state machine progression:
+     * PLACED -> CONFIRMED -> SHIPPED -> OUT_FOR_DELIVERY -> DELIVERED, or CANCELLED.
+     * Enforces ownership (BOLA prevention), restores inventory upon cancellation, and logs audit milestones.
+     *
+     * @param orderId order primary key ID
+     * @param newStatus target {@link OrderStatus}
+     * @param note optional cancellation or tracking note
+     * @param updaterEmail email of the authenticated user performing the status update
+     * @return updated {@link OrderDto}
+     */
     @Transactional
     public OrderDto updateOrderStatus(Long orderId, OrderStatus newStatus, String note, String updaterEmail) {
         Order order = orderRepository.findById(orderId)
@@ -376,6 +533,15 @@ public class OrderService {
         return toDto(saved);
     }
 
+    /**
+     * Updates the status of an individual seller's sub-order package and recalculates master order status.
+     *
+     * @param subOrderId package / sub-order primary key ID
+     * @param newStatus target status
+     * @param note optional note or tracking description
+     * @param updaterEmail email of authenticated seller or admin
+     * @return updated {@link SubOrderDto}
+     */
     @Transactional
     public SubOrderDto updateSubOrderStatus(Long subOrderId, OrderStatus newStatus, String note, String updaterEmail) {
         SubOrder subOrder = subOrderRepository.findById(subOrderId)
@@ -493,6 +659,16 @@ public class OrderService {
         return toSubOrderDto(savedSubOrder);
     }
 
+    /**
+     * Cancels an order, restocks inventory, updates payment status to REFUNDED if paid,
+     * and logs tracking and audit records.
+     *
+     * @param orderId order primary key ID
+     * @param userId requesting buyer user ID
+     * @param reason cancellation reason string
+     * @param isAdmin true if admin
+     * @return updated {@link OrderDto}
+     */
     @Transactional
     public OrderDto cancelOrder(Long orderId, Long userId, String reason, boolean isAdmin) {
         Order order = orderRepository.findById(orderId)
