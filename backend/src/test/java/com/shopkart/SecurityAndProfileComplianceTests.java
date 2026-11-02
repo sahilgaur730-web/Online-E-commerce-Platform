@@ -296,5 +296,125 @@ public class SecurityAndProfileComplianceTests {
             mockMvc.perform(get("/api/products"))
                     .andExpect(header().string("X-Frame-Options", "SAMEORIGIN"));
         }
+
+        @Test
+        @DisplayName("Test 6D: Swagger UI endpoints (/swagger-ui/**, /swagger-ui.html) return 401 or 403 under prod profile")
+        void testSwaggerUiBlockedInProdProfile() throws Exception {
+            // Unauthenticated -> 401 Unauthorized or 403 Forbidden
+            mockMvc.perform(get("/swagger-ui.html"))
+                    .andExpect(result -> {
+                        int status = result.getResponse().getStatus();
+                        assertTrue(List.of(401, 403).contains(status), "Expected 401 or 403, got: " + status);
+                    });
+
+            mockMvc.perform(get("/swagger-ui/index.html"))
+                    .andExpect(result -> {
+                        int status = result.getResponse().getStatus();
+                        assertTrue(List.of(401, 403).contains(status), "Expected 401 or 403, got: " + status);
+                    });
+
+            // Authenticated Admin -> 403 Forbidden
+            String adminToken = getProdAdminToken();
+            mockMvc.perform(get("/swagger-ui.html").header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isForbidden());
+
+            mockMvc.perform(get("/swagger-ui/index.html").header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("Test 6E: OpenAPI documentation (/v3/api-docs/**) returns 401 or 403 under prod profile")
+        void testOpenApiDocsBlockedInProdProfile() throws Exception {
+            // Unauthenticated -> 401 Unauthorized or 403 Forbidden
+            mockMvc.perform(get("/v3/api-docs"))
+                    .andExpect(result -> {
+                        int status = result.getResponse().getStatus();
+                        assertTrue(List.of(401, 403).contains(status), "Expected 401 or 403, got: " + status);
+                    });
+
+            mockMvc.perform(get("/v3/api-docs/swagger-config"))
+                    .andExpect(result -> {
+                        int status = result.getResponse().getStatus();
+                        assertTrue(List.of(401, 403).contains(status), "Expected 401 or 403, got: " + status);
+                    });
+
+            // Authenticated Admin -> 403 Forbidden
+            String adminToken = getProdAdminToken();
+            mockMvc.perform(get("/v3/api-docs").header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("Test 6F: Actuator endpoints (/actuator/**) return 401 or 403 under prod profile")
+        void testActuatorBlockedInProdProfile() throws Exception {
+            // Unauthenticated -> 401 Unauthorized or 403 Forbidden
+            mockMvc.perform(get("/actuator"))
+                    .andExpect(result -> {
+                        int status = result.getResponse().getStatus();
+                        assertTrue(List.of(401, 403).contains(status), "Expected 401 or 403, got: " + status);
+                    });
+
+            mockMvc.perform(get("/actuator/health"))
+                    .andExpect(result -> {
+                        int status = result.getResponse().getStatus();
+                        assertTrue(List.of(401, 403).contains(status), "Expected 401 or 403, got: " + status);
+                    });
+
+            mockMvc.perform(get("/actuator/env"))
+                    .andExpect(result -> {
+                        int status = result.getResponse().getStatus();
+                        assertTrue(List.of(401, 403).contains(status), "Expected 401 or 403, got: " + status);
+                    });
+
+            // Authenticated Admin -> 403 Forbidden
+            String adminToken = getProdAdminToken();
+            mockMvc.perform(get("/actuator").header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isForbidden());
+            mockMvc.perform(get("/actuator/health").header("Authorization", "Bearer " + adminToken))
+                    .andExpect(status().isForbidden());
+        }
+    }
+
+    @Nested
+    @NestedTestConfiguration(NestedTestConfiguration.EnclosingConfiguration.OVERRIDE)
+    @SpringBootTest
+    @AutoConfigureMockMvc
+    @ActiveProfiles("dev")
+    @TestPropertySource(properties = {
+            "jwt.secret=9a3f2c4e6b8a1d0f5e7c2b4a6d8f0e1c3b5a7d9e1f3a5c7b9d1e3f5a7b9c1d3e",
+            "jwt.expirationMs=86400000"
+    })
+    class DevProfileComplianceTests {
+
+        @Autowired
+        private MockMvc mockMvc;
+
+        @Autowired
+        private ApplicationContext applicationContext;
+
+        @Test
+        @DisplayName("Dev Profile: DataInitializer bean IS loaded")
+        void testDataInitializerLoadedInDevProfile() {
+            assertTrue(applicationContext.containsBean("dataInitializer"),
+                    "DataInitializer bean must be present in ApplicationContext under dev profile");
+        }
+
+        @Test
+        @DisplayName("Dev Profile: Dev endpoints are NOT rejected with 401 or 403 by Security")
+        void testDevEndpointsPermittedInDevProfile() throws Exception {
+            mockMvc.perform(get("/swagger-ui.html"))
+                    .andExpect(result -> {
+                        int status = result.getResponse().getStatus();
+                        assertFalse(List.of(401, 403).contains(status),
+                                "Dev endpoint should NOT return 401/403 under dev profile, got: " + status);
+                    });
+
+            mockMvc.perform(get("/v3/api-docs"))
+                    .andExpect(result -> {
+                        int status = result.getResponse().getStatus();
+                        assertFalse(List.of(401, 403).contains(status),
+                                "OpenAPI docs should NOT return 401/403 under dev profile, got: " + status);
+                    });
+        }
     }
 }

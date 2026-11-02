@@ -15,7 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -284,5 +287,145 @@ public class PaymentWorkflowIntegrationTests {
         assertThrows(BadRequestException.class, () ->
                 orderService.cancelOrder(placedOrder.getId(), buyer.getId(), "Cancel again", false)
         );
+    }
+
+    // =========================================================================
+    // Test Group: HMAC-SHA256 Signature Verification & Gateways
+    // =========================================================================
+
+    private static final String TEST_KEY_SECRET = "test_secret_shopkartSandbox2026";
+    private static final String TEST_WEBHOOK_SECRET = "whsec_test_secret123";
+
+    private String calculateHmac(String data, String secret) throws Exception {
+        Mac mac = Mac.getInstance("HmacSHA256");
+        SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        mac.init(secretKey);
+        byte[] hash = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+        StringBuilder hex = new StringBuilder();
+        for (byte b : hash) {
+            String h = Integer.toHexString(0xff & b);
+            if (h.length() == 1) hex.append('0');
+            hex.append(h);
+        }
+        return hex.toString();
+    }
+
+    @Test
+    @DisplayName("Test 5: verifyRazorpaySignature accepts valid HMAC-SHA256 signature")
+    void testVerifyRazorpaySignature_Valid() throws Exception {
+        String orderId = "order_rzp_123456";
+        String paymentId = "pay_rzp_987654";
+        String payload = orderId + "|" + paymentId;
+        String validSignature = calculateHmac(payload, TEST_KEY_SECRET);
+
+        assertTrue(paymentService.verifyRazorpaySignature(orderId, paymentId, validSignature));
+    }
+
+    @Test
+    @DisplayName("Test 6: verifyRazorpaySignature rejects tampered signature")
+    void testVerifyRazorpaySignature_TamperedSignature() throws Exception {
+        String orderId = "order_rzp_123456";
+        String paymentId = "pay_rzp_987654";
+        String validSignature = calculateHmac(orderId + "|" + paymentId, TEST_KEY_SECRET);
+
+        // Corrupt one character
+        char corruptChar = validSignature.charAt(10) == 'a' ? 'b' : 'a';
+        String tamperedSignature = validSignature.substring(0, 10) + corruptChar + validSignature.substring(11);
+
+        assertFalse(paymentService.verifyRazorpaySignature(orderId, paymentId, tamperedSignature));
+    }
+
+    @Test
+    @DisplayName("Test 7: verifyRazorpaySignature rejects forged payload (altered orderId or paymentId)")
+    void testVerifyRazorpaySignature_ForgedPayload() throws Exception {
+        String validSignature = calculateHmac("order_100|pay_200", TEST_KEY_SECRET);
+
+        assertFalse(paymentService.verifyRazorpaySignature("order_999", "pay_200", validSignature));
+        assertFalse(paymentService.verifyRazorpaySignature("order_100", "pay_888", validSignature));
+    }
+
+    @Test
+    @DisplayName("Test 8: verifyRazorpaySignature rejects null, empty, and blank inputs")
+    void testVerifyRazorpaySignature_NullAndEmptyInputs() throws Exception {
+        String validSignature = calculateHmac("order_1|pay_1", TEST_KEY_SECRET);
+
+        assertFalse(paymentService.verifyRazorpaySignature("order_1", "pay_1", null));
+        assertFalse(paymentService.verifyRazorpaySignature("order_1", "pay_1", ""));
+        assertFalse(paymentService.verifyRazorpaySignature("order_1", "pay_1", "   "));
+        assertFalse(paymentService.verifyRazorpaySignature(null, "pay_1", validSignature));
+        assertFalse(paymentService.verifyRazorpaySignature("   ", "pay_1", validSignature));
+        assertFalse(paymentService.verifyRazorpaySignature("order_1", null, validSignature));
+        assertFalse(paymentService.verifyRazorpaySignature("order_1", "   ", validSignature));
+    }
+
+    @Test
+    @DisplayName("Test 9: verifyWebhookSignature accepts valid HMAC-SHA256 signature on JSON payload")
+    void testVerifyWebhookSignature_Valid() throws Exception {
+        String payload = "{\"event\":\"payment.captured\",\"payload\":{\"payment\":{\"entity\":{\"id\":\"pay_test123\"}}}}";
+        String validSignature = calculateHmac(payload, TEST_WEBHOOK_SECRET);
+
+        assertTrue(paymentService.verifyWebhookSignature(payload, validSignature));
+    }
+
+    @Test
+    @DisplayName("Test 10: verifyWebhookSignature rejects tampered signature and forged payload")
+    void testVerifyWebhookSignature_TamperedAndForged() throws Exception {
+        String payload = "{\"event\":\"payment.captured\",\"payload\":{\"payment\":{\"entity\":{\"id\":\"pay_test123\"}}}}";
+        String validSignature = calculateHmac(payload, TEST_WEBHOOK_SECRET);
+        String tamperedSignature = validSignature.substring(0, validSignature.length() - 2) + "ff";
+
+        assertFalse(paymentService.verifyWebhookSignature(payload, tamperedSignature));
+        assertFalse(paymentService.verifyWebhookSignature(payload + " ", validSignature));
+        assertFalse(paymentService.verifyWebhookSignature("{\"event\":\"payment.failed\"}", validSignature));
+    }
+
+    @Test
+    @DisplayName("Test 11: verifyWebhookSignature rejects null, empty, and blank payloads and signatures")
+    void testVerifyWebhookSignature_NullAndEmptyInputs() {
+        assertFalse(paymentService.verifyWebhookSignature("payload", null));
+        assertFalse(paymentService.verifyWebhookSignature("payload", ""));
+        assertFalse(paymentService.verifyWebhookSignature("payload", "   "));
+        assertFalse(paymentService.verifyWebhookSignature(null, "valid_sig"));
+        assertFalse(paymentService.verifyWebhookSignature("", "valid_sig"));
+        assertFalse(paymentService.verifyWebhookSignature("   ", "valid_sig"));
+    }
+
+    @Test
+    @DisplayName("Test 12: verifyPayment with valid signature transitions order to PAID and CONFIRMED")
+    void testVerifyPayment_ValidSignatureFlow() throws Exception {
+        Product product = createProduct("Sig Item " + System.currentTimeMillis(), new BigDecimal("500.00"), 10, seller1);
+        cartService.addToCart(buyer.getId(), new AddToCartRequest(product.getId(), 1));
+        OrderDto order = orderService.createOrder(buyer.getId(), new CreateOrderRequest(address.getId(), "CARD"));
+
+        String txnId = "TXN_SIG_OK_" + System.currentTimeMillis();
+        String validSignature = calculateHmac(order.getId() + "|" + txnId, TEST_KEY_SECRET);
+
+        PaymentVerificationRequest req = new PaymentVerificationRequest(order.getId(), txnId, true);
+        req.setSignature(validSignature);
+
+        PaymentResponse res = paymentService.verifyPayment(buyer.getId(), req);
+        assertEquals(PaymentStatus.PAID, res.getStatus());
+
+        Order dbOrder = orderRepository.findById(order.getId()).orElseThrow();
+        assertEquals(PaymentStatus.PAID, dbOrder.getPaymentStatus());
+        assertEquals(OrderStatus.CONFIRMED, dbOrder.getOrderStatus());
+    }
+
+    @Test
+    @DisplayName("Test 13: verifyPayment with tampered signature throws BadRequestException and leaves order PLACED/PENDING")
+    void testVerifyPayment_TamperedSignatureRejection() throws Exception {
+        Product product = createProduct("Tamper Item " + System.currentTimeMillis(), new BigDecimal("500.00"), 10, seller1);
+        cartService.addToCart(buyer.getId(), new AddToCartRequest(product.getId(), 1));
+        OrderDto order = orderService.createOrder(buyer.getId(), new CreateOrderRequest(address.getId(), "CARD"));
+
+        String txnId = "TXN_SIG_BAD_" + System.currentTimeMillis();
+        PaymentVerificationRequest req = new PaymentVerificationRequest(order.getId(), txnId, true);
+        req.setSignature("invalid_forged_signature_hex_value");
+
+        assertThrows(BadRequestException.class, () -> paymentService.verifyPayment(buyer.getId(), req));
+
+        Order dbOrder = orderRepository.findById(order.getId()).orElseThrow();
+        assertEquals(PaymentStatus.PENDING, dbOrder.getPaymentStatus());
+        assertEquals(OrderStatus.PLACED, dbOrder.getOrderStatus());
     }
 }

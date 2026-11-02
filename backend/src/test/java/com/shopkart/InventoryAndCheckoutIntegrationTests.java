@@ -12,20 +12,39 @@ import com.shopkart.service.InventoryService;
 import com.shopkart.service.OrderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.shopkart.security.JwtUtils;
+import com.shopkart.security.UserPrincipal;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class InventoryAndCheckoutIntegrationTests {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private JwtUtils jwtUtils;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Autowired
     private InventoryService inventoryService;
@@ -262,5 +281,149 @@ public class InventoryAndCheckoutIntegrationTests {
             cartService.addToCart(buyer.getId(), new AddToCartRequest(limitedStockProduct.getId(), 2));
         });
         assertTrue(exCumulative.getMessage().contains("Cannot add more than available stock (3)"));
+    }
+
+    // =========================================================================
+    // MockMvc Checkout, 400 Validation & Tax Calculation Tests
+    // =========================================================================
+
+    @Test
+    @DisplayName("Test 6: MockMvc 400 Bad Request on missing addressId and paymentMethod (@NotNull, @NotBlank)")
+    void testMockMvcCreateOrderMissingFieldsValidation() throws Exception {
+        String buyerToken = jwtUtils.generateToken(UserPrincipal.create(buyer));
+
+        // Vector A: Missing addressId
+        String missingAddressJson = "{\"paymentMethod\":\"UPI\"}";
+        mockMvc.perform(post("/api/orders")
+                .header("Authorization", "Bearer " + buyerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(missingAddressJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Validation failed"))
+                .andExpect(jsonPath("$.data.addressId").value("Address ID is required"));
+
+        // Vector B: Missing paymentMethod
+        String missingPaymentJson = "{\"addressId\":" + address.getId() + "}";
+        mockMvc.perform(post("/api/orders")
+                .header("Authorization", "Bearer " + buyerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(missingPaymentJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.data.paymentMethod").value("Payment method is required"));
+
+        // Vector C: Blank paymentMethod
+        String blankPaymentJson = "{\"addressId\":" + address.getId() + ",\"paymentMethod\":\"   \"}";
+        mockMvc.perform(post("/api/orders")
+                .header("Authorization", "Bearer " + buyerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(blankPaymentJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.data.paymentMethod").value("Payment method is required"));
+    }
+
+    @Test
+    @DisplayName("Test 7: MockMvc 400 Bad Request on malformed JSON payload")
+    void testMockMvcCreateOrderMalformedPayload() throws Exception {
+        String buyerToken = jwtUtils.generateToken(UserPrincipal.create(buyer));
+
+        mockMvc.perform(post("/api/orders")
+                .header("Authorization", "Bearer " + buyerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{malformed: json, addressId: "))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    @DisplayName("Test 8: MockMvc 400 Bad Request when attempting checkout with empty cart")
+    void testMockMvcCreateOrderEmptyCartRejection() throws Exception {
+        String buyerToken = jwtUtils.generateToken(UserPrincipal.create(buyer));
+        cartService.clearCart(buyer.getId());
+
+        CreateOrderRequest req = new CreateOrderRequest(address.getId(), "COD");
+        mockMvc.perform(post("/api/orders")
+                .header("Authorization", "Bearer " + buyerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("Your cart is empty. Add products before placing an order."));
+    }
+
+    @Test
+    @DisplayName("Test 9: MockMvc 400 Bad Request on Address creation with missing required fields (@NotBlank)")
+    void testMockMvcAddAddressBeanValidation() throws Exception {
+        String buyerToken = jwtUtils.generateToken(UserPrincipal.create(buyer));
+
+        // Omit required fields (fullName, phone, pincode, etc.)
+        String invalidAddressJson = "{\"streetAddress\":\"123 Tech Park\"}";
+
+        mockMvc.perform(post("/api/addresses")
+                .header("Authorization", "Bearer " + buyerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(invalidAddressJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.data.fullName").value("Full name is required"))
+                .andExpect(jsonPath("$.data.phone").value("Phone is required"))
+                .andExpect(jsonPath("$.data.pincode").value("Pincode is required"));
+    }
+
+    @Test
+    @DisplayName("Test 10: MockMvc 400 Bad Request on Add to Cart invalid quantity (@Min) and missing productId (@NotNull)")
+    void testMockMvcAddToCartBeanValidation() throws Exception {
+        String buyerToken = jwtUtils.generateToken(UserPrincipal.create(buyer));
+
+        // Vector A: Missing productId
+        mockMvc.perform(post("/api/cart/items")
+                .header("Authorization", "Bearer " + buyerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"quantity\":2}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.data.productId").value("Product ID is required"));
+
+        // Vector B: Invalid non-positive quantity (0)
+        mockMvc.perform(post("/api/cart/items")
+                .header("Authorization", "Bearer " + buyerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"productId\":1,\"quantity\":0}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.data.quantity").value("Quantity must be at least 1"));
+    }
+
+    @Test
+    @DisplayName("Test 11: End-to-end MockMvc order creation verifies line item sum, discount savings, delivery fee, and 18% GST tax calculation")
+    void testMockMvcOrderCreationAndTaxCalculationAccuracy() throws Exception {
+        String buyerToken = jwtUtils.generateToken(UserPrincipal.create(buyer));
+        cartService.clearCart(buyer.getId());
+
+        // Product 1: Selling ₹400 (Orig ₹500), Qty 2 -> Subtotal ₹800, Orig ₹1000
+        Product p1 = createProduct("Tax Item 1 " + System.currentTimeMillis(), new BigDecimal("400.00"), new BigDecimal("500.00"), 10, seller);
+        cartService.addToCart(buyer.getId(), new AddToCartRequest(p1.getId(), 2));
+
+        // Execute order creation via MockMvc
+        CreateOrderRequest req = new CreateOrderRequest(address.getId(), "UPI");
+        mockMvc.perform(post("/api/orders")
+                .header("Authorization", "Bearer " + buyerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.orderStatus").value("PLACED"))
+                .andExpect(jsonPath("$.data.totalAmount").value(1000.0))
+                .andExpect(jsonPath("$.data.discountAmount").value(200.0))
+                .andExpect(jsonPath("$.data.deliveryFee").value(0.0))
+                .andExpect(jsonPath("$.data.finalAmount").value(800.0));
+
+        // Mathematical verification of 18% GST tax breakdown (inclusive GST model: subtotal * 18 / 118)
+        BigDecimal finalAmount = new BigDecimal("800.00");
+        BigDecimal expectedGst = finalAmount.multiply(new BigDecimal("18"))
+                .divide(new BigDecimal("118"), 2, java.math.RoundingMode.HALF_UP);
+        assertEquals(new BigDecimal("122.03"), expectedGst, "Inclusive 18% GST on ₹800 final amount must equal ₹122.03");
     }
 }

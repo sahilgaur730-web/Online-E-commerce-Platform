@@ -68,6 +68,8 @@ jwt:
 # Payment Gateway Sandbox: Safe dummy sandbox test keys
 payment:
   sandbox-key: rzp_test_shopkartTestKey123
+  sandbox-secret: test_secret_shopkartSandbox2026
+  webhook-secret: whsec_test_secret123
 
 razorpay:
   key:
