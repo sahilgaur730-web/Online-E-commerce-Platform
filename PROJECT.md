@@ -42,7 +42,7 @@ Every feature and gap identified during the Phase 0 Survey has been cataloged an
 | 20 | Prod Profile Security Lockdown Tests | Author security tests verifying `/swagger-ui/**`, `/v3/api-docs/**`, `/actuator/**`, `/h2-console/**` are rejected under `prod` | M4 | survey_2, prompt_R4 |
 | 21 | Full Clean Test Suite Execution | Execute `./mvnw clean test` verifying 100% test pass with zero failures or errors | M4 | survey_2, prompt_R4 |
 | 22 | Comprehensive Root README.md | Author README with modular directory tree, Mermaid ER diagram, Mermaid Flow diagram, configuration table, run/test commands, and Invigilator Remediation Summary | M5 | survey_3, prompt_R5 |
-| 23 | Review 2 Presentation Guide & Slide Deck | Author `REVIEW_2_PRESENTATION_GUIDE.md` with slide-by-slide bullet points, ER diagrams, 3-viewport screenshot checklist, and Git commit plan | M5 | survey_3, prompt_R5 |
+| 23 | Review 2 Presentation Guide & Slide Deck | Authored `REVIEW_2_PRESENTATION_GUIDE.md` during Review 2 (subsequently removed from repository per user request) | M5 | survey_3, prompt_R5 |
 
 ---
 
@@ -54,7 +54,7 @@ Every feature and gap identified during the Phase 0 Survey has been cataloged an
 | M2 | Security Lockdown, Javadoc Documentation, CI/CD Pipeline & Config Hygiene | Features 9–12: Swagger/OpenAPI/Actuator lockdown in `SecurityConfig`, Javadoc across classes/services/controllers, `.github/workflows/maven-ci.yml`, `.env.example` | M1 | DONE |
 | M3 | Responsive Frontend UI/UX, Design Tokens & Payment Views | Features 13–16: Payment failure view, payment processing overlay, Tailwind v4 `@theme` tokens, address form validation, 1440px/768px/375px responsive polish | none | DONE |
 | M4 | Automated Integration, Security & Concurrency Test Suite | Features 17–21: Callback signature tests, Checkout 400 MockMvc tests, multithreaded concurrency test, prod security tests, 100% clean `./mvnw clean test` pass | M1, M2 | DONE |
-| M5 | Root README, Mermaid Diagrams & Review 2 Presentation Guide | Features 22–23: Root `README.md` with Mermaid ER & Flow diagrams, `REVIEW_2_PRESENTATION_GUIDE.md`, screenshot checklist, modular Git commit plan | M1, M2, M3, M4 | DONE |
+| M5 | Root README & Mermaid Diagrams | Feature 22: Root `README.md` with Mermaid ER & Flow diagrams (`REVIEW_2_PRESENTATION_GUIDE.md` subsequently removed per user request) | M1, M2, M3, M4 | DONE |
 
 ---
 
@@ -99,7 +99,6 @@ c:\Users\SAHIL GAUR\Desktop\E-COMM\
 ├── mvnw.cmd                                   # Maven wrapper cmd script
 ├── .mvn/wrapper/                              # Maven wrapper configuration
 ├── README.md                                  # M5: Root README with Mermaid ER & Flow
-├── REVIEW_2_PRESENTATION_GUIDE.md             # M5: Presentation guide & slide notes
 ├── backend/
 │   ├── pom.xml                                # Cleaned dependencies
 │   └── src/
