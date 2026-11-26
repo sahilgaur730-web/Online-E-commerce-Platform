@@ -589,4 +589,4 @@ This project is licensed under the [MIT License](LICENSE).
 
 
 ## Developers
-Sahil Gaur, Shani
+Sahil Gaur, Shani, Suman Kumar,
